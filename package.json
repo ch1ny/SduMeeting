@@ -2,10 +2,14 @@
   "name": "chirp",
   "version": "0.1.0",
   "private": true,
+  "main": "main.js",
+  "homepage": "./",
   "dependencies": {
+    "@ant-design/icons": "^4.7.0",
     "@testing-library/jest-dom": "^5.16.1",
     "@testing-library/react": "^12.1.2",
     "@testing-library/user-event": "^13.5.0",
+    "antd": "^4.18.5",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-scripts": "5.0.0",
@@ -15,7 +19,11 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "elect": "set NODE_ENV=development&&electron .",
+    "dist": "copy /y .\\package.json .\\build\\package.json&&echo y|javascript-obfuscator .\\main.js --config .\\js-obfuscator\\main.js.json --output .\\build\\main.js&&echo y|javascript-obfuscator .\\public\\js\\login.js --config .\\js-obfuscator\\login.js.json --output .\\build\\js\\login.js",
+    "dist-win": "yarn dist&&electron-packager ./build %npm_package_name% --electron-version=16.0.8 --platform=win32 --arch=x64 --out ./dist --asar --overwrite",
+    "win": "react-scripts build&&yarn dist-win&&extraNodeModules.bat win32 x64"
   },
   "eslintConfig": {
     "extends": [
@@ -34,5 +42,11 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "electron": "^16.0.8",
+    "electron-packager": "^15.4.0",
+    "electron-store": "^8.0.1",
+    "javascript-obfuscator": "^3.1.0"
   }
 }

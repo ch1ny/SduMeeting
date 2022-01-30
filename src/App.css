@@ -1,38 +1,110 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
 .App {
-  text-align: center;
+  position: absolute;
+  left: 1.5px;
+  top: 1.5px;
+  width: calc(100vw - 3px);
+  height: calc(100vh - 3px);
+  overflow: hidden;
+  box-shadow: 0 0 1px rgba(0, 0, 0, 0.8);
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.dragBar {
+  -webkit-app-region: drag;
+  position: absolute;
+  height: 2rem;
+  width: 100%;
+  line-height: 2rem;
+  user-select: none;
+  z-index: 9999;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.titleBtn {
+  border: none;
+  outline: none;
+  color: #1c1c1c;
+  cursor: pointer;
+  background: none;
+  float: right;
+  width: 2rem;
+  height: 2rem;
+  -webkit-app-region: no-drag;
+  transition: 250ms;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+.titleBtn:hover {
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+#minimize:hover {
+  background-color: #9c9c9c;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+#maximize:hover {
+  background-color: #13acfc;
+}
+
+#shutdown:hover {
+  background-color: #ff0000;
+}
+
+.mainBody {
+  width: 100%;
+  height: 100%;
+}
+
+.mainBody div {
+  display: inline-block;
+}
+
+.mainBody .tabbar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  background-image: linear-gradient(to bottom, #29323c 0%, #485563 100%);
+  width: 4rem;
+  height: 100%;
+}
+
+.mainBody .tabbar .avatarContainer {
+  width: 100%;
+  text-align: center;
+  padding-top: 2rem; 
+  padding-bottom: 2rem;
+  padding-inline: 0%;
+  cursor: pointer;
+}
+
+.mainBody .tabbar .tabContainer {
+  width: 100%;
+}
+
+.mainBody .tabbar .tabContainer div {
+  width: 100%;
+  text-align: center;
+  cursor: pointer;
+  padding-top: 20%;
+  padding-bottom: 20%;
+  transition: 300ms;
+}
+
+.mainBody .tabbar .tabContainer div:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.tab {
+  color: #eaeaea;
+  font-size: 2rem;
+}
+
+.mainBody .content {
+  position: absolute;
+  left: 4rem;
+  background-color: #eaeaea;
+  height: 100%;
+  width: calc(100% - 4rem);
 }
