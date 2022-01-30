@@ -23,7 +23,7 @@
     "elect": "set NODE_ENV=development&&electron .",
     "dist": "copy /y .\\package.json .\\build\\package.json&&echo y|javascript-obfuscator .\\main.js --config .\\js-obfuscator\\main.js.json --output .\\build\\main.js&&echo y|javascript-obfuscator .\\public\\js\\login.js --config .\\js-obfuscator\\login.js.json --output .\\build\\js\\login.js",
     "dist-win": "yarn dist&&electron-packager ./build %npm_package_name% --electron-version=16.0.8 --platform=win32 --arch=x64 --out ./dist --asar --overwrite",
-    "win": "react-scripts build&&yarn dist-win&&extraNodeModules.bat win32 x64"
+    "win": "set GENERATE_SOURCEMAP=false&&react-scripts build&&yarn dist-win&&extraNodeModules.bat win32 x64"
   },
   "eslintConfig": {
     "extends": [
