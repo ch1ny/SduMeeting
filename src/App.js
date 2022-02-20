@@ -1,6 +1,6 @@
 import './App.css';
 import React from 'react';
-import { BorderOutlined, ChromeFilled, CloseOutlined, ContactsFilled, MinusOutlined, SwitcherOutlined, UserOutlined, WechatFilled } from '@ant-design/icons/lib/icons';
+import { BorderOutlined, ChromeFilled, CloseOutlined, ContactsFilled, MessageFilled, MinusOutlined, SwitcherOutlined, UserOutlined } from '@ant-design/icons/lib/icons';
 import { Avatar, Badge, Dropdown, Menu } from 'antd';
 
 class App extends React.Component {
@@ -9,7 +9,7 @@ class App extends React.Component {
     const onlineStatus = localStorage.getItem('onlineStatus')
     this.state = {
       isMaximized: false,
-      nowTag: undefined,
+      selectedTabDiv: undefined,
       onlineStatus: onlineStatus === null ? 1 : parseInt(onlineStatus)
     }
     window.electron = window.require('electron') // 全局引入 electron 模块
@@ -17,11 +17,38 @@ class App extends React.Component {
 
   componentDidMount() {
     this.initIpcListener(window.electron.ipcRenderer)
+
+    /**
+     * 事件代理选择Tab (时间换空间)
+     */
+    const tabContainer = document.querySelector('.tabContainer')
+    tabContainer.addEventListener('click', (event) => {
+      if (event.target === tabContainer) {
+        return
+      }
+      for (const index in event.path) {
+        const element = event.path[index];
+        if (element.nodeName.toLowerCase() === 'div' && element.classList.contains('tabDiv')) {
+          if (this.state.selectedTabDiv !== undefined) {
+            this.state.selectedTabDiv.querySelector('.ant-badge')
+              .querySelector('.tab')
+              .classList.remove('selected')
+          }
+          const badge = element.querySelector('.ant-badge')
+          const tab = badge.querySelector('.tab')
+          tab.classList.add('selected')
+          this.setState({
+            selectedTabDiv: element
+          })
+          break;
+        }
+      }
+    })
   }
 
   render() {
     return (
-      <div className="App">
+      <div className="App" >
         <div className='dragBar'>
           <button className="titleBtn" id="shutdown" title="退出" onClick={() => { window.electron.ipcRenderer.send('quit') }}>
             <CloseOutlined />
@@ -74,17 +101,17 @@ class App extends React.Component {
               </Dropdown>
             </div>
             <div className='tabContainer'>
-              <div>
+              <div className='tabDiv' tab_id={0}>
                 <Badge dot>
-                  <WechatFilled className='tab' />
+                  <MessageFilled className='tab' />
                 </Badge>
               </div>
-              <div>
+              <div className='tabDiv' tab_id={1}>
                 <Badge dot>
                   <ContactsFilled className='tab' />
                 </Badge>
               </div>
-              <div>
+              <div className='tabDiv' tab_id={2}>
                 <Badge dot>
                   <ChromeFilled className='tab' />
                 </Badge>

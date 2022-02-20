@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Tray, Menu, screen } = require('electron')
+const { app, BrowserWindow, Tray, Menu, screen, nativeImage } = require('electron')
 const path = require('path')
 const url = require('url')
 
@@ -6,6 +6,7 @@ let loginWindow, mainWindow
 let tray
 let screenWidth, screenHeight
 const ipc = require('electron').ipcMain
+const DIRNAME = process.env.NODE_ENV === 'development' ? path.join(__dirname, 'public') : __dirname
 
 function createLoginWindow() {
     loginWindow = new BrowserWindow({
@@ -40,33 +41,24 @@ function createLoginWindow() {
         {
             label: '退出',
             click: () => {
-                if (process.platform !== 'darwin') {
-                    app.quit()
-                } else {
-                    loginWindow = null
-                    mainWindow = null
-                }
-            }
+                app.quit()
+            },
+            icon: nativeImage.createFromPath(path.join(DIRNAME, 'img/trayIcon/quit.png')).resize({
+                width: 16,
+                height: 16,
+                quality: 'best'
+            })
         }
     ])
 
-    if (process.env.NODE_ENV === 'development') {
-        tray = new Tray(path.join(__dirname, 'public/favicon.ico'))
-        loginWindow.loadURL(url.format({
-            pathname: path.join(__dirname, 'public/login.html'),
-            protocol: 'file:',
-            slashes: true
-        }))
-        // loginWindow.loadURL('http://localhost:3000/')
-        // loginWindow.webContents.openDevTools()
-    } else {
-        tray = new Tray(path.join(__dirname, 'favicon.ico'))
-        loginWindow.loadURL(url.format({
-            pathname: path.join(__dirname, 'login.html'),
-            protocol: 'file:',
-            slashes: true
-        }))
-    }
+
+    tray = new Tray(path.join(DIRNAME, 'favicon.ico'))
+    loginWindow.loadURL(url.format({
+        pathname: path.join(DIRNAME, 'login.html'),
+        protocol: 'file:',
+        slashes: true
+    }))
+
     tray.setToolTip(`假装这是一个QQ\n(¯﹃¯)`)
     tray.setContextMenu(contextMenu)
     tray.on('click', () => {
@@ -75,6 +67,11 @@ function createLoginWindow() {
         } else {
             mainWindow.restore()
         }
+    })
+
+    ipc.on('login', (event, userId) => {
+        createMainWindow()
+        loginWindow.close();
     })
 
     loginWindow.on('closed', () => {
@@ -110,7 +107,7 @@ function createMainWindow() {
         mainWindow.webContents.openDevTools()
     } else {
         mainWindow.loadURL(url.format({
-            pathname: path.join(__dirname, 'index.html'),
+            pathname: path.join(DIRNAME, 'index.html'),
             protocol: 'file:',
             slashes: true
         }))
@@ -130,15 +127,18 @@ function createMainWindow() {
             }
         },
         {
+            type: 'separator'
+        },
+        {
             label: '退出',
             click: () => {
-                if (process.platform !== 'darwin') {
-                    app.quit()
-                } else {
-                    loginWindow = null
-                    mainWindow = null
-                }
-            }
+                app.quit()
+            },
+            icon: nativeImage.createFromPath(path.join(DIRNAME, 'img/trayIcon/quit.png')).resize({
+                width: 16,
+                height: 16,
+                quality: 'best'
+            })
         }
     ])
 
@@ -198,10 +198,6 @@ app.on('ready', () => {
         } else {
             mainWindow.minimize()
         }
-    })
-    ipc.on('login', (event, userId) => {
-        createMainWindow()
-        loginWindow.close();
     })
 })
 

@@ -76,6 +76,9 @@
   padding-top: 2rem; 
   padding-bottom: 2rem;
   padding-inline: 0%;
+}
+
+.mainBody .tabbar .avatarContainer * {
   cursor: pointer;
 }
 
@@ -99,6 +102,11 @@
 .tab {
   color: #eaeaea;
   font-size: 2rem;
+  transition: 300ms;
+}
+
+.tab.selected {
+  color: #13acfc;
 }
 
 .mainBody .content {
