@@ -8,6 +8,8 @@ let screenWidth, screenHeight
 const ipc = require('electron').ipcMain
 const DIRNAME = process.env.NODE_ENV === 'development' ? path.join(__dirname, 'public') : __dirname
 
+const ffmpegPath = path.join(DIRNAME, 'lib/ffmpeg.exe')
+
 function createLoginWindow() {
     loginWindow = new BrowserWindow({
         width: parseInt(screenWidth * 0.35),
@@ -50,7 +52,7 @@ function createLoginWindow() {
             })
         }
     ])
-
+    // loginWindow.webContents.openDevTools()
 
     tray = new Tray(path.join(DIRNAME, 'favicon.ico'))
     loginWindow.loadURL(url.format({
@@ -167,6 +169,7 @@ function createMainWindow() {
             mainWindow.webContents.send('exchangeMax')
         }
         mainWindow.show()
+        winPushStream()
     })
 
     ipc.on('maximize', () => {
@@ -213,3 +216,38 @@ app.on('activate', () => {
         createLoginWindow()
     }
 })
+
+/**
+ * 视频推流测试
+ */
+function winPushStream() {
+    const ffmpeg = require('fluent-ffmpeg')
+    const outputAddress = 'rtmp://txy.live-push.bilivideo.com/live-bvc/?streamname=live_27905679_7208685&key=e025ba04032f34473b5714600813a2d5&schedule=rtmp&pflag=1'
+    const command = ffmpeg()
+        .setFfmpegPath(ffmpegPath)
+        .input('desktop')
+        .inputFormat('gdigrab')
+        // .input('audio=麦克风 (HyperX Cloud Stinger S)')
+        // .inputFormat('dshow')
+        .addOptions([
+            '-vcodec libx264',
+            '-preset ultrafast',
+            '-acodec libmp3lame',
+            '-pix_fmt yuv422p'
+        ])
+        .format('flv')
+        .output(outputAddress, {
+            end: true
+        })
+        .on('start', (commandLine) => {
+            console.log('[' + new Date() + '] Video is Pushing !');
+            console.log('commandLine: ' + commandLine);
+        })
+        .on('error', (err, stdout, stderr) => {
+            console.log(`error: ${err.message}`);
+        })
+        .on('end', () => {
+            console.log('[' + new Date() + '] Video Pushing is Finished !');
+        });
+    command.run()
+}

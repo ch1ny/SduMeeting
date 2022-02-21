@@ -152,6 +152,21 @@ class App extends React.Component {
     }
   }
 
+  /**
+   * 获取麦克风设备
+   * @returns {Promise} 麦克风设备
+   */
+  getMicrophones() {
+    return navigator.mediaDevices.enumerateDevices().then((devices) => devices.filter((device) => device.kind === 'audioinput'))
+  }
+
+  /**
+   * 获取摄像头设备
+   * @returns {Promise} 摄像头设备
+   */
+  getCameras() {
+    return navigator.mediaDevices.enumerateDevices().then((devices) => devices.filter((device) => device.kind === 'videoinput'))
+  }
 }
 
 export default App;
