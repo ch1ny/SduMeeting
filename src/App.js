@@ -1,7 +1,8 @@
 import './App.css';
 import React from 'react';
-import { BorderOutlined, ChromeFilled, CloseOutlined, ContactsFilled, MessageFilled, MinusOutlined, SwitcherOutlined, UserOutlined } from '@ant-design/icons/lib/icons';
+import { BorderOutlined, CloseOutlined, ContactsFilled, MediumCircleFilled, MessageFilled, MinusOutlined, SwitcherOutlined, UserOutlined } from '@ant-design/icons/lib/icons';
 import { Avatar, Badge, Dropdown, Menu } from 'antd';
+import Meeting from './components/Meeting/Meeting';
 
 class App extends React.Component {
   constructor(props) {
@@ -39,6 +40,8 @@ class App extends React.Component {
           tab.classList.add('selected')
           this.setState({
             selectedTabDiv: element
+          }, () => {
+            console.log(this.state.selectedTabDiv.getAttribute('tab_id'));
           })
           break;
         }
@@ -113,13 +116,38 @@ class App extends React.Component {
               </div>
               <div className='tabDiv' tab_id={2}>
                 <Badge dot>
-                  <ChromeFilled className='tab' />
+                  <MediumCircleFilled className='tab' />
                 </Badge>
               </div>
             </div>
           </div>
           <div className='content'>
+            {
+              ((tabDiv) => {
+                if (tabDiv === undefined) {
+                  return (<></>)
+                }
+                switch (tabDiv.getAttribute('tab_id')) {
+                  case '0':
+                    return (
+                      <>
 
+                      </>)
+                  case '1':
+                    return (
+                      <>
+
+                      </>
+                    )
+                  case '2':
+                    return (
+                      <>
+                        <Meeting />
+                      </>
+                    )
+                }
+              })(this.state.selectedTabDiv)
+            }
           </div>
         </div>
       </div>
@@ -157,7 +185,39 @@ class App extends React.Component {
    * @returns {Promise} 麦克风设备
    */
   getMicrophones() {
-    return navigator.mediaDevices.enumerateDevices().then((devices) => devices.filter((device) => device.kind === 'audioinput'))
+    navigator.mediaDevices.enumerateDevices().then((devices) => {
+      for (const key in devices) {
+        const element = devices[key];
+        if (element.kind === 'audioinput') {
+          const formerIndex = element.label.indexOf(' (')
+          const latterIndex = element.label.lastIndexOf(' (')
+          const type = ((deviceId) => {
+            switch (deviceId) {
+              case 'default':
+                return 'default'
+              case 'communications':
+                return 'communications'
+              default:
+                return 'device'
+            }
+          })(element.deviceId)
+          const label = ((label, type) => {
+            switch (type) {
+              case 'default':
+                return label.replace('Default - ', '')
+              case 'communications':
+                return label.replace('Communications - ', '')
+              default:
+                return label
+            }
+          })(formerIndex === latterIndex ? element.label : element.label.substring(0, latterIndex), type)
+          console.log({
+            type,
+            label
+          });
+        }
+      }
+    })
   }
 
   /**

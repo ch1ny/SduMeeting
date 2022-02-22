@@ -1,6 +1,7 @@
 const { app, BrowserWindow, Tray, Menu, screen, nativeImage } = require('electron')
 const path = require('path')
 const url = require('url')
+const ffmpeg = require('fluent-ffmpeg')
 
 let loginWindow, mainWindow
 let tray
@@ -19,6 +20,7 @@ function createLoginWindow() {
         show: false,
         // alwaysOnTop: true,
         resizable: false,
+        fullscreenable: false,
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
@@ -97,10 +99,12 @@ function createMainWindow() {
         frame: false,
         transparent: true,
         show: false,
+        fullscreenable: false,
         // alwaysOnTop: true,
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
+            preload: path.join(DIRNAME, 'js/preload.js')
         }
     })
 
@@ -169,7 +173,7 @@ function createMainWindow() {
             mainWindow.webContents.send('exchangeMax')
         }
         mainWindow.show()
-        winPushStream()
+        // winPushStream()
     })
 
     ipc.on('maximize', () => {
@@ -221,14 +225,13 @@ app.on('activate', () => {
  * 视频推流测试
  */
 function winPushStream() {
-    const ffmpeg = require('fluent-ffmpeg')
-    const outputAddress = 'rtmp://txy.live-push.bilivideo.com/live-bvc/?streamname=live_27905679_7208685&key=e025ba04032f34473b5714600813a2d5&schedule=rtmp&pflag=1'
+    const outputAddress = 'rtmp://live-push.bilivideo.com/live-bvc/?streamname=live_27905679_7208685&key=e025ba04032f34473b5714600813a2d5&schedule=rtmp&pflag=1'
     const command = ffmpeg()
         .setFfmpegPath(ffmpegPath)
         .input('desktop')
         .inputFormat('gdigrab')
-        // .input('audio=麦克风 (HyperX Cloud Stinger S)')
-        // .inputFormat('dshow')
+        .input('audio=麦克风 (HyperX Cloud Stinger S)')
+        .inputFormat('dshow')
         .addOptions([
             '-vcodec libx264',
             '-preset ultrafast',
@@ -250,4 +253,39 @@ function winPushStream() {
             console.log('[' + new Date() + '] Video Pushing is Finished !');
         });
     command.run()
+}
+
+let pushStreamCommand
+
+function pushStream(pushStreamAddress) {
+    if (pushStreamCommand !== undefined) {
+        pushStreamCommand.kill('SIGSTOP')
+    }
+    pushStreamCommand = ffmpeg()
+        .setFfmpegPath(ffmpegPath)
+        .input('desktop')
+        .inputFormat('gdigrab')
+        // .input('audio=麦克风 (HyperX Cloud Stinger S)')
+        // .inputFormat('dshow')
+        .addOptions([
+            '-vcodec libx264',
+            '-preset ultrafast',
+            '-acodec libmp3lame',
+            '-pix_fmt yuv422p'
+        ])
+        .format('flv')
+        .output(pushStreamAddress, {
+            end: true
+        })
+        .on('start', (commandLine) => {
+            console.log('[' + new Date() + '] Video is Pushing !');
+            console.log('commandLine: ' + commandLine);
+        })
+        .on('error', (err, stdout, stderr) => {
+            console.log(`error: ${err.message}`);
+        })
+        .on('end', () => {
+            console.log('[' + new Date() + '] Video Pushing is Finished !');
+        });
+    pushStreamCommand.run()
 }
