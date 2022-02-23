@@ -109,10 +109,15 @@
   color: #13acfc;
 }
 
+.mainBody {
+  background-color: #eaeaea;
+}
+
 .mainBody .content {
   position: absolute;
   left: 4rem;
-  background-color: #eaeaea;
-  height: 100%;
+  top: 2rem;
+  /* background-color: #eaeaea; */
+  height: calc(100% - 2rem);
   width: calc(100% - 4rem);
 }

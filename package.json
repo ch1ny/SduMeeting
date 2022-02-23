@@ -22,8 +22,8 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "elect": "set NODE_ENV=development&&electron .",
-    "dist": "copy /y .\\package.json .\\build\\package.json&&echo y|javascript-obfuscator .\\main.js --config .\\js-obfuscator\\main.js.json --output .\\build\\main.js&&echo y|javascript-obfuscator .\\public\\js\\login.js --config .\\js-obfuscator\\login.js.json --output .\\build\\js\\login.js",
-    "dist-win": "yarn dist&&electron-packager ./build %npm_package_name% --platform=win32 --arch=x64 --out ./dist --asar --overwrite",
+    "obfuscator": "obfuscator.bat",
+    "dist-win": "yarn obfuscator&&electron-packager ./build %npm_package_name% --platform=win32 --arch=x64 --out ./dist --asar --overwrite",
     "win": "yarn build&&yarn dist-win&&extraNodeModules.bat win32 x64"
   },
   "eslintConfig": {

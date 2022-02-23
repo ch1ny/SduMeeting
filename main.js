@@ -104,7 +104,7 @@ function createMainWindow() {
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
-            preload: path.join(DIRNAME, 'js/preload.js')
+            preload: path.join(DIRNAME, 'js/preload/mainWindowPreload.js')
         }
     })
 

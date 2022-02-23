@@ -4,13 +4,7 @@ function initCanvas() {
     victor(theme).set()
 }
 
-function titleBtn(electron) {
-    document.querySelector('#shutdown').onclick = () => {
-        electron.ipcRenderer.send('quit')
-    }
-    document.querySelector('#minimize').onclick = () => {
-        electron.ipcRenderer.send('minimize')
-    }
+function titleBtn() {
     let rotating = false
     const mainBody = document.querySelector('#mainBody')
         , switchBtn = document.querySelector('#switch')
@@ -33,6 +27,15 @@ function titleBtn(electron) {
                 }, 250)
             }, 250)
         }
+    }
+}
+
+function titleBtnIpc(electron) {
+    document.querySelector('#shutdown').onclick = () => {
+        electron.ipcRenderer.send('quit')
+    }
+    document.querySelector('#minimize').onclick = () => {
+        electron.ipcRenderer.send('minimize')
     }
 }
 
@@ -132,7 +135,8 @@ function buttonRipple() {
 (function () {
     initCanvas()
     buttonRipple()
+    titleBtn()
     const electron = window.require('electron');
-    titleBtn(electron)
+    titleBtnIpc(electron)
     loginBtn(electron)
 })()
