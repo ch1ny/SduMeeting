@@ -40,7 +40,7 @@
   color: white;
 }
 
-#minimize:hover {
+#minimize:hover , #setting:hover {
   background-color: #9c9c9c;
 }
 
