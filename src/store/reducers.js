@@ -6,11 +6,11 @@ import {
     EXCHANGE_VIDEO_DEVICE,
 } from './actions'
 
-function updateAvailableVideoDevices(state = [{ label: 'screen', webLabel: '屏幕抓取', deviceId: 'screen' }], action) {
+function updateAvailableVideoDevices(state = [], action) {
     switch (action.type) {
         case UPDATE_AVAILABLE_VIDEO_DEVICES:
             action.devices.push()
-            return [{ label: 'screen', webLabel: '屏幕抓取', deviceId: 'screen' }].concat(action.devices)
+            return action.devices
         default:
             return state
     }
@@ -28,6 +28,7 @@ function updateAvailableAudioDevices(state = [], action) {
 function exchangeVideoDevice(state = null, action) {
     switch (action.type) {
         case EXCHANGE_VIDEO_DEVICE:
+            localStorage.setItem('usingVideoDevice', action.deviceInfo.key)
             return action.deviceInfo
         default:
             return state
@@ -37,6 +38,7 @@ function exchangeVideoDevice(state = null, action) {
 function exchangeAudioDevice(state = null, action) {
     switch (action.type) {
         case EXCHANGE_AUDIO_DEVICE:
+            localStorage.setItem('usingAudioDevice', action.deviceInfo.key)
             return action.deviceInfo
         default:
             return state

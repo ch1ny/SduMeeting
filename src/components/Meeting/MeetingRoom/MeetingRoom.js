@@ -2,6 +2,7 @@ import { Select } from "antd";
 import React from "react";
 import { StoreContext } from "../../../app/context";
 import { DEVICE_TYPE, exchangeMediaDevice } from "../../../store/actions";
+import store from "../../../store/store";
 import './MeetingRoom.css'
 
 export default class MeetingRoom extends React.Component {
@@ -11,28 +12,30 @@ export default class MeetingRoom extends React.Component {
         super(props)
         this.state = {
             stream: new Blob(),
-            videoDevices: [],
-            audioDevices: [],
-            usingVideoDevice: undefined,
-            usingAudioDevice: undefined
+            usingVideoDevice: store.getState().availableVideoDevices,
+            usingAudioDevice: store.getState().availableAudioDevices,
+            unsubscribe: store.subscribe(() => {
+                this.setState({
+                    usingVideoDevice: store.getState().availableVideoDevices,
+                    usingAudioDevice: store.getState().availableAudioDevices
+                }, () => {
+                    if (store.getState().usingVideoDevice) this.setMediaStream(DEVICE_TYPE.VIDEO_DEVICE, store.getState().usingVideoDevice)
+                    if (store.getState().usingAudioDevice) this.setMediaStream(DEVICE_TYPE.AUDIO_DEVICE, store.getState().usingAudioDevice)
+                })
+            })
         }
         this.audioRef = React.createRef()
         this.videoRef = React.createRef()
         this.setMediaStream = this.setMediaStream.bind(this)
-        this.changeCamera = this.changeCamera.bind(this)
-        this.changeMicroPhone = this.changeMicroPhone.bind(this)
     }
 
     componentDidMount() {
-        const storeState = this.context.getState()
-        this.setState({
-            videoDevices: storeState.availableVideoDevices,
-            audioDevices: storeState.availableAudioDevices,
-            usingVideoDevice: storeState.usingVideoDevice,
-            usingAudioDevice: storeState.usingAudioDevice
-        })
-        if (storeState.usingVideoDevice) this.setMediaStream(DEVICE_TYPE.VIDEO_DEVICE, storeState.usingVideoDevice)
-        if (storeState.usingAudioDevice) this.setMediaStream(DEVICE_TYPE.AUDIO_DEVICE, storeState.usingAudioDevice)
+        if (store.getState().usingVideoDevice) this.setMediaStream(DEVICE_TYPE.VIDEO_DEVICE, store.getState().usingVideoDevice)
+        if (store.getState().usingAudioDevice) this.setMediaStream(DEVICE_TYPE.AUDIO_DEVICE, store.getState().usingAudioDevice)
+    }
+
+    componentWillUnmount() {
+        this.state.unsubscribe()
     }
 
     async setMediaStream(mediaType, object) {
@@ -42,7 +45,7 @@ export default class MeetingRoom extends React.Component {
                     case 'screen':
                         this.videoRef.current.srcObject = await window.navigator.mediaDevices.getDisplayMedia()
                         break
-                    case null:
+                    case 'null':
                         this.videoRef.current.srcObject = null
                         break
                     default:
@@ -57,7 +60,7 @@ export default class MeetingRoom extends React.Component {
                 }
                 break
             case DEVICE_TYPE.AUDIO_DEVICE:
-                if (object.value) {
+                if (object.value !== 'null') {
                     const audioConstraints = {
                         deviceId: {
                             exact: object.key
@@ -74,37 +77,12 @@ export default class MeetingRoom extends React.Component {
         }
     }
 
-    changeMicroPhone(label, object) {
-        this.setState({ usingAudioDevice: label })
-        this.context.dispatch(exchangeMediaDevice(DEVICE_TYPE.AUDIO_DEVICE, object))
-        this.setMediaStream(DEVICE_TYPE.AUDIO_DEVICE, object)
-    }
-
-    changeCamera(label, object) {
-        this.setState({ usingVideoDevice: label })
-        this.context.dispatch(exchangeMediaDevice(DEVICE_TYPE.VIDEO_DEVICE, object))
-        this.setMediaStream(DEVICE_TYPE.VIDEO_DEVICE, object)
-    }
-
     render() {
-        const { Option } = Select
         return (
             <>
                 <div id="videoContainer">
                     <video id="video" width="100%" height="100%" autoPlay={true} ref={this.videoRef} />
                     <audio id="audio" autoPlay={true} ref={this.audioRef} />
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-around' }}>
-                    <Select placeholder='请选择录音设备' style={{ width: 'calc(40vw)' }} onSelect={this.changeMicroPhone} value={this.state.usingAudioDevice}>
-                        {
-                            this.state.audioDevices.map((device) => (<Option value={device.label} key={device.deviceId}>{device.webLabel}</Option>))
-                        }
-                    </Select>
-                    <Select placeholder='请选择录像设备' style={{ width: 'calc(40vw)' }} onSelect={this.changeCamera} value={this.state.usingVideoDevice}>
-                        {
-                            this.state.videoDevices.map((device) => (<Option value={device.label} key={device.deviceId}>{device.webLabel}</Option>))
-                        }
-                    </Select>
                 </div>
             </>
         )

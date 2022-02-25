@@ -20,7 +20,7 @@
   width: 100%;
   line-height: 2rem;
   user-select: none;
-  z-index: 9999;
+  z-index: 999;
 }
 
 .titleBtn {

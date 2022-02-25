@@ -3,9 +3,10 @@ import React from 'react';
 import { BorderOutlined, CloseOutlined, ContactsFilled, MediumCircleFilled, MessageFilled, MinusOutlined, SettingOutlined, SwitcherOutlined, UserOutlined } from '@ant-design/icons/lib/icons';
 import { Avatar, Badge, Dropdown, Menu } from 'antd';
 import Meeting from './components/Meeting/Meeting';
-import { DEVICE_TYPE, updateAvailableDevices } from './store/actions';
+import { DEVICE_TYPE, exchangeMediaDevice, updateAvailableDevices } from './store/actions';
 import store from './store/store';
 import { StoreContext } from './app/context';
+import Setting from './components/Setting/Setting';
 // import { BiliIcon, PushStreamIcon } from './components/MyIcons/MyIcons'
 
 class App extends React.Component {
@@ -15,7 +16,8 @@ class App extends React.Component {
     this.state = {
       isMaximized: false,
       selectedTabDiv: undefined,
-      onlineStatus: onlineStatus === null ? 1 : parseInt(onlineStatus)
+      onlineStatus: onlineStatus === null ? 1 : parseInt(onlineStatus),
+      showSetting: false
     }
     window.electron = window.require('electron') // 全局引入 electron 模块
   }
@@ -25,6 +27,8 @@ class App extends React.Component {
     this.getUserMediaDevices()
     this.proxyForChoosingTab()
   }
+
+  settingFatherDomRef = React.createRef()
 
   render() {
     return (
@@ -44,7 +48,7 @@ class App extends React.Component {
             <button className="titleBtn" id="minimize" title="最小化" onClick={() => { window.electron.ipcRenderer.send('minimize') }}>
               <MinusOutlined />
             </button>
-            <button className='titleBtn' id='setting' title='设置'>
+            <button className='titleBtn' id='setting' title='设置' onClick={() => { this.setState({ showSetting: true }) }}>
               <SettingOutlined />
             </button>
           </div>
@@ -100,40 +104,33 @@ class App extends React.Component {
                     <MediumCircleFilled className='tab' />
                   </Badge>
                 </div>
-                {/* <div className='tabDiv' tab_id={3}>
-                <Badge dot>
-                  <PushStreamIcon className='tab' />
-                </Badge>
-              </div> */}
               </div>
             </div>
-            <div className='content'>
+            <div className='content' ref={this.settingFatherDomRef}>
               {
                 ((tabDiv) => {
                   if (tabDiv === undefined) {
                     return (<></>)
                   }
-                  switch (tabDiv.getAttribute('tab_id')) {
-                    case '0':
-                      return (
-                        <>
-
-                        </>)
-                    case '1':
-                      return (
-                        <>
-
-                        </>
-                      )
-                    case '2':
-                      return (
-                        <>
-                          <Meeting />
-                        </>
-                      )
-                  }
+                  return (
+                    <>
+                      <div style={{ display: this.state.selectedTabDiv.getAttribute('tab_id') === '0' ? 'block' : 'none' }}>
+                        聊天
+                      </div>
+                      <div style={
+                        {
+                          display: this.state.selectedTabDiv.getAttribute('tab_id') === '2' ? 'block' : 'none',
+                          width: '100%',
+                          height: '100%'
+                        }
+                      }>
+                        <Meeting />
+                      </div>
+                    </>
+                  )
                 })(this.state.selectedTabDiv)
               }
+              <Setting visible={this.state.showSetting} closeFunc={() => { this.setState({ showSetting: false }) }} fatherRef={this.settingFatherDomRef} />
             </div>
           </div>
         </div>
@@ -196,8 +193,39 @@ class App extends React.Component {
           audioDevices.push(generateDeviceJson(device))
         }
       }
-      store.dispatch(updateAvailableDevices(DEVICE_TYPE.VIDEO_DEVICE, videoDevices))
-      store.dispatch(updateAvailableDevices(DEVICE_TYPE.AUDIO_DEVICE, audioDevices))
+      videoDevices = [{ label: 'screen', webLabel: '屏幕抓取', deviceId: 'screen' }].concat(videoDevices);
+      store.dispatch(updateAvailableDevices(DEVICE_TYPE.VIDEO_DEVICE, videoDevices));
+      store.dispatch(updateAvailableDevices(DEVICE_TYPE.AUDIO_DEVICE, audioDevices));
+      const lastVideoDevice = localStorage.getItem('usingVideoDevice');
+      const lastAudioDevice = localStorage.getItem('usingAudioDevice');
+      (() => {
+        for (const device of videoDevices) {
+          if (device.deviceId === lastVideoDevice) {
+            store.dispatch(exchangeMediaDevice(DEVICE_TYPE.VIDEO_DEVICE,
+              {
+                key: device.deviceId,
+                value: device.label,
+                children: device.webLabel
+              }
+            ))
+            return
+          }
+        }
+      })();
+      (() => {
+        for (const device of audioDevices) {
+          if (device.deviceId === lastAudioDevice) {
+            store.dispatch(exchangeMediaDevice(DEVICE_TYPE.AUDIO_DEVICE,
+              {
+                key: device.deviceId,
+                value: device.label,
+                children: device.webLabel
+              }
+            ))
+            return
+          }
+        }
+      })();
     })
   }
 

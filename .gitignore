@@ -1,5 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# 临时用来测试WebRTC的网页文件
+/public/webRTC.html
+
 # dependencies
 /node_modules
 /.pnp
