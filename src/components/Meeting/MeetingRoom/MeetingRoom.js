@@ -1,13 +1,9 @@
-import { Select } from "antd";
 import React from "react";
-import { StoreContext } from "../../../app/context";
-import { DEVICE_TYPE, exchangeMediaDevice } from "../../../store/actions";
+import { DEVICE_TYPE } from "../../../store/actions";
 import store from "../../../store/store";
 import './MeetingRoom.css'
 
 export default class MeetingRoom extends React.Component {
-    static contextType = StoreContext
-
     constructor(props) {
         super(props)
         this.state = {

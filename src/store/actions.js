@@ -23,6 +23,8 @@ export function updateAvailableDevices(deviceType, devices) {
             return { type: UPDATE_AVAILABLE_VIDEO_DEVICES, devices }
         case DEVICE_TYPE.AUDIO_DEVICE:
             return { type: UPDATE_AVAILABLE_AUDIO_DEVICES, devices }
+        default:
+            return null
     }
 }
 export function exchangeMediaDevice(deviceType, deviceInfo) {
@@ -31,5 +33,7 @@ export function exchangeMediaDevice(deviceType, deviceInfo) {
             return { type: EXCHANGE_VIDEO_DEVICE, deviceInfo }
         case DEVICE_TYPE.AUDIO_DEVICE:
             return { type: EXCHANGE_AUDIO_DEVICE, deviceInfo }
+        default:
+            return null
     }
 }

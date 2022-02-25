@@ -5,7 +5,6 @@ import { Avatar, Badge, Dropdown, Menu } from 'antd';
 import Meeting from './components/Meeting/Meeting';
 import { DEVICE_TYPE, exchangeMediaDevice, updateAvailableDevices } from './store/actions';
 import store from './store/store';
-import { StoreContext } from './app/context';
 import Setting from './components/Setting/Setting';
 // import { BiliIcon, PushStreamIcon } from './components/MyIcons/MyIcons'
 
@@ -32,109 +31,107 @@ class App extends React.Component {
 
   render() {
     return (
-      <StoreContext.Provider value={store}>
-        <div className="App" >
-          <div className='dragBar'>
-            <button className="titleBtn" id="shutdown" title="退出" onClick={() => { window.electron.ipcRenderer.send('quit') }}>
-              <CloseOutlined />
-            </button>
-            <button className="titleBtn" id="maximize" title={this.state.isMaximized ? "还原" : "最大化"} onClick={() => {
-              window.electron.ipcRenderer.send('maximize')
-            }}>
-              {
-                this.state.isMaximized ? <SwitcherOutlined /> : <BorderOutlined />
-              }
-            </button>
-            <button className="titleBtn" id="minimize" title="最小化" onClick={() => { window.electron.ipcRenderer.send('minimize') }}>
-              <MinusOutlined />
-            </button>
-            <button className='titleBtn' id='setting' title='设置' onClick={() => { this.setState({ showSetting: true }) }}>
-              <SettingOutlined />
-            </button>
-          </div>
-          <div className='mainBody'>
-            <div className='tabbar'>
-              <div className='avatarContainer'>
-                <Dropdown overlay={(
-                  <Menu style={{ width: '5rem' }} onClick={({ key }) => {
-                    const newStatus = parseInt(key)
-                    if (this.state.onlineStatus !== newStatus) {
-                      this.setState({
-                        onlineStatus: newStatus
-                      })
-                      localStorage.setItem('onlineStatus', newStatus)
-                    }
-                  }}>
-                    <Menu.Item key={1} style={{ fontSize: '0.75rem' }}>
-                      <Badge dot color='green' />
-                      在线
-                    </Menu.Item>
-                    <Menu.Item key={2} style={{ fontSize: '0.75rem' }}>
-                      <Badge dot color='gold' />
-                      离开
-                    </Menu.Item>
-                    <Menu.Item key={3} style={{ fontSize: '0.75rem' }}>
-                      <Badge dot color='red' />
-                      忙碌
-                    </Menu.Item>
-                    <Menu.Item key={0} style={{ fontSize: '0.75rem' }}>
-                      <Badge dot color='#c3c3c3' />
-                      隐身
-                    </Menu.Item>
-                  </Menu>
-                )} trigger={['click']}>
-                  <Badge dot color={this.computeOnlineStatusColor()} style={{ transition: '500ms' }}>
-                    <Avatar shape='square' icon={<UserOutlined />} size={40} />
-                  </Badge>
-                </Dropdown>
-              </div>
-              <div className='tabContainer'>
-                <div className='tabDiv' tab_id={0}>
-                  <Badge dot>
-                    <MessageFilled className='tab' />
-                  </Badge>
-                </div>
-                <div className='tabDiv' tab_id={1}>
-                  <Badge dot>
-                    <ContactsFilled className='tab' />
-                  </Badge>
-                </div>
-                <div className='tabDiv' tab_id={2}>
-                  <Badge dot>
-                    <MediumCircleFilled className='tab' />
-                  </Badge>
-                </div>
-              </div>
-            </div>
-            <div className='content' ref={this.settingFatherDomRef}>
-              {
-                ((tabDiv) => {
-                  if (tabDiv === undefined) {
-                    return (<></>)
+      <div className="App" >
+        <div className='dragBar'>
+          <button className="titleBtn" id="shutdown" title="退出" onClick={() => { window.electron.ipcRenderer.send('quit') }}>
+            <CloseOutlined />
+          </button>
+          <button className="titleBtn" id="maximize" title={this.state.isMaximized ? "还原" : "最大化"} onClick={() => {
+            window.electron.ipcRenderer.send('maximize')
+          }}>
+            {
+              this.state.isMaximized ? <SwitcherOutlined /> : <BorderOutlined />
+            }
+          </button>
+          <button className="titleBtn" id="minimize" title="最小化" onClick={() => { window.electron.ipcRenderer.send('minimize') }}>
+            <MinusOutlined />
+          </button>
+          <button className='titleBtn' id='setting' title='设置' onClick={() => { this.setState({ showSetting: true }) }}>
+            <SettingOutlined />
+          </button>
+        </div>
+        <div className='mainBody'>
+          <div className='tabbar'>
+            <div className='avatarContainer'>
+              <Dropdown overlay={(
+                <Menu style={{ width: '5rem' }} onClick={({ key }) => {
+                  const newStatus = parseInt(key)
+                  if (this.state.onlineStatus !== newStatus) {
+                    this.setState({
+                      onlineStatus: newStatus
+                    })
+                    localStorage.setItem('onlineStatus', newStatus)
                   }
-                  return (
-                    <>
-                      <div style={{ display: this.state.selectedTabDiv.getAttribute('tab_id') === '0' ? 'block' : 'none' }}>
-                        聊天
-                      </div>
-                      <div style={
-                        {
-                          display: this.state.selectedTabDiv.getAttribute('tab_id') === '2' ? 'block' : 'none',
-                          width: '100%',
-                          height: '100%'
-                        }
-                      }>
-                        <Meeting />
-                      </div>
-                    </>
-                  )
-                })(this.state.selectedTabDiv)
-              }
-              <Setting visible={this.state.showSetting} closeFunc={() => { this.setState({ showSetting: false }) }} fatherRef={this.settingFatherDomRef} />
+                }}>
+                  <Menu.Item key={1} style={{ fontSize: '0.75rem' }}>
+                    <Badge dot color='green' />
+                    在线
+                  </Menu.Item>
+                  <Menu.Item key={2} style={{ fontSize: '0.75rem' }}>
+                    <Badge dot color='gold' />
+                    离开
+                  </Menu.Item>
+                  <Menu.Item key={3} style={{ fontSize: '0.75rem' }}>
+                    <Badge dot color='red' />
+                    忙碌
+                  </Menu.Item>
+                  <Menu.Item key={0} style={{ fontSize: '0.75rem' }}>
+                    <Badge dot color='#c3c3c3' />
+                    隐身
+                  </Menu.Item>
+                </Menu>
+              )} trigger={['click']}>
+                <Badge dot color={this.computeOnlineStatusColor()} style={{ transition: '500ms' }}>
+                  <Avatar shape='square' icon={<UserOutlined />} size={40} />
+                </Badge>
+              </Dropdown>
             </div>
+            <div className='tabContainer'>
+              <div className='tabDiv' tab_id={0}>
+                <Badge dot>
+                  <MessageFilled className='tab' />
+                </Badge>
+              </div>
+              <div className='tabDiv' tab_id={1}>
+                <Badge dot>
+                  <ContactsFilled className='tab' />
+                </Badge>
+              </div>
+              <div className='tabDiv' tab_id={2}>
+                <Badge dot>
+                  <MediumCircleFilled className='tab' />
+                </Badge>
+              </div>
+            </div>
+          </div>
+          <div className='content' ref={this.settingFatherDomRef}>
+            {
+              ((tabDiv) => {
+                if (tabDiv === undefined) {
+                  return (<></>)
+                }
+                return (
+                  <>
+                    <div style={{ display: this.state.selectedTabDiv.getAttribute('tab_id') === '0' ? 'block' : 'none' }}>
+                      聊天
+                    </div>
+                    <div style={
+                      {
+                        display: this.state.selectedTabDiv.getAttribute('tab_id') === '2' ? 'block' : 'none',
+                        width: '100%',
+                        height: '100%'
+                      }
+                    }>
+                      <Meeting />
+                    </div>
+                  </>
+                )
+              })(this.state.selectedTabDiv)
+            }
+            <Setting visible={this.state.showSetting} closeFunc={() => { this.setState({ showSetting: false }) }} fatherRef={this.settingFatherDomRef} />
           </div>
         </div>
-      </StoreContext.Provider>
+      </div>
     );
   }
 
@@ -161,6 +158,8 @@ class App extends React.Component {
         return 'gold';
       case 3:
         return 'red';
+      default:
+        return 'rgba(0,0,0,0)'
     }
   }
 
