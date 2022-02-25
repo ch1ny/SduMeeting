@@ -7,7 +7,6 @@ function overwriteGetDisplayMedia() {
         return new Promise(async (resolve, reject) => {
             try {
                 const sources = await desktopCapturer.getSources({ types: ['screen'] })
-                console.log(sources);
                 const stream = await window.navigator.mediaDevices.getUserMedia({
                     audio: withAudio ? {
                         mandatory: {
