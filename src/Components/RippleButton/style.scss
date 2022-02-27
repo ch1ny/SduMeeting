@@ -4,6 +4,11 @@
     -webkit-tap-highlight-color: transparent;
     z-index: 1;
     user-select: none;
+    color: white;
+    border: none;
+    overflow: hidden;
+    padding-inline: 0.25rem;
+    padding-block: 0.15rem;
 
     .waves-animation {
         position: absolute;

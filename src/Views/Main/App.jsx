@@ -22,6 +22,7 @@ export default class App extends React.Component {
 
 
     componentDidMount() {
+        this.overwriteGetDisplayMedia()
         this.initIpcListener(window.electron.ipcRenderer)
         this.getUserMediaDevices()
         this.proxyForChoosingTab()
@@ -257,5 +258,35 @@ export default class App extends React.Component {
                 }
             }
         })
+    }
+
+    /**
+     * 重写 window.mediaDevices.getDisplayMedia() 方法
+     */
+    overwriteGetDisplayMedia() {
+        window.navigator.mediaDevices.getDisplayMedia = (withAudio = false) => {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    const source = await window.electron.ipcRenderer.invoke('DESKTOP_CAPTURE')
+                    const stream = await window.navigator.mediaDevices.getUserMedia({
+                        audio: withAudio ? {
+                            mandatory: {
+                                chromeMediaSource: 'desktop',
+                                chromeMediaSourceId: source.id
+                            }
+                        } : withAudio,
+                        video: {
+                            mandatory: {
+                                chromeMediaSource: 'desktop',
+                                chromeMediaSourceId: source.id
+                            }
+                        }
+                    })
+                    resolve(stream)
+                } catch (err) {
+                    reject(err)
+                }
+            })
+        }
     }
 }

@@ -1,4 +1,4 @@
-import Icon, { LockOutlined, UserOutlined } from "@ant-design/icons";
+import Icon, { DownCircleOutlined, LockOutlined, UserOutlined } from "@ant-design/icons";
 import React from "react";
 import RippleButton from "Components/RippleButton/RippleButton";
 import './App.scss'
@@ -9,12 +9,13 @@ import $fetch from "Utils/Fetch/fetch";
 export default class App extends React.Component {
     constructor(props) {
         super(props)
+        const userId = localStorage.getItem('userId')
         this.state = {
             showRegister: false,
             rotating: false,
             rememberPassword: localStorage.getItem('rememberPassword') === 'true',
             autoLogin: localStorage.getItem('autoLogin') === 'true',
-            userId: localStorage.getItem('userId'),
+            userId: userId === 'null' ? '' : userId,
             userPassword: ''
         }
     }
@@ -23,7 +24,7 @@ export default class App extends React.Component {
 
     componentDidMount() {
         let victor = new Victor("header", "canvas");
-        let theme = ["#18bbff", "#00486b"]
+        let theme = ["#ff1324", "#ff3851"]
         victor(theme).set()
     }
 
@@ -157,7 +158,7 @@ export default class App extends React.Component {
         // })
 
         new Promise((resolve, reject) => {
-            resolve()
+            setTimeout(() => { resolve() }, 750)
         }).then(() => {
             localStorage.setItem('rememberPassword', this.state.rememberPassword)
             localStorage.setItem('autoLogin', this.state.autoLogin)

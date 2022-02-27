@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "SduMeeting"
-#define MyAppVersion "0.3.0"
+#define MyAppVersion "0.3.1"
 #define MyAppPublisher "Shandong University, AioliaRegulus"
 #define MyAppURL "https://gitee.com/sdumeeting/front-end"
 #define MyAppExeName "SduMeeting.exe"
@@ -22,7 +22,7 @@ DefaultDirName=D:\{#MyAppName}
 DisableProgramGroupPage=yes
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
-OutputDir=C:\Users\10563\Desktop
+OutputDir=.\
 OutputBaseFilename=SduMeetingSetup
 SetupIconFile=.\public\electronAssets\favicon.ico
 Compression=lzma

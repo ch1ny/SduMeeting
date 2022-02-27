@@ -97,7 +97,7 @@ class RippleButton extends React.Component {
             [`${this.props.className}`]: this.props.className
         })
         return (
-            <button className={classname} style={this.props.style} onClick={(event) => { (this.onRipple())(event); if (this.props.onClick) this.props.onClick() }}>{this.props.children}</button>
+            <button className={classname} style={{ backgroundColor: this.props.color }} onClick={(event) => { (this.onRipple())(event); if (this.props.onClick) this.props.onClick() }}>{this.props.children}</button>
         )
     }
 }

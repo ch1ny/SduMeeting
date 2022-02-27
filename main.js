@@ -78,12 +78,12 @@ function createLoginWindow() {
         }
     })
 
-    ipc.on('login', (event, userId) => {
+    ipc.once('login', (event, userId) => {
         createMainWindow()
         loginWindow.close();
     })
 
-    ipc.on('safePsw', (event, shouldSaveStatus, userPsw) => {
+    ipc.once('safePsw', (event, shouldSaveStatus, userPsw) => {
         switch (shouldSaveStatus) {
             case 1: // 保存新密码
                 store.set('userSafePsw', safeStorage.encryptString(userPsw))
@@ -123,11 +123,9 @@ function createMainWindow() {
         transparent: true,
         show: false,
         fullscreenable: false,
-        // alwaysOnTop: true,
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
-            preload: path.join(DIRNAME, 'preload/mainWindowPreload.js')
         }
     })
 
@@ -205,6 +203,18 @@ function createMainWindow() {
         } else {
             mainWindow.maximize()
         }
+    })
+
+    const { desktopCapturer } = require('electron')
+    ipc.handle('DESKTOP_CAPTURE', () => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const sources = await desktopCapturer.getSources({ types: ['screen'] })
+                resolve(sources[0])
+            } catch (err) {
+                reject(err)
+            }
+        })
     })
 }
 
