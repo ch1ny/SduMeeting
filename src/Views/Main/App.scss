@@ -1,0 +1,126 @@
+@import '~antd/dist/antd.css';
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+.App {
+    position: absolute;
+    left: 1.5px;
+    top: 1.5px;
+    width: calc(100vw - 3px);
+    height: calc(100vh - 3px);
+    overflow: hidden;
+    box-shadow: 0 0 1px rgba(0, 0, 0, 0.8);
+}
+
+.dragBar {
+    -webkit-app-region: drag;
+    position: absolute;
+    height: 2rem;
+    width: 100%;
+    line-height: 2rem;
+    user-select: none;
+    z-index: 999;
+}
+
+.titleBtn {
+    border: none;
+    outline: none;
+    color: #1c1c1c;
+    cursor: pointer;
+    background: none;
+    float: right;
+    width: 2rem;
+    height: 2rem;
+    -webkit-app-region: no-drag;
+    transition: 250ms;
+}
+
+.titleBtn:hover {
+    color: white;
+}
+
+#minimize:hover,
+#setting:hover {
+    background-color: #9c9c9c;
+}
+
+#maximize:hover {
+    background-color: #13acfc;
+}
+
+#shutdown:hover {
+    background-color: #ff0000;
+}
+
+.mainBody {
+    width: 100%;
+    height: 100%;
+}
+
+.mainBody div {
+    display: inline-block;
+}
+
+.mainBody .tabbar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    background-image: linear-gradient(to bottom, #29323c 0%, #485563 100%);
+    width: 4rem;
+    height: 100%;
+}
+
+.mainBody .tabbar .avatarContainer {
+    width: 100%;
+    text-align: center;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    padding-inline: 0%;
+}
+
+.mainBody .tabbar .avatarContainer * {
+    cursor: pointer;
+}
+
+.mainBody .tabbar .tabContainer {
+    width: 100%;
+}
+
+.mainBody .tabbar .tabContainer div {
+    width: 100%;
+    text-align: center;
+    cursor: pointer;
+    padding-top: 20%;
+    padding-bottom: 20%;
+    transition: 300ms;
+}
+
+.mainBody .tabbar .tabContainer div:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.tab {
+    color: #eaeaea;
+    font-size: 2rem;
+    transition: 300ms;
+}
+
+.tab.selected {
+    color: #13acfc;
+}
+
+.mainBody {
+    background-color: #eaeaea;
+}
+
+.mainBody .content {
+    position: absolute;
+    left: 4rem;
+    top: 2rem;
+    /* background-color: #eaeaea; */
+    height: calc(100% - 2rem);
+    width: calc(100% - 4rem);
+}

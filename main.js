@@ -1,15 +1,14 @@
-const { app, BrowserWindow, Tray, Menu, screen, nativeImage } = require('electron')
+const { app, BrowserWindow, Tray, Menu, screen, nativeImage, globalShortcut, safeStorage } = require('electron')
 const path = require('path')
 const url = require('url')
-const ffmpeg = require('fluent-ffmpeg')
+const Store = require('electron-store')
+const store = new Store()
 
 let loginWindow, mainWindow
 let tray
 let screenWidth, screenHeight
 const ipc = require('electron').ipcMain
 const DIRNAME = process.env.NODE_ENV === 'development' ? path.join(__dirname, 'public') : __dirname
-
-const ffmpegPath = path.join(DIRNAME, 'lib/ffmpeg.exe')
 
 function createLoginWindow() {
     loginWindow = new BrowserWindow({
@@ -47,7 +46,7 @@ function createLoginWindow() {
             click: () => {
                 app.quit()
             },
-            icon: nativeImage.createFromPath(path.join(DIRNAME, 'img/trayIcon/quit.png')).resize({
+            icon: nativeImage.createFromPath(path.join(DIRNAME, 'electronAssets/img/trayIcon/quit.png')).resize({
                 width: 16,
                 height: 16,
                 quality: 'best'
@@ -56,12 +55,18 @@ function createLoginWindow() {
     ])
     // loginWindow.webContents.openDevTools()
 
-    tray = new Tray(path.join(DIRNAME, 'favicon.ico'))
-    loginWindow.loadURL(url.format({
-        pathname: path.join(DIRNAME, 'login.html'),
-        protocol: 'file:',
-        slashes: true
-    }))
+    tray = new Tray(path.join(DIRNAME, 'electronAssets/favicon.ico'))
+
+    if (process.env.NODE_ENV === 'development') {
+        loginWindow.loadURL('http://localhost:3000/login')
+        // loginWindow.webContents.openDevTools()
+    } else {
+        loginWindow.loadURL(url.format({
+            pathname: path.join(DIRNAME, 'login/index.html'),
+            protocol: 'file:',
+            slashes: true
+        }))
+    }
 
     tray.setToolTip(`假装这是一个QQ\n(¯﹃¯)`)
     tray.setContextMenu(contextMenu)
@@ -78,18 +83,36 @@ function createLoginWindow() {
         loginWindow.close();
     })
 
+    ipc.on('safePsw', (event, shouldSaveStatus, userPsw) => {
+        switch (shouldSaveStatus) {
+            case 1: // 保存新密码
+                store.set('userSafePsw', safeStorage.encryptString(userPsw))
+                break;
+            case -1: // 不保存密码
+                store.clear('userSafePsw')
+                break
+            default: // 不需要变动密码
+                break
+        }
+    })
+
     loginWindow.on('closed', () => {
         loginWindow = null
     })
 
     loginWindow.on('ready-to-show', () => {
+        let hasUserPsw = false, userPsw
+        if (store.get('userSafePsw')) {
+            userPsw = safeStorage.decryptString(Buffer.from(store.get('userSafePsw').data))
+            // console.log(userPsw);
+            hasUserPsw = true
+        }
         loginWindow.show()
+        loginWindow.webContents.send('userSafePsw', hasUserPsw, userPsw)
     })
 }
 
 function createMainWindow() {
-    const Store = require('electron-store')
-    const store = new Store()
     const windowSize = store.get('mainWindowSize')
 
     mainWindow = new BrowserWindow({
@@ -104,16 +127,16 @@ function createMainWindow() {
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
-            preload: path.join(DIRNAME, 'js/preload/mainWindowPreload.js')
+            preload: path.join(DIRNAME, 'preload/mainWindowPreload.js')
         }
     })
 
     if (process.env.NODE_ENV === 'development') {
-        mainWindow.loadURL('http://localhost:3000/')
+        mainWindow.loadURL('http://localhost:3000/main')
         mainWindow.webContents.openDevTools()
     } else {
         mainWindow.loadURL(url.format({
-            pathname: path.join(DIRNAME, 'index.html'),
+            pathname: path.join(DIRNAME, 'main/index.html'),
             protocol: 'file:',
             slashes: true
         }))
@@ -140,7 +163,7 @@ function createMainWindow() {
             click: () => {
                 app.quit()
             },
-            icon: nativeImage.createFromPath(path.join(DIRNAME, 'img/trayIcon/quit.png')).resize({
+            icon: nativeImage.createFromPath(path.join(DIRNAME, 'electronAssets/img/trayIcon/quit.png')).resize({
                 width: 16,
                 height: 16,
                 quality: 'best'
@@ -188,6 +211,12 @@ function createMainWindow() {
 app.on('ready', () => {
     screenWidth = screen.getPrimaryDisplay().workAreaSize.width;
     screenHeight = screen.getPrimaryDisplay().workAreaSize.height
+
+    if (process.env.NODE_ENV !== 'development')
+        globalShortcut.register("CommandOrControl+Shift+I", () => {
+            // console.log("你想打开开发者工具？");
+        })
+
     createLoginWindow()
     ipc.on('quit', () => {
         if (process.platform !== 'darwin') {
@@ -221,71 +250,7 @@ app.on('activate', () => {
     }
 })
 
-/**
- * 视频推流测试
- */
-function winPushStream() {
-    const outputAddress = 'rtmp://live-push.bilivideo.com/live-bvc/?streamname=live_27905679_7208685&key=e025ba04032f34473b5714600813a2d5&schedule=rtmp&pflag=1'
-    const command = ffmpeg()
-        .setFfmpegPath(ffmpegPath)
-        .input('desktop')
-        .inputFormat('gdigrab')
-        .input('audio=麦克风 (HyperX Cloud Stinger S)')
-        .inputFormat('dshow')
-        .addOptions([
-            '-vcodec libx264',
-            '-preset ultrafast',
-            '-acodec libmp3lame',
-            '-pix_fmt yuv422p'
-        ])
-        .format('flv')
-        .output(outputAddress, {
-            end: true
-        })
-        .on('start', (commandLine) => {
-            console.log('[' + new Date() + '] Video is Pushing !');
-            console.log('commandLine: ' + commandLine);
-        })
-        .on('error', (err, stdout, stderr) => {
-            console.log(`error: ${err.message}`);
-        })
-        .on('end', () => {
-            console.log('[' + new Date() + '] Video Pushing is Finished !');
-        });
-    command.run()
-}
-
-let pushStreamCommand
-
-function pushStream(pushStreamAddress) {
-    if (pushStreamCommand !== undefined) {
-        pushStreamCommand.kill('SIGSTOP')
-    }
-    pushStreamCommand = ffmpeg()
-        .setFfmpegPath(ffmpegPath)
-        .input('desktop')
-        .inputFormat('gdigrab')
-        // .input('audio=麦克风 (HyperX Cloud Stinger S)')
-        // .inputFormat('dshow')
-        .addOptions([
-            '-vcodec libx264',
-            '-preset ultrafast',
-            '-acodec libmp3lame',
-            '-pix_fmt yuv422p'
-        ])
-        .format('flv')
-        .output(pushStreamAddress, {
-            end: true
-        })
-        .on('start', (commandLine) => {
-            console.log('[' + new Date() + '] Video is Pushing !');
-            console.log('commandLine: ' + commandLine);
-        })
-        .on('error', (err, stdout, stderr) => {
-            console.log(`error: ${err.message}`);
-        })
-        .on('end', () => {
-            console.log('[' + new Date() + '] Video Pushing is Finished !');
-        });
-    pushStreamCommand.run()
-}
+app.on('will-quit', () => {
+    if (process.env.NODE_ENV !== 'development')
+        globalShortcut.unregisterAll()
+})
