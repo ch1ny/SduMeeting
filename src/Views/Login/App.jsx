@@ -1,9 +1,9 @@
-import Icon, { DownCircleOutlined, LockOutlined, UserOutlined } from "@ant-design/icons";
+import Icon, { DownCircleOutlined, LoadingOutlined, LockOutlined, UserOutlined } from "@ant-design/icons";
 import React from "react";
 import RippleButton from "Components/RippleButton/RippleButton";
 import './App.scss'
 import { Victor } from './Victor'
-import { Checkbox, Input } from "antd";
+import { Checkbox, Input, message } from "antd";
 import $fetch from "Utils/Fetch/fetch";
 
 export default class App extends React.Component {
@@ -16,7 +16,8 @@ export default class App extends React.Component {
             rememberPassword: localStorage.getItem('rememberPassword') === 'true',
             autoLogin: localStorage.getItem('autoLogin') === 'true',
             userId: userId === 'null' ? '' : userId,
-            userPassword: ''
+            userPassword: '',
+            isLogining: false
         }
     }
 
@@ -31,7 +32,7 @@ export default class App extends React.Component {
     electron = window.require('electron')
 
     render() {
-        this.electron.ipcRenderer.on('userSafePsw', (event, hasUserPsw, userPsw) => {
+        this.electron.ipcRenderer.on('USER_SAFE_PASSWORD', (event, hasUserPsw, userPsw) => {
             if (hasUserPsw) {
                 this.setState({
                     userPassword: userPsw
@@ -44,8 +45,8 @@ export default class App extends React.Component {
                 <div id="mainBody" ref={this.mainBodyRef}>
                     <div id="header">
                         <div id="titleBar"><LogoIcon style={{ fontSize: '1.5rem' }} /><span style={{ fontFamily: 'Microsoft Yahei' }}>山大会议</span>
-                            <button className="titleBtn" id="shutdown" title="退出" onClick={() => { this.electron.ipcRenderer.send('quit') }}><ShutdownIcon /></button>
-                            <button className="titleBtn" id="minimize" title="最小化" onClick={() => { this.electron.ipcRenderer.send('minimize') }}><MinimizeIcon /></button>
+                            <button className="titleBtn" id="shutdown" title="退出" onClick={() => { this.electron.ipcRenderer.send('QUIT') }}><ShutdownIcon /></button>
+                            <button className="titleBtn" id="minimize" title="最小化" onClick={() => { this.electron.ipcRenderer.send('MINIMIZE_LOGIN_WINDOW') }}><MinimizeIcon /></button>
                             <button className="titleBtn" id="switch" title={this.state.showRegister ? "返回登录" : "注册账号"} onClick={() => { this.rotateTable() }}><RegisterIcon /></button>
                         </div>
                         <div id="canvas"></div>
@@ -107,7 +108,9 @@ export default class App extends React.Component {
                                 </Checkbox>
                             </div>
                             <div>
-                                <RippleButton className="submit" onClick={() => { this.login() }}>登 录</RippleButton>
+                                <RippleButton className="submit" onClick={() => { this.login() }} disabled={this.state.isLogining}>
+                                    {this.state.isLogining && <LoadingOutlined />} 登 录
+                                </RippleButton>
                             </div>
                         </div>
                         <div className="form" id="registerForm" style={{ display: this.state.showRegister ? 'block' : 'none' }}>
@@ -156,25 +159,28 @@ export default class App extends React.Component {
         // }).then((res) => {
         //     console.log(res);
         // })
-
-        new Promise((resolve, reject) => {
-            setTimeout(() => { resolve() }, 750)
-        }).then(() => {
+        this.setState({
+            isLogining: true
+        })
+        setTimeout(() => {
             localStorage.setItem('rememberPassword', this.state.rememberPassword)
             localStorage.setItem('autoLogin', this.state.autoLogin)
             if (this.state.rememberPassword) {
                 if (localStorage.getItem('userId') === this.state.userId) {
-                    this.electron.ipcRenderer.send('safePsw', 0);
+                    this.electron.ipcRenderer.send('SAFE_PASSWORD', 0);
                 } else {
-                    this.electron.ipcRenderer.send('safePsw', 1, this.state.userPassword);
+                    this.electron.ipcRenderer.send('SAFE_PASSWORD', 1, this.state.userPassword);
                 }
             } else {
-                this.electron.ipcRenderer.send('safePsw', -1);
+                this.electron.ipcRenderer.send('SAFE_PASSWORD', -1);
             }
             localStorage.setItem('userId', this.state.userId)
-        }).then(() => {
-            this.electron.ipcRenderer.send('login', this.state.userId)
-        })
+            this.setState({
+                isLogining: false
+            }, () => {
+                this.electron.ipcRenderer.send('USER_LOGIN', this.state.userId)
+            })
+        }, 750)
     }
 }
 

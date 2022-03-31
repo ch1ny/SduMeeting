@@ -1,17 +1,24 @@
-import React from "react";
-import MeetingRoom from "./MeetingRoom/MeetingRoom";
+import React, { useState } from 'react';
+import MeetingList from './MeetingList/MeetingList';
+import MeetingRoom from './MeetingRoom/MeetingRoom';
+import './style.scss';
 
-export default class Meeting extends React.Component {
-    constructor(props) {
-        super(props)
-        this.state = {}
-    }
+export default function Meeting() {
+	const [meetingInfo, setMeetingInfo] = useState(null);
 
-    render() {
-        return (
-            <>
-                <MeetingRoom />
-            </>
-        )
-    }
+	return (
+		<>
+			{meetingInfo === null ? (
+				<MeetingList joinMeeting={setMeetingInfo} />
+			) : (
+				<MeetingRoom
+					meetingId={meetingInfo.meetingId}
+					joinName={meetingInfo.joinName}
+					leaveMeeting={() => {
+						setMeetingInfo(null);
+					}}
+				/>
+			)}
+		</>
+	);
 }

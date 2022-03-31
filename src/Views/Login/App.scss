@@ -122,12 +122,11 @@ body {
     font-size: 1.25rem;
     padding: 0.75rem;
     width: 50%;
-    background-color: #ff486b;
+    background-color: #ec221b;
     color: white;
     border: none;
     border-radius: 0.25rem;
     outline: none;
-    cursor: pointer;
     box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.3);
     transition: 300ms;
     overflow: hidden;
@@ -137,5 +136,5 @@ body {
 }
 
 .submit:hover {
-    background-color: #ec221b;
+    background-color: #ff486b;
 }

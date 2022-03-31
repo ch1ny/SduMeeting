@@ -94,10 +94,11 @@ class RippleButton extends React.Component {
     render() {
         const classname = classNames({
             'rippleButton': true,
-            [`${this.props.className}`]: this.props.className
+            [`${this.props.className}`]: this.props.className,
+            'rippleButton-disabled': this.props.disabled
         })
         return (
-            <button className={classname} style={{ backgroundColor: this.props.color }} onClick={(event) => { (this.onRipple())(event); if (this.props.onClick) this.props.onClick() }}>{this.props.children}</button>
+            <button className={classname} style={{ backgroundColor: this.props.color }} onClick={(event) => { (this.onRipple())(event); if (this.props.onClick) this.props.onClick() }} disabled={this.props.disabled}>{this.props.children}</button>
         )
     }
 }

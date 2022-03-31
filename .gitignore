@@ -5,6 +5,7 @@
 
 # production
 /build
+/build-electron
 /dist
 
 npm-debug.log*

@@ -1,21 +1,23 @@
 const $fetch = {
-    baseURL: '',
-    post: function (url, params, headers) {
+    post: (url, params, headers) => {
         return new Promise((resolve, reject) => {
-            fetch(`${this.baseURL}${url}`, {
+            fetch(url, {
                 method: 'POST',
                 headers: Object.assign({ 'Content-Type': 'application/json' }, headers),
-                body: JSON.stringify(params)
-            }).then((res) => {
-                res.json()
-            }).then((data) => {
-                resolve(data)
+                body: JSON.stringify(params),
+                cache: 'no-cache',
+            }).then((response) => {
+                if (response.status === 200 && response.ok === true) {
+                    resolve(response.json())
+                } else {
+                    reject(response.json())
+                }
             }).catch((err) => {
                 reject(err)
             })
         })
     },
-    get: function (url, params, headers) {
+    get: (url, params, headers) => {
         let paramsStr = ''
         if (params) {
             for (const key in params) {
@@ -23,13 +25,16 @@ const $fetch = {
             }
         }
         return new Promise((resolve, reject) => {
-            fetch(`${this.baseURL}${url}${paramsStr}`, {
+            fetch(`${url}${paramsStr}`, {
                 method: 'GET',
-                headers
-            }).then((res) => {
-                res.json()
-            }).then((data) => {
-                resolve(data)
+                headers,
+                cache: 'no-cache'
+            }).then((response) => {
+                if (response.status === 200 && response.ok === true) {
+                    resolve(response.json())
+                } else {
+                    reject(response.json())
+                }
             }).catch((err) => {
                 reject(err)
             })
