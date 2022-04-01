@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Button, Progress, Select } from 'antd';
+import { Button, message, Progress, Select } from 'antd';
 import { CustomerServiceOutlined } from '@ant-design/icons';
 import store from 'Utils/Store/store';
 import SoundMeter from 'Components/SoundMeter/SoundMeter';
@@ -164,7 +164,9 @@ export default function MediaDevices(props) {
 				style={{ fontSize: '0.9em' }}
 				icon={<CustomerServiceOutlined />}
 				onClick={() => {
-					getUserMediaDevices();
+					getUserMediaDevices().then(() => {
+						message.success('设备信息更新完毕', 0.5);
+					});
 				}}>
 				没找到合适的设备？点我重新获取设备
 			</Button>

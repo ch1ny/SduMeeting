@@ -50,5 +50,30 @@
 		background-color: white;
 		display: flex;
 		overflow: hidden;
+		justify-content: space-around;
+		align-items: center;
+
+		.mettingRoom_toolButton {
+			width: 10vmin;
+			height: 90%;
+			text-align: center;
+			cursor: pointer;
+			padding: 1px;
+			border-radius: 0.5em;
+			user-select: none;
+			transition: 150ms;
+
+			&:hover {
+				background-color: #cccccc;
+			}
+
+			&_icon {
+				font-size: 3vmin;
+			}
+
+			&_text {
+				font-size: 2vmin;
+			}
+		}
 	}
 }

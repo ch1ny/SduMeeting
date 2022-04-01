@@ -1,7 +1,7 @@
 {
-  "name": "sdu-meeting",
-  "version": "0.3.1",
-  "main": "main.js",
-  "author": "德布罗煜",
-  "license": "MIT"
+	"name": "sdu-meeting",
+	"version": "0.3.2",
+	"main": "main.js",
+	"author": "德布罗煜",
+	"license": "MIT"
 }
