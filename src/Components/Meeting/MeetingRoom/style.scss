@@ -35,13 +35,47 @@
 
 		#mainVideo {
 			position: relative;
-			width: calc(100% - 8rem);
+			width: calc(100% - 11rem);
 		}
 
 		#members {
-			width: 8rem;
+			width: 11rem;
 			height: 100%;
-			overflow-y: auto;
+			background-color: #303030;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+
+			.scrollButton {
+				text-align: center;
+				width: 90%;
+				height: 1.5em;
+				line-height: 1.5em;
+				background-color: #505050;
+				margin-block: 0.2rem;
+				color: #fff;
+				cursor: pointer;
+
+				&:hover {
+					background-color: #808080;
+				}
+				&:active {
+					background-color: #6c6c6c;
+				}
+			}
+
+			#membersList {
+				max-height: 100%;
+				overflow-y: scroll;
+				padding: 0.1rem;
+				margin-block: 0.5rem;
+				margin-block-start: 0.25rem;
+				margin-block-end: 0.25rem;
+
+				&::-webkit-scrollbar {
+					width: 0rem;
+				}
+			}
 		}
 	}
 

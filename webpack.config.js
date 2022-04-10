@@ -6,7 +6,7 @@ module.exports = {
 	devServer: {
 		static: path.join(__dirname, 'public'),
 		host: '127.0.0.1',
-		port: 3000,
+		port: 9000,
 	},
 	resolve: {
 		extensions: ['.js', '.jsx', '.json'],

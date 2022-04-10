@@ -70,7 +70,7 @@ function createLoginWindow() {
 	tray = new Tray(path.join(DIRNAME, 'electronAssets/favicon.ico'));
 
 	if (process.env.NODE_ENV === 'development') {
-		loginWindow.loadURL('http://localhost:3000/login');
+		loginWindow.loadURL('http://localhost:9000/login');
 		// loginWindow.webContents.openDevTools()
 	} else {
 		loginWindow.loadURL(
@@ -151,7 +151,7 @@ function createMainWindow() {
 	});
 
 	if (process.env.NODE_ENV === 'development') {
-		mainWindow.loadURL('http://localhost:3000/main');
+		mainWindow.loadURL('http://localhost:9000/main');
 		mainWindow.webContents.openDevTools();
 	} else {
 		mainWindow.loadURL(

@@ -1,54 +1,22 @@
-import Icon, { CopyOutlined, DisconnectOutlined, LeftOutlined } from '@ant-design/icons';
+import Icon, {
+	CaretDownOutlined,
+	CaretUpOutlined,
+	CopyOutlined,
+	DisconnectOutlined,
+	LeftOutlined,
+} from '@ant-design/icons';
 import { Button, message, Modal } from 'antd';
 import React, { useState, useEffect, useRef } from 'react';
+import { usePrevious } from 'Utils/MyHooks/MyHooks';
 import { DEVICE_TYPE } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
+import SFU from 'Utils/WebRTC/SFU';
+import MeetingMember from './MeetingMember/MeetingMember';
 import './style.scss';
-
-async function setMediaStream(mediaType, object) {
-	switch (mediaType) {
-		case DEVICE_TYPE.VIDEO_DEVICE:
-			switch (object.value) {
-				case 'screen':
-					return await window.navigator.mediaDevices.getDisplayMedia();
-				case 'null':
-					return null;
-				default:
-					const videoConstraints = {
-						deviceId: {
-							exact: object.key,
-						},
-						width: 1920,
-						height: 1080,
-					};
-					return await navigator.mediaDevices.getUserMedia({
-						video: videoConstraints,
-					});
-			}
-		case DEVICE_TYPE.AUDIO_DEVICE:
-			if (object.value !== 'null') {
-				const audioConstraints = {
-					deviceId: {
-						exact: object.key,
-					},
-				};
-				return await navigator.mediaDevices.getUserMedia({
-					audio: audioConstraints,
-				});
-			} else {
-				return null;
-			}
-		default:
-			console.warn('汤暖暖的，你能有这么多设备？');
-	}
-}
 
 export default function MeetingRoom(props) {
 	const [usingVideoDevice, setUsingVideoDevice] = useState(store.getState().usingVideoDevice);
 	const [usingAudioDevice, setUsingAudioDevice] = useState(store.getState().usingAudioDevice);
-
-	const videoRef = useRef();
-	const audioRef = useRef();
 
 	useEffect(
 		() =>
@@ -59,30 +27,59 @@ export default function MeetingRoom(props) {
 		[]
 	);
 
+	const videoRef = useRef();
+	const [localStream, setLocalStream] = useState(new MediaStream());
 	useEffect(() => {
-		console.log('视频设备', usingVideoDevice);
+		videoRef.current.srcObject = localStream;
+	}, []);
+
+	const [videoTrack, setVideoTrack] = useState(null);
+	const prevVideoTrack = usePrevious(videoTrack);
+	useEffect(() => {
+		if (videoTrack) {
+			if (prevVideoTrack) {
+				localStream.removeTrack(prevVideoTrack);
+				// TODO: 调用 sender.replaceTrack() 实现轨道传入的流的切换
+			}
+			localStream.addTrack(videoTrack);
+			if (localStreamStatus !== 3) {
+				setLocalStreamStatus(localStream.getTracks().length);
+			}
+		}
+	}, [videoTrack]);
+
+	const [audioTrack, setAudioTrack] = useState(null);
+	const prevAudioTrack = usePrevious(audioTrack);
+	useEffect(() => {
+		if (audioTrack) {
+			if (prevAudioTrack) {
+				localStream.removeTrack(prevAudioTrack);
+				// TODO: 调用 sender.replaceTrack() 实现轨道传入的流的切换
+			}
+			localStream.addTrack(audioTrack);
+			if (localStreamStatus !== 3) {
+				setLocalStreamStatus(localStream.getTracks().length);
+			}
+		}
+	}, [audioTrack]);
+
+	useEffect(() => {
+		// console.log('视频设备', usingVideoDevice);
 		(async () => {
-			videoRef.current.srcObject = await setMediaStream(
-				DEVICE_TYPE.VIDEO_DEVICE,
-				usingVideoDevice
-			);
+			if (!usingVideoDevice) return;
+			const stream = await setMediaStream(DEVICE_TYPE.VIDEO_DEVICE, usingVideoDevice);
+			setVideoTrack(stream.getVideoTracks()[0]);
 		})();
 	}, [usingVideoDevice]);
 
 	useEffect(() => {
-		console.log('音频设备', usingAudioDevice);
+		// console.log('音频设备', usingAudioDevice);
 		(async () => {
-			audioRef.current.srcObject = await setMediaStream(
-				DEVICE_TYPE.AUDIO_DEVICE,
-				usingAudioDevice
-			);
+			if (!usingAudioDevice) return;
+			const stream = await setMediaStream(DEVICE_TYPE.AUDIO_DEVICE, usingAudioDevice);
+			setAudioTrack(stream.getAudioTracks()[0]);
 		})();
 	}, [usingAudioDevice]);
-
-	const meetingRoomRef = useRef();
-	const meetingIdRef = useRef();
-
-	const { confirm } = Modal;
 
 	const [isUsingMicroPhone, setIsUsingMicroPhone] = useState(
 		localStorage.getItem('autoOpenMicroPhone') === 'true'
@@ -142,6 +139,56 @@ export default function MeetingRoom(props) {
 		localStorage.setItem('autoOpenCamera', isUsingCamera);
 	}, [isUsingCamera]);
 
+	// INFO: 用来判断用户列表是否超出高度
+	const [memberHeight, setMemberHeight] = useState(0);
+	const [memberScrollHeight, setMemberScrollHeight] = useState(0);
+	const [memberScrollTop, setMemberScrollTop] = useState(0);
+	const scrollMembersRef = useRef();
+	useEffect(() => {
+		setMemberHeight(scrollMembersRef.current.clientHeight);
+		setMemberScrollHeight(scrollMembersRef.current.scrollHeight);
+	}, []);
+
+	/**
+	 * NOTE: WebRTC 控制部分
+	 */
+	// TODO: 这里 joinName 未来需要改为用户ID
+	const [members, setMembers] = useState(new Map());
+	const [joined, setJoined] = useState(false);
+	const [localStreamStatus, setLocalStreamStatus] = useState(0);
+	useEffect(() => {
+		if (props.sfu) {
+			props.sfu.on('connect', () => {
+				console.log('SFU 连接成功');
+				props.sfu.join();
+				setJoined(true);
+			});
+			props.sfu.on('disconnect', () => {
+				// disconnect
+			});
+			props.sfu.on('addLocalStream', (id, stream) => {
+				console.log('=====addLocalStream=====');
+				// INFO: 本地流添加
+			});
+			props.sfu.on('addRemoteStream', (id, stream) => {
+				console.log('=====addRemoteStream=====');
+				setMembers(new Map(members.set(id, { stream })));
+			});
+			props.sfu.on('removeRemoteStream', (id, stream) => {
+				members.delete(id);
+				setMembers(new Map(members));
+			});
+		}
+	}, [props.sfu]);
+	useEffect(() => {
+		if (joined && localStreamStatus === 2) {
+			props.sfu.publish(localStream);
+			setLocalStreamStatus(3);
+		}
+	}, [joined, localStreamStatus]);
+
+	const meetingIdRef = useRef();
+	const { confirm } = Modal;
 	return (
 		<>
 			<div className='topbar'>
@@ -154,6 +201,9 @@ export default function MeetingRoom(props) {
 							icon: <DisconnectOutlined />,
 							content: '您确认要退出会议吗？',
 							onOk: () => {
+								if (props.sfu) {
+									// sfu.socket.close();
+								}
 								props.leaveMeeting();
 							},
 						});
@@ -185,9 +235,47 @@ export default function MeetingRoom(props) {
 							autoPlay={true}
 							ref={videoRef}
 						/>
-						<audio id='audio' autoPlay={true} ref={audioRef} />
 					</div>
-					<div id='members'>{}</div>
+					<div id='members'>
+						{memberScrollHeight > memberHeight && memberScrollTop > 0 && (
+							<div className='scrollButton'>
+								<CaretUpOutlined />
+							</div>
+						)}
+						<div
+							id='membersList'
+							onScroll={() => {
+								setMemberHeight(scrollMembersRef.current.clientHeight);
+								setMemberScrollTop(scrollMembersRef.current.scrollTop);
+								console.log(
+									memberHeight.toFixed(1),
+									memberScrollHeight.toFixed(1),
+									memberScrollTop.toFixed(1)
+								);
+							}}
+							ref={scrollMembersRef}>
+							{(function () {
+								const membersArr = [];
+								for (const [key, value] of members) {
+									console.log(key, value);
+									membersArr.push(
+										<MeetingMember
+											key={key}
+											stream={value.stream}
+											member={`S:${key}`}
+										/>
+									);
+								}
+								return membersArr;
+							})()}
+						</div>
+						{memberScrollHeight > memberHeight &&
+							memberHeight + memberScrollTop < memberScrollHeight && (
+								<div className='scrollButton'>
+									<CaretDownOutlined />
+								</div>
+							)}
+					</div>
 				</div>
 				<div id='toolbar'>
 					<ToolButton
@@ -219,4 +307,31 @@ function ToolButton(props) {
 			</div>
 		</>
 	);
+}
+
+async function setMediaStream(mediaType, object) {
+	switch (mediaType) {
+		case DEVICE_TYPE.VIDEO_DEVICE:
+			const videoConstraints = {
+				deviceId: {
+					exact: object.key,
+				},
+				width: 1920,
+				height: 1080,
+			};
+			return await navigator.mediaDevices.getUserMedia({
+				video: videoConstraints,
+			});
+		case DEVICE_TYPE.AUDIO_DEVICE:
+			const audioConstraints = {
+				deviceId: {
+					exact: object.key,
+				},
+			};
+			return await navigator.mediaDevices.getUserMedia({
+				audio: audioConstraints,
+			});
+		default:
+			console.warn('汤暖暖的，你能有这么多设备？');
+	}
 }

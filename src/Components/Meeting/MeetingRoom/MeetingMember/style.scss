@@ -1,0 +1,17 @@
+.meetingMember {
+	position: relative;
+	margin-block: 0.2rem;
+
+	.memberName {
+		color: #fafafa;
+		position: absolute;
+		bottom: 10%;
+		right: 2%;
+		background-color: #101010;
+		max-width: 9em;
+		padding-inline: 0.3em;
+		overflow-x: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+}

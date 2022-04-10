@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Button, message, Progress, Select } from 'antd';
 import { CustomerServiceOutlined } from '@ant-design/icons';
 import store from 'Utils/Store/store';
-import SoundMeter from 'Components/SoundMeter/SoundMeter';
+import SoundMeter from 'Utils/SoundMeter/SoundMeter';
 import { DEVICE_TYPE, exchangeMediaDevice, updateAvailableDevices } from 'Utils/Store/actions';
 
 export default function MediaDevices(props) {
@@ -66,9 +66,6 @@ export default function MediaDevices(props) {
 						{device.webLabel}
 					</Option>
 				))}
-				<Option value={undefined} key={null}>
-					禁用
-				</Option>
 			</Select>
 			<div style={{ marginTop: '0.25rem', display: 'flex' }}>
 				<div style={{ height: '1.2rem' }}>
@@ -132,9 +129,6 @@ export default function MediaDevices(props) {
 						{device.webLabel}
 					</Option>
 				))}
-				<Option value={undefined} key={null}>
-					禁用
-				</Option>
 			</Select>
 			<div style={{ margin: '0.25rem' }}>
 				<Button
@@ -217,9 +211,6 @@ function getUserMediaDevices() {
 						audioDevices.push(generateDeviceJson(device));
 					}
 				}
-				videoDevices = [
-					{ label: 'screen', webLabel: '屏幕抓取', deviceId: 'screen' },
-				].concat(videoDevices);
 				store.dispatch(updateAvailableDevices(DEVICE_TYPE.VIDEO_DEVICE, videoDevices));
 				store.dispatch(updateAvailableDevices(DEVICE_TYPE.AUDIO_DEVICE, audioDevices));
 				resolve({ video: videoDevices, audio: audioDevices });

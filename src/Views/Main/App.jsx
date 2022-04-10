@@ -257,24 +257,12 @@ export default class App extends React.Component {
 					audioDevices.push(generateDeviceJson(device));
 				}
 			}
-			videoDevices = [{ label: 'screen', webLabel: '屏幕抓取', deviceId: 'screen' }].concat(
-				videoDevices
-			);
 			store.dispatch(updateAvailableDevices(DEVICE_TYPE.VIDEO_DEVICE, videoDevices));
 			store.dispatch(updateAvailableDevices(DEVICE_TYPE.AUDIO_DEVICE, audioDevices));
 			const lastVideoDevice = localStorage.getItem('usingVideoDevice');
 			const lastAudioDevice = localStorage.getItem('usingAudioDevice');
 			(() => {
-				if (lastVideoDevice === 'null') {
-					store.dispatch(
-						exchangeMediaDevice(DEVICE_TYPE.VIDEO_DEVICE, {
-							key: 'null',
-							value: 'null',
-							children: '禁用',
-						})
-					);
-					return;
-				}
+				store.dispatch(exchangeMediaDevice(DEVICE_TYPE.VIDEO_DEVICE, videoDevices[0]));
 				for (const device of videoDevices) {
 					if (device.deviceId === lastVideoDevice) {
 						store.dispatch(
@@ -289,16 +277,7 @@ export default class App extends React.Component {
 				}
 			})();
 			(() => {
-				if (lastAudioDevice === 'null') {
-					store.dispatch(
-						exchangeMediaDevice(DEVICE_TYPE.AUDIO_DEVICE, {
-							key: 'null',
-							value: 'null',
-							children: '禁用',
-						})
-					);
-					return;
-				}
+				store.dispatch(exchangeMediaDevice(DEVICE_TYPE.AUDIO_DEVICE, audioDevices[0]));
 				for (const device of audioDevices) {
 					if (device.deviceId === lastAudioDevice) {
 						store.dispatch(
@@ -357,19 +336,17 @@ export default class App extends React.Component {
 	 * 重写 window.mediaDevices.getDisplayMedia() 方法
 	 */
 	overwriteGetDisplayMedia() {
-		window.navigator.mediaDevices.getDisplayMedia = (withAudio = false) => {
+		window.navigator.mediaDevices.getDisplayMedia = () => {
 			return new Promise(async (resolve, reject) => {
 				try {
 					const source = await window.electron.ipcRenderer.invoke('DESKTOP_CAPTURE');
 					const stream = await window.navigator.mediaDevices.getUserMedia({
-						audio: withAudio
-							? {
-									mandatory: {
-										chromeMediaSource: 'desktop',
-										chromeMediaSourceId: source.id,
-									},
-							  }
-							: withAudio,
+						audio: {
+							mandatory: {
+								chromeMediaSource: 'desktop',
+								chromeMediaSourceId: source.id,
+							},
+						},
 						video: {
 							mandatory: {
 								chromeMediaSource: 'desktop',
