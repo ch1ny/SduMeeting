@@ -65,6 +65,7 @@ export default class SFU extends EventEmitter {
 		this.socket.onerror = (e) => {
 			console.log('onerror::');
 			console.warn(e);
+			this.emit('error');
 		};
 
 		this.socket.onclose = (e) => {
@@ -93,7 +94,6 @@ export default class SFU extends EventEmitter {
 
 	join() {
 		console.log(`Join to [${this.roomId}] as [${this.userName}:${this.userId}]`);
-
 		let message = {
 			type: 'join',
 			data: {
@@ -105,9 +105,9 @@ export default class SFU extends EventEmitter {
 		this.send(message);
 	}
 
-	send = (data) => {
+	send(data) {
 		this.socket.send(JSON.stringify(data));
-	};
+	}
 
 	publish(stream) {
 		this._createSender(this.userId, stream);

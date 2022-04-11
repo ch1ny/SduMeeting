@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 
-const ices = 'stun:stun.stunprotocol.org:3478';
+const ices = 'stun:stun.stunprotocol.org:3478'; // INFO: 一个免费的 STUN 服务器
 
 export default class RTC extends EventEmitter {
 	constructor() {

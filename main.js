@@ -242,6 +242,19 @@ function createMainWindow() {
 		mainWindow.show();
 	});
 
+	ipc.on('MAIN_WINDOW_FULL_SCREEN', (event, isFullScreen) => {
+		mainWindow.setFullScreenable(isFullScreen);
+		mainWindow.setFullScreen(isFullScreen);
+		if (!isFullScreen) {
+			const mainWindowSize = store.get('mainWindowSize');
+			const [mainWindowWidth, mainWindowHeight] = mainWindowSize
+				? mainWindowSize
+				: [parseInt(screenWidth * 0.6), parseInt(screenHeight * 0.8)];
+			mainWindow.setSize(mainWindowWidth, mainWindowHeight);
+			mainWindow.center();
+		}
+	});
+
 	const { desktopCapturer } = require('electron');
 	ipc.handle('DESKTOP_CAPTURE', () => {
 		return new Promise(async (resolve, reject) => {

@@ -13,6 +13,13 @@ export default function MeetingList(props) {
 	const [meetings, setMeetings] = useState([]);
 	const [showJoinModal, setShowJoinModal] = useState(false);
 
+	const [autoOpenMicroPhone, setAutoOpenMicroPhone] = useState(
+		localStorage.getItem('autoOpenMicroPhone') === 'true'
+	);
+	const [autoOpenCamera, setAutoOpenCamera] = useState(
+		localStorage.getItem('autoOpenCamera') === 'true'
+	);
+
 	return (
 		<>
 			<div className='meetingList'>
@@ -60,89 +67,66 @@ export default function MeetingList(props) {
 					}}
 					onFinish={(values) => {
 						setShowJoinModal(false);
+						values.autoOpenCamera = autoOpenCamera;
+						values.autoOpenMicroPhone = autoOpenMicroPhone;
 						console.log(values);
 						props.joinMeeting(values);
 					}}>
-					{function () {
-						const [autoOpenMicroPhone, setAutoOpenMicroPhone] = useState(
-							localStorage.getItem('autoOpenMicroPhone') === 'true'
-						);
-						const [autoOpenCamera, setAutoOpenCamera] = useState(
-							localStorage.getItem('autoOpenCamera') === 'true'
-						);
-
-						return (
-							<>
-								<Form.Item
-									name='meetingId'
-									rules={[
-										{
-											message: '会议号由至少9位的纯数字组成',
-											pattern: /^[0-9]{9,}$/,
-										},
-										{
-											required: true,
-											message: '请输入会议号',
-										},
-									]}>
-									<Input
-										prefix={
-											<CommentOutlined
-												style={{ color: 'rgba(0, 0, 0, 0.25)' }}
-											/>
-										}
-										placeholder='输入会议号'
-									/>
-								</Form.Item>
-								<Form.Item
-									name='joinName'
-									rules={[
-										{
-											required: true,
-											message: '请输入与会名称',
-										},
-									]}>
-									<Input
-										prefix={
-											<UserOutlined
-												style={{ color: 'rgba(0, 0, 0, 0.25)' }}
-											/>
-										}
-										placeholder='您的名称'
-									/>
-								</Form.Item>
-								<Form.Item>
-									<Checkbox
-										checked={autoOpenMicroPhone}
-										onChange={(e) => {
-											setAutoOpenMicroPhone(e.target.checked);
-											localStorage.setItem(
-												'autoOpenMicroPhone',
-												e.target.checked
-											);
-										}}>
-										与会时打开麦克风
-									</Checkbox>
-									<Checkbox
-										checked={autoOpenCamera}
-										onChange={(e) => {
-											setAutoOpenCamera(e.target.checked);
-											localStorage.setItem(
-												'autoOpenCamera',
-												e.target.checked
-											);
-										}}>
-										与会时打开摄像头
-									</Checkbox>
-								</Form.Item>
-								<Form.Item>
-									<Button type='primary' htmlType='submit'>
-										加入会议
-									</Button>
-								</Form.Item>
-							</>
-						);
-					}}
+					<Form.Item
+						name='meetingId'
+						rules={[
+							{
+								message: '会议号由至少9位的纯数字组成',
+								pattern: /^[0-9]{9,}$/,
+							},
+							{
+								required: true,
+								message: '请输入会议号',
+							},
+						]}>
+						<Input
+							prefix={<CommentOutlined style={{ color: 'rgba(0, 0, 0, 0.25)' }} />}
+							placeholder='输入会议号'
+						/>
+					</Form.Item>
+					<Form.Item
+						name='joinName'
+						rules={[
+							{
+								required: true,
+								message: '请输入与会名称',
+							},
+						]}>
+						<Input
+							prefix={<UserOutlined style={{ color: 'rgba(0, 0, 0, 0.25)' }} />}
+							placeholder='您的名称'
+						/>
+					</Form.Item>
+					<Form.Item>
+						<Checkbox
+							checked={autoOpenMicroPhone}
+							onChange={(e) => {
+								setAutoOpenMicroPhone(e.target.checked);
+								localStorage.setItem('autoOpenMicroPhone', e.target.checked);
+							}}>
+							与会时打开麦克风
+						</Checkbox>
+					</Form.Item>
+					<Form.Item>
+						<Checkbox
+							checked={autoOpenCamera}
+							onChange={(e) => {
+								setAutoOpenCamera(e.target.checked);
+								localStorage.setItem('autoOpenCamera', e.target.checked);
+							}}>
+							与会时打开摄像头
+						</Checkbox>
+					</Form.Item>
+					<Form.Item>
+						<Button type='primary' htmlType='submit'>
+							加入会议
+						</Button>
+					</Form.Item>
 				</Form>
 			</Modal>
 		</>

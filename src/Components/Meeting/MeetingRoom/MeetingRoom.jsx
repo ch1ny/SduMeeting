@@ -3,9 +3,12 @@ import Icon, {
 	CaretUpOutlined,
 	CopyOutlined,
 	DisconnectOutlined,
+	FullscreenExitOutlined,
+	FullscreenOutlined,
 	LeftOutlined,
 } from '@ant-design/icons';
 import { Button, message, Modal } from 'antd';
+import classNames from 'classnames';
 import React, { useState, useEffect, useRef } from 'react';
 import eventBus from 'Utils/EventBus/EventBus';
 import { usePrevious } from 'Utils/MyHooks/MyHooks';
@@ -15,95 +18,7 @@ import MeetingMember from './MeetingMember/MeetingMember';
 import './style.scss';
 
 export default function MeetingRoom(props) {
-	const [usingVideoDevice, setUsingVideoDevice] = useState(store.getState().usingVideoDevice);
-	const [usingAudioDevice, setUsingAudioDevice] = useState(store.getState().usingAudioDevice);
-
-	useEffect(
-		() =>
-			store.subscribe(() => {
-				setUsingVideoDevice(store.getState().usingVideoDevice);
-				setUsingAudioDevice(store.getState().usingAudioDevice);
-			}),
-		[]
-	);
-
-	const videoRef = useRef();
-	const [localStream, setLocalStream] = useState(new MediaStream());
-	useEffect(() => {
-		videoRef.current.srcObject = localStream;
-		const _requestPictureInPicture = () => {
-			videoRef.current.requestPictureInPicture();
-		};
-		eventBus.on('MAIN_WINDOW_MINIMIZE', _requestPictureInPicture);
-		const _exitPictureInPicture = () => {
-			document.exitPictureInPicture();
-		};
-		videoRef.current.addEventListener('enterpictureinpicture', function () {
-			window.electron.ipcRenderer.once('MAIN_WINDOW_RESTORE', _exitPictureInPicture);
-		});
-		videoRef.current.addEventListener('leavepictureinpicture', function () {
-			window.electron.ipcRenderer.send('MAIN_WINDOW_RESTORE');
-			window.electron.ipcRenderer.removeListener(
-				'MAIN_WINDOW_RESTORE',
-				_exitPictureInPicture
-			);
-		});
-		return () => {
-			eventBus.off('MAIN_WINDOW_MINIMIZE', _requestPictureInPicture);
-		};
-	}, []);
-
-	const [videoTrack, setVideoTrack] = useState(null);
-	const prevVideoTrack = usePrevious(videoTrack);
-	useEffect(() => {
-		if (videoTrack) {
-			if (prevVideoTrack) {
-				localStream.removeTrack(prevVideoTrack);
-				// TODO: 调用 sender.replaceTrack() 实现轨道传入的流的切换
-			}
-			localStream.addTrack(videoTrack);
-			if (localStreamStatus !== 3) {
-				setLocalStreamStatus(localStream.getTracks().length);
-			}
-		}
-	}, [videoTrack]);
-
-	const [audioTrack, setAudioTrack] = useState(null);
-	const prevAudioTrack = usePrevious(audioTrack);
-	useEffect(() => {
-		if (audioTrack) {
-			if (prevAudioTrack) {
-				localStream.removeTrack(prevAudioTrack);
-				// TODO: 调用 sender.replaceTrack() 实现轨道传入的流的切换
-			}
-			localStream.addTrack(audioTrack);
-			if (localStreamStatus !== 3) {
-				setLocalStreamStatus(localStream.getTracks().length);
-			}
-		}
-	}, [audioTrack]);
-
-	useEffect(() => {
-		// console.log('视频设备', usingVideoDevice);
-		(async () => {
-			if (!usingVideoDevice) return;
-			const stream = await setMediaStream(DEVICE_TYPE.VIDEO_DEVICE, usingVideoDevice);
-			setVideoTrack(stream.getVideoTracks()[0]);
-		})();
-	}, [usingVideoDevice]);
-
-	useEffect(() => {
-		// console.log('音频设备', usingAudioDevice);
-		(async () => {
-			if (!usingAudioDevice) return;
-			const stream = await setMediaStream(DEVICE_TYPE.AUDIO_DEVICE, usingAudioDevice);
-			setAudioTrack(stream.getAudioTracks()[0]);
-		})();
-	}, [usingAudioDevice]);
-
-	const [isUsingMicroPhone, setIsUsingMicroPhone] = useState(
-		localStorage.getItem('autoOpenMicroPhone') === 'true'
-	);
+	const [isUsingMicroPhone, setIsUsingMicroPhone] = useState(props.autoOpenMicroPhone);
 	const MicroPhoneIcon = (props) => (
 		<Icon
 			component={() => (
@@ -129,12 +44,26 @@ export default function MeetingRoom(props) {
 		/>
 	);
 	useEffect(() => {
-		localStorage.setItem('autoOpenMicroPhone', isUsingCamera);
+		localStorage.setItem('autoOpenMicroPhone', isUsingMicroPhone);
+		if (localStream) {
+			const track = localStream.getAudioTracks()[0];
+			if (track) {
+				track.enabled = isUsingMicroPhone;
+				localPlayedStream.getAudioTracks()[0].enabled = isUsingMicroPhone;
+			}
+			if (props.sfu.sender) {
+				const senders = props.sfu.sender.pc.getSenders();
+				for (const sender of senders) {
+					if (sender.track === audioTrack) {
+						sender.track.enabled = isUsingMicroPhone;
+						break;
+					}
+				}
+			}
+		}
 	}, [isUsingMicroPhone]);
 
-	const [isUsingCamera, setIsUsingCamera] = useState(
-		localStorage.getItem('autoOpenCamera') === 'true'
-	);
+	const [isUsingCamera, setIsUsingCamera] = useState(props.autoOpenCamera);
 	const CameraIcon = (props) => (
 		<Icon
 			component={() => (
@@ -157,7 +86,131 @@ export default function MeetingRoom(props) {
 	);
 	useEffect(() => {
 		localStorage.setItem('autoOpenCamera', isUsingCamera);
+		if (localStream) {
+			const track = localStream.getVideoTracks()[0];
+			if (track) {
+				track.enabled = isUsingCamera;
+				localPlayedStream.getVideoTracks()[0].enabled = isUsingCamera;
+			}
+			if (props.sfu.sender) {
+				const senders = props.sfu.sender.pc.getSenders();
+				for (const sender of senders) {
+					if (sender.track === videoTrack) {
+						sender.track.enabled = isUsingCamera;
+						break;
+					}
+				}
+			}
+		}
 	}, [isUsingCamera]);
+
+	const [usingVideoDevice, setUsingVideoDevice] = useState(store.getState().usingVideoDevice);
+	const [usingAudioDevice, setUsingAudioDevice] = useState(store.getState().usingAudioDevice);
+
+	useEffect(
+		() =>
+			store.subscribe(() => {
+				setUsingVideoDevice(store.getState().usingVideoDevice);
+				setUsingAudioDevice(store.getState().usingAudioDevice);
+			}),
+		[]
+	);
+
+	const videoRef = useRef();
+	const [localStream, setLocalStream] = useState(new MediaStream());
+	const [localPlayedStream, setLocalPlayedStream] = useState(new MediaStream());
+	useEffect(() => {
+		/**
+		 * INFO: 进入画中画模式
+		 */
+		const _requestPictureInPicture = () => {
+			videoRef.current.requestPictureInPicture();
+		};
+		eventBus.on('MAIN_WINDOW_MINIMIZE', _requestPictureInPicture);
+		/**
+		 * INFO: 退出画中画模式
+		 */
+		const _exitPictureInPicture = () => {
+			document.exitPictureInPicture();
+		};
+		videoRef.current.addEventListener('enterpictureinpicture', function () {
+			window.electron.ipcRenderer.once('MAIN_WINDOW_RESTORE', _exitPictureInPicture);
+		});
+		videoRef.current.addEventListener('leavepictureinpicture', function () {
+			window.electron.ipcRenderer.send('MAIN_WINDOW_RESTORE');
+			window.electron.ipcRenderer.removeListener(
+				'MAIN_WINDOW_RESTORE',
+				_exitPictureInPicture
+			);
+		});
+		return () => {
+			eventBus.off('MAIN_WINDOW_MINIMIZE', _requestPictureInPicture);
+		};
+	}, []);
+
+	const [videoTrack, setVideoTrack] = useState(null);
+	const prevVideoTrack = usePrevious(videoTrack);
+	useEffect(() => {
+		if (videoTrack) {
+			if (prevVideoTrack) {
+				const senders = props.sfu.sender.pc.getSenders();
+				for (const sender of senders) {
+					if (sender.track === prevVideoTrack) {
+						sender.replaceTrack(videoTrack);
+						break;
+					}
+				}
+				localPlayedStream.removeTrack(localPlayedStream.getVideoTracks()[0]);
+				localPlayedStream.addTrack(videoTrack);
+			} else localStream.addTrack(videoTrack);
+			if (localStreamStatus !== 3) {
+				setLocalStreamStatus(localStream.getTracks().length);
+			}
+		}
+	}, [videoTrack]);
+
+	const [audioTrack, setAudioTrack] = useState(null);
+	const prevAudioTrack = usePrevious(audioTrack);
+	useEffect(() => {
+		if (audioTrack) {
+			if (prevAudioTrack) {
+				const senders = props.sfu.sender.pc.getSenders();
+				for (const sender of senders) {
+					if (sender.track === prevAudioTrack) {
+						sender.replaceTrack(audioTrack);
+						break;
+					}
+				}
+				localPlayedStream.removeTrack(localPlayedStream.getAudioTracks()[0]);
+				localPlayedStream.addTrack(audioTrack);
+			} else localStream.addTrack(audioTrack);
+			if (localStreamStatus !== 3) {
+				setLocalStreamStatus(localStream.getTracks().length);
+			}
+		}
+	}, [audioTrack]);
+
+	useEffect(() => {
+		// console.log('视频设备', usingVideoDevice);
+		(async () => {
+			if (!usingVideoDevice) return;
+			const stream = await setMediaStream(DEVICE_TYPE.VIDEO_DEVICE, usingVideoDevice);
+			const track = stream.getVideoTracks()[0];
+			track.enabled = isUsingCamera;
+			setVideoTrack(track);
+		})();
+	}, [usingVideoDevice]);
+
+	useEffect(() => {
+		// console.log('音频设备', usingAudioDevice);
+		(async () => {
+			if (!usingAudioDevice) return;
+			const stream = await setMediaStream(DEVICE_TYPE.AUDIO_DEVICE, usingAudioDevice);
+			const track = stream.getAudioTracks()[0];
+			track.enabled = isUsingMicroPhone;
+			setAudioTrack(track);
+		})();
+	}, [usingAudioDevice]);
 
 	// INFO: 用来判断用户列表是否超出高度
 	const [memberHeight, setMemberHeight] = useState(0);
@@ -173,25 +226,12 @@ export default function MeetingRoom(props) {
 	 * NOTE: WebRTC 控制部分
 	 */
 	// TODO: 这里 joinName 未来需要改为用户ID
-	const [members, setMembers] = useState(new Map().set(props.joinName, { stream: localStream }));
-	const [joined, setJoined] = useState(false);
+	const [members, setMembers] = useState(new Map());
 	const [localStreamStatus, setLocalStreamStatus] = useState(0);
 	useEffect(() => {
 		if (props.sfu) {
-			props.sfu.on('connect', () => {
-				console.log('SFU 连接成功');
-				props.sfu.join();
-				setJoined(true);
-			});
-			props.sfu.on('disconnect', () => {
-				// disconnect
-			});
-			props.sfu.on('addLocalStream', (id, stream) => {
-				console.log('=====addLocalStream=====');
-				// INFO: 本地流添加
-			});
 			props.sfu.on('addRemoteStream', (id, stream) => {
-				console.log('=====addRemoteStream=====');
+				console.log('===addRemoteStream===');
 				setMembers(new Map(members.set(id, { stream })));
 			});
 			props.sfu.on('removeRemoteStream', (id, stream) => {
@@ -201,11 +241,25 @@ export default function MeetingRoom(props) {
 		}
 	}, [props.sfu]);
 	useEffect(() => {
-		if (joined && localStreamStatus === 2) {
+		if (localStreamStatus === 2) {
+			const clonedStream = localStream.clone();
+			setLocalPlayedStream(clonedStream);
+			videoRef.current.srcObject = clonedStream;
+			setMembers(new Map(members.set(props.joinName, { stream: clonedStream })));
 			props.sfu.publish(localStream);
 			setLocalStreamStatus(3);
 		}
-	}, [joined, localStreamStatus]);
+	}, [localStreamStatus]);
+
+	const [isFullScreen, setIsFullScreen] = useState(false);
+	const fullScreenRef = useRef();
+	useEffect(() => {
+		fullScreenRef.current.addEventListener('fullscreenchange', () => {
+			const isFullScreen = document.fullscreenElement !== null;
+			setIsFullScreen(isFullScreen);
+			window.electron.ipcRenderer.send('MAIN_WINDOW_FULL_SCREEN', isFullScreen);
+		});
+	}, []);
 
 	const meetingIdRef = useRef();
 	const { confirm } = Modal;
@@ -245,7 +299,7 @@ export default function MeetingRoom(props) {
 					<CopyOutlined />
 				</Button>
 			</div>
-			<div id='videoContainer'>
+			<div id={`videoContainer${isFullScreen ? 'FullScreen' : ''}`} ref={fullScreenRef}>
 				<div id='mainBox'>
 					<div id='mainVideo'>
 						<video
@@ -290,7 +344,7 @@ export default function MeetingRoom(props) {
 											key={key}
 											stream={value.stream}
 											member={`S:${key}`}
-											muted={localStream === value.stream}
+											muted={localPlayedStream === value.stream}
 										/>
 									);
 								}
@@ -309,6 +363,7 @@ export default function MeetingRoom(props) {
 					<ToolButton
 						icon={<MicroPhoneIcon />}
 						text={isUsingMicroPhone ? '静音' : '解除静音'}
+						title={isUsingMicroPhone ? '静音' : '解除静音'}
 						onClick={() => {
 							setIsUsingMicroPhone(!isUsingMicroPhone);
 						}}
@@ -316,8 +371,21 @@ export default function MeetingRoom(props) {
 					<ToolButton
 						icon={<CameraIcon />}
 						text={isUsingCamera ? '停止视频' : '开启视频'}
+						title={isUsingCamera ? '停止视频' : '开启视频'}
 						onClick={() => {
 							setIsUsingCamera(!isUsingCamera);
+						}}
+					/>
+					<ToolButton
+						icon={isFullScreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />}
+						text={isFullScreen ? '退出全屏' : '全屏模式'}
+						title={isFullScreen ? '退出全屏' : '全屏模式'}
+						onClick={() => {
+							if (isFullScreen) {
+								document.exitFullscreen();
+							} else {
+								fullScreenRef.current.requestFullscreen();
+							}
 						}}
 					/>
 				</div>
@@ -329,16 +397,12 @@ export default function MeetingRoom(props) {
 function ToolButton(props) {
 	return (
 		<>
-			<div className='mettingRoom_toolButton' onClick={props.onClick}>
+			<div className='mettingRoom_toolButton' onClick={props.onClick} title={props.title}>
 				<div className='mettingRoom_toolButton_icon'>{props.icon}</div>
 				<div className='mettingRoom_toolButton_text'>{props.text}</div>
 			</div>
 		</>
 	);
-}
-
-function minimizeAndPip(ref) {
-	ref?.current.requestPictureInPicture();
 }
 
 async function setMediaStream(mediaType, object) {
