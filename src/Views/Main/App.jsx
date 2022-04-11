@@ -16,6 +16,7 @@ import Meeting from 'Components/Meeting/Meeting';
 import { DEVICE_TYPE, exchangeMediaDevice, updateAvailableDevices } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
 import Setting from 'Components/Setting/Setting';
+import eventBus from 'Utils/EventBus/EventBus';
 
 export default class App extends React.Component {
 	constructor(props) {
@@ -69,6 +70,7 @@ export default class App extends React.Component {
 						title='最小化'
 						onClick={() => {
 							window.electron.ipcRenderer.send('MINIMIZE_MAIN_WINDOW');
+							eventBus.emit('MAIN_WINDOW_MINIMIZE');
 						}}>
 						<MinusOutlined />
 					</button>

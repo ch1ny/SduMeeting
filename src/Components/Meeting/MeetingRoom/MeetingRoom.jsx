@@ -7,10 +7,10 @@ import Icon, {
 } from '@ant-design/icons';
 import { Button, message, Modal } from 'antd';
 import React, { useState, useEffect, useRef } from 'react';
+import eventBus from 'Utils/EventBus/EventBus';
 import { usePrevious } from 'Utils/MyHooks/MyHooks';
 import { DEVICE_TYPE } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
-import SFU from 'Utils/WebRTC/SFU';
 import MeetingMember from './MeetingMember/MeetingMember';
 import './style.scss';
 
@@ -31,6 +31,26 @@ export default function MeetingRoom(props) {
 	const [localStream, setLocalStream] = useState(new MediaStream());
 	useEffect(() => {
 		videoRef.current.srcObject = localStream;
+		const _requestPictureInPicture = () => {
+			videoRef.current.requestPictureInPicture();
+		};
+		eventBus.on('MAIN_WINDOW_MINIMIZE', _requestPictureInPicture);
+		const _exitPictureInPicture = () => {
+			document.exitPictureInPicture();
+		};
+		videoRef.current.addEventListener('enterpictureinpicture', function () {
+			window.electron.ipcRenderer.once('MAIN_WINDOW_RESTORE', _exitPictureInPicture);
+		});
+		videoRef.current.addEventListener('leavepictureinpicture', function () {
+			window.electron.ipcRenderer.send('MAIN_WINDOW_RESTORE');
+			window.electron.ipcRenderer.removeListener(
+				'MAIN_WINDOW_RESTORE',
+				_exitPictureInPicture
+			);
+		});
+		return () => {
+			eventBus.off('MAIN_WINDOW_MINIMIZE', _requestPictureInPicture);
+		};
 	}, []);
 
 	const [videoTrack, setVideoTrack] = useState(null);
@@ -153,7 +173,7 @@ export default function MeetingRoom(props) {
 	 * NOTE: WebRTC 控制部分
 	 */
 	// TODO: 这里 joinName 未来需要改为用户ID
-	const [members, setMembers] = useState(new Map());
+	const [members, setMembers] = useState(new Map().set(props.joinName, { stream: localStream }));
 	const [joined, setJoined] = useState(false);
 	const [localStreamStatus, setLocalStreamStatus] = useState(0);
 	useEffect(() => {
@@ -234,6 +254,9 @@ export default function MeetingRoom(props) {
 							height='100%'
 							autoPlay={true}
 							ref={videoRef}
+							// TODO: 这里未来改为有人分享屏幕时解除静音
+							// muted={localStream === videoRef.current?.srcObject}
+							muted={true}
 						/>
 					</div>
 					<div id='members'>
@@ -253,16 +276,21 @@ export default function MeetingRoom(props) {
 									memberScrollTop.toFixed(1)
 								);
 							}}
+							onDoubleClick={(e) => {
+								if (e.target.className === 'meetingMemberVideo') {
+									videoRef.current.srcObject = e.target.srcObject;
+								}
+							}}
 							ref={scrollMembersRef}>
 							{(function () {
 								const membersArr = [];
 								for (const [key, value] of members) {
-									console.log(key, value);
 									membersArr.push(
 										<MeetingMember
 											key={key}
 											stream={value.stream}
 											member={`S:${key}`}
+											muted={localStream === value.stream}
 										/>
 									);
 								}
@@ -307,6 +335,10 @@ function ToolButton(props) {
 			</div>
 		</>
 	);
+}
+
+function minimizeAndPip(ref) {
+	ref?.current.requestPictureInPicture();
 }
 
 async function setMediaStream(mediaType, object) {

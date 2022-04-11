@@ -88,7 +88,7 @@ function createLoginWindow() {
 		if (loginWindow !== null) {
 			loginWindow.show();
 		} else {
-			mainWindow.restore();
+			mainWindow.show();
 		}
 	});
 
@@ -172,7 +172,7 @@ function createMainWindow() {
 					// loginWindow.setSkipTaskbar(true)
 					// loginWindow.minimize()
 				} else {
-					mainWindow.minimize();
+					mainWindow.hide();
 				}
 			},
 		},
@@ -222,6 +222,10 @@ function createMainWindow() {
 		// winPushStream()
 	});
 
+	mainWindow.on('show', () => {
+		mainWindow.webContents.send('MAIN_WINDOW_RESTORE');
+	});
+
 	ipc.on('EXCHANGE_MAIN_WINDOW_MAXIMIZED_STATUS', () => {
 		if (mainWindow.isMaximized()) {
 			mainWindow.unmaximize();
@@ -231,7 +235,11 @@ function createMainWindow() {
 	});
 
 	ipc.on('MINIMIZE_MAIN_WINDOW', () => {
-		mainWindow.minimize();
+		mainWindow.hide();
+	});
+
+	ipc.on('MAIN_WINDOW_RESTORE', () => {
+		mainWindow.show();
 	});
 
 	const { desktopCapturer } = require('electron');

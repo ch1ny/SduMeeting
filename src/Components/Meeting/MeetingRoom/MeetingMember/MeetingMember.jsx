@@ -14,6 +14,7 @@ export default function MeetingMember(props) {
 				height='100%'
 				ref={videoRef}
 				autoPlay={true}
+				muted={props.muted}
 				className='meetingMemberVideo'
 			/>
 			<span className='memberName' title={props.member}>
