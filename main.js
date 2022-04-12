@@ -197,6 +197,7 @@ function createMainWindow() {
 	tray.setContextMenu(contextMenu);
 
 	let isMaximized = store.get('isMainWindowMaximized');
+	isMaximized = isMaximized ? isMaximized : false;
 
 	mainWindow.on('resize', () => {
 		const isMax = mainWindow.isMaximized();
@@ -289,6 +290,9 @@ app.on('ready', () => {
 			loginWindow = null;
 			mainWindow = null;
 		}
+	});
+	ipc.handle('APP_VERSION', () => {
+		return app.getVersion();
 	});
 });
 

@@ -9,7 +9,7 @@ export default class RTC extends EventEmitter {
 		this._receivers = new Map();
 	}
 
-	get sender() {
+	getSender() {
 		return this._sender;
 	}
 
@@ -17,7 +17,7 @@ export default class RTC extends EventEmitter {
 		return this._receivers.get(pubid);
 	}
 
-	async createSender(pubid, stream) {
+	createSender(pubid, stream) {
 		let sender = {
 			offerSent: false,
 			pc: null,

@@ -18,6 +18,21 @@ import MeetingMember from './MeetingMember/MeetingMember';
 import './style.scss';
 
 export default function MeetingRoom(props) {
+	const [usingVideoDevice, setUsingVideoDevice] = useState(store.getState().usingVideoDevice);
+	const [usingAudioDevice, setUsingAudioDevice] = useState(store.getState().usingAudioDevice);
+
+	useEffect(
+		() =>
+			store.subscribe(() => {
+				setUsingVideoDevice(store.getState().usingVideoDevice);
+				setUsingAudioDevice(store.getState().usingAudioDevice);
+			}),
+		[]
+	);
+
+	/**
+	 * INFO: 静音 / 开关摄像头
+	 */
 	const [isUsingMicroPhone, setIsUsingMicroPhone] = useState(props.autoOpenMicroPhone);
 	const MicroPhoneIcon = (props) => (
 		<Icon
@@ -49,17 +64,8 @@ export default function MeetingRoom(props) {
 			const track = localStream.getAudioTracks()[0];
 			if (track) {
 				track.enabled = isUsingMicroPhone;
-				localPlayedStream.getAudioTracks()[0].enabled = isUsingMicroPhone;
 			}
-			if (props.sfu.sender) {
-				const senders = props.sfu.sender.pc.getSenders();
-				for (const sender of senders) {
-					if (sender.track === audioTrack) {
-						sender.track.enabled = isUsingMicroPhone;
-						break;
-					}
-				}
-			}
+			setTrackEnableStatus(props.sfu.sender, 'audio', isUsingMicroPhone);
 		}
 	}, [isUsingMicroPhone]);
 
@@ -92,33 +98,13 @@ export default function MeetingRoom(props) {
 				track.enabled = isUsingCamera;
 				localPlayedStream.getVideoTracks()[0].enabled = isUsingCamera;
 			}
-			if (props.sfu.sender) {
-				const senders = props.sfu.sender.pc.getSenders();
-				for (const sender of senders) {
-					if (sender.track === videoTrack) {
-						sender.track.enabled = isUsingCamera;
-						break;
-					}
-				}
-			}
+			setTrackEnableStatus(props.sfu.sender, 'video', isUsingCamera);
 		}
 	}, [isUsingCamera]);
 
-	const [usingVideoDevice, setUsingVideoDevice] = useState(store.getState().usingVideoDevice);
-	const [usingAudioDevice, setUsingAudioDevice] = useState(store.getState().usingAudioDevice);
-
-	useEffect(
-		() =>
-			store.subscribe(() => {
-				setUsingVideoDevice(store.getState().usingVideoDevice);
-				setUsingAudioDevice(store.getState().usingAudioDevice);
-			}),
-		[]
-	);
-
 	const videoRef = useRef();
 	const [localStream, setLocalStream] = useState(new MediaStream());
-	const [localPlayedStream, setLocalPlayedStream] = useState(new MediaStream());
+	const [localPlayedStream, setLocalPlayedStream] = useState(undefined);
 	useEffect(() => {
 		/**
 		 * INFO: 进入画中画模式
@@ -134,14 +120,11 @@ export default function MeetingRoom(props) {
 			document.exitPictureInPicture();
 		};
 		videoRef.current.addEventListener('enterpictureinpicture', function () {
-			window.electron.ipcRenderer.once('MAIN_WINDOW_RESTORE', _exitPictureInPicture);
+			window.ipcRenderer.once('MAIN_WINDOW_RESTORE', _exitPictureInPicture);
 		});
 		videoRef.current.addEventListener('leavepictureinpicture', function () {
-			window.electron.ipcRenderer.send('MAIN_WINDOW_RESTORE');
-			window.electron.ipcRenderer.removeListener(
-				'MAIN_WINDOW_RESTORE',
-				_exitPictureInPicture
-			);
+			window.ipcRenderer.send('MAIN_WINDOW_RESTORE');
+			window.ipcRenderer.removeListener('MAIN_WINDOW_RESTORE', _exitPictureInPicture);
 		});
 		return () => {
 			eventBus.off('MAIN_WINDOW_MINIMIZE', _requestPictureInPicture);
@@ -153,13 +136,7 @@ export default function MeetingRoom(props) {
 	useEffect(() => {
 		if (videoTrack) {
 			if (prevVideoTrack) {
-				const senders = props.sfu.sender.pc.getSenders();
-				for (const sender of senders) {
-					if (sender.track === prevVideoTrack) {
-						sender.replaceTrack(videoTrack);
-						break;
-					}
-				}
+				replaceRemoteTrack(props.sfu.sender.pc.getSenders(), prevVideoTrack, videoTrack);
 				localPlayedStream.removeTrack(localPlayedStream.getVideoTracks()[0]);
 				localPlayedStream.addTrack(videoTrack);
 			} else localStream.addTrack(videoTrack);
@@ -174,15 +151,7 @@ export default function MeetingRoom(props) {
 	useEffect(() => {
 		if (audioTrack) {
 			if (prevAudioTrack) {
-				const senders = props.sfu.sender.pc.getSenders();
-				for (const sender of senders) {
-					if (sender.track === prevAudioTrack) {
-						sender.replaceTrack(audioTrack);
-						break;
-					}
-				}
-				localPlayedStream.removeTrack(localPlayedStream.getAudioTracks()[0]);
-				localPlayedStream.addTrack(audioTrack);
+				replaceRemoteTrack(props.sfu.sender.pc.getSenders(), prevAudioTrack, audioTrack);
 			} else localStream.addTrack(audioTrack);
 			if (localStreamStatus !== 3) {
 				setLocalStreamStatus(localStream.getTracks().length);
@@ -198,6 +167,15 @@ export default function MeetingRoom(props) {
 			const track = stream.getVideoTracks()[0];
 			track.enabled = isUsingCamera;
 			setVideoTrack(track);
+			/**
+			 * INFO: 本地播放流(仅需展示视频轨道)
+			 */
+			if (localPlayedStream) return;
+			const clonedStream = new MediaStream();
+			clonedStream.addTrack(track);
+			setLocalPlayedStream(clonedStream);
+			videoRef.current.srcObject = clonedStream;
+			setMembers(new Map(members.set(props.joinName, { stream: clonedStream })));
 		})();
 	}, [usingVideoDevice]);
 
@@ -227,6 +205,11 @@ export default function MeetingRoom(props) {
 	 */
 	// TODO: 这里 joinName 未来需要改为用户ID
 	const [members, setMembers] = useState(new Map());
+	useEffect(() => {
+		setMemberHeight(scrollMembersRef.current.clientHeight);
+		setMemberScrollHeight(scrollMembersRef.current.scrollHeight);
+		setMemberScrollTop(scrollMembersRef.current.scrollTop);
+	}, [members]);
 	const [localStreamStatus, setLocalStreamStatus] = useState(0);
 	useEffect(() => {
 		if (props.sfu) {
@@ -242,10 +225,6 @@ export default function MeetingRoom(props) {
 	}, [props.sfu]);
 	useEffect(() => {
 		if (localStreamStatus === 2) {
-			const clonedStream = localStream.clone();
-			setLocalPlayedStream(clonedStream);
-			videoRef.current.srcObject = clonedStream;
-			setMembers(new Map(members.set(props.joinName, { stream: clonedStream })));
 			props.sfu.publish(localStream);
 			setLocalStreamStatus(3);
 		}
@@ -257,7 +236,7 @@ export default function MeetingRoom(props) {
 		fullScreenRef.current.addEventListener('fullscreenchange', () => {
 			const isFullScreen = document.fullscreenElement !== null;
 			setIsFullScreen(isFullScreen);
-			window.electron.ipcRenderer.send('MAIN_WINDOW_FULL_SCREEN', isFullScreen);
+			window.ipcRenderer.send('MAIN_WINDOW_FULL_SCREEN', isFullScreen);
 		});
 	}, []);
 
@@ -275,9 +254,6 @@ export default function MeetingRoom(props) {
 							icon: <DisconnectOutlined />,
 							content: '您确认要退出会议吗？',
 							onOk: () => {
-								if (props.sfu) {
-									// sfu.socket.close();
-								}
 								props.leaveMeeting();
 							},
 						});
@@ -315,7 +291,11 @@ export default function MeetingRoom(props) {
 					</div>
 					<div id='members'>
 						{memberScrollHeight > memberHeight && memberScrollTop > 0 && (
-							<div className='scrollButton'>
+							<div
+								className='scrollButton'
+								onClick={() => {
+									scrollMembersRef.current.scrollTop -= 50;
+								}}>
 								<CaretUpOutlined />
 							</div>
 						)}
@@ -323,6 +303,7 @@ export default function MeetingRoom(props) {
 							id='membersList'
 							onScroll={() => {
 								setMemberHeight(scrollMembersRef.current.clientHeight);
+								setMemberScrollHeight(scrollMembersRef.current.scrollHeight);
 								setMemberScrollTop(scrollMembersRef.current.scrollTop);
 								console.log(
 									memberHeight.toFixed(1),
@@ -353,7 +334,11 @@ export default function MeetingRoom(props) {
 						</div>
 						{memberScrollHeight > memberHeight &&
 							memberHeight + memberScrollTop < memberScrollHeight && (
-								<div className='scrollButton'>
+								<div
+									className='scrollButton'
+									onClick={() => {
+										scrollMembersRef.current.scrollTop += 50;
+									}}>
 									<CaretDownOutlined />
 								</div>
 							)}
@@ -403,6 +388,39 @@ function ToolButton(props) {
 			</div>
 		</>
 	);
+}
+
+/**
+ * 设置远程轨道的 enabled
+ * @param {*} sender
+ * @param {*} type
+ * @param {*} enabled
+ */
+function setTrackEnableStatus(_sender, type, enabled) {
+	if (_sender) {
+		const senders = _sender.pc.getSenders();
+		for (const sender of senders) {
+			if (sender.track.kind === type) {
+				sender.track.enabled = enabled;
+				return;
+			}
+		}
+	}
+}
+
+/**
+ * 更换新的流轨道
+ * @param {*} senders
+ * @param {*} oldTrack
+ * @param {*} newTrack
+ */
+function replaceRemoteTrack(senders, oldTrack, newTrack) {
+	for (const sender of senders) {
+		if (sender.track === oldTrack) {
+			sender.replaceTrack(newTrack);
+			break;
+		}
+	}
 }
 
 async function setMediaStream(mediaType, object) {

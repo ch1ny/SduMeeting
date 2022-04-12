@@ -1,13 +1,3 @@
-/**
- * TODO: 根据下方的 NOTE 进行改进
- * NOTE: 对于切换流，SFU 对象会保存 this.sender
- * NOTE: 通过 this.sender 的 PeerConnection 对象的 getSenders() 方法可以获取对应不同轨道的 sender
- * NOTE: 对应 sender 调用 sender.track 可以得到该 sender 对应的轨道
- * NOTE: 调用 sender.replaceTrack() 可以实现轨道传入的流的切换
- *
- * NOTE: 对 sender.track 直接修改其 enabled 值可以阻止/允许其传输
- */
-
 import { EventEmitter } from 'events';
 import RTC from './RTC';
 
@@ -113,31 +103,34 @@ export default class SFU extends EventEmitter {
 		this._createSender(this.userId, stream);
 	}
 
-	async _createSender(pubid, stream) {
+	_createSender(pubid, stream) {
 		try {
 			// 创建一个sender
-			let sender = await this._rtc.createSender(pubid, stream);
+			let sender = this._rtc.createSender(pubid, stream);
 			this.sender = sender;
 			// 监听IceCandidate回调
 			sender.pc.onicecandidate = async (e) => {
 				if (!sender.senderOffer) {
 					const offer = sender.pc.localDescription;
 					sender.senderOffer = true;
-					await this.publishToServer(offer, pubid);
+					this.publishToServer(offer, pubid);
 				}
 			};
 			// 创建Offer
-			let desc = await sender.pc.createOffer({
-				offerToReceiveVideo: false,
-				offerToReceiveAudio: false,
-			});
-			sender.pc.setLocalDescription(desc);
+			sender.pc
+				.createOffer({
+					offerToReceiveVideo: false,
+					offerToReceiveAudio: false,
+				})
+				.then((desc) => {
+					sender.pc.setLocalDescription(desc);
+				});
 		} catch (error) {
 			console.log('onCreateSender error =>' + error);
 		}
 	}
 
-	async publishToServer(offer, pubid) {
+	publishToServer(offer, pubid) {
 		let message = {
 			type: 'publish',
 			data: {
@@ -174,7 +167,7 @@ export default class SFU extends EventEmitter {
 		this._rtc.closeReceiver(meesage['data']['pubid']);
 	}
 
-	async _onRtcCreateReceiver(pubid) {
+	_onRtcCreateReceiver(pubid) {
 		try {
 			let receiver = this._rtc.createReceiver(pubid);
 
@@ -182,18 +175,19 @@ export default class SFU extends EventEmitter {
 				if (!receiver.senderOffer) {
 					const offer = receiver.pc.localDescription;
 					receiver.senderOffer = true;
-					await this.subscribeFromServer(offer, pubid);
+					this.subscribeFromServer(offer, pubid);
 				}
 			};
 			// 创建Offer
-			let desc = await receiver.pc.createOffer();
-			receiver.pc.setLocalDescription(desc);
+			receiver.pc.createOffer().then((desc) => {
+				receiver.pc.setLocalDescription(desc);
+			});
 		} catch (error) {
 			console.log('onRtcCreateReceiver error =>' + error);
 		}
 	}
 
-	async subscribeFromServer(offer, pubid) {
+	subscribeFromServer(offer, pubid) {
 		let message = {
 			type: 'subscribe',
 			data: {

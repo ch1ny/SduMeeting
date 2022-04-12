@@ -1,0 +1,39 @@
+.dragBar {
+	-webkit-app-region: drag;
+	position: absolute;
+	height: 2rem;
+	width: 100%;
+	line-height: 2rem;
+	user-select: none;
+	z-index: 999;
+}
+
+.titleBtn {
+	border: none;
+	outline: none;
+	color: #1c1c1c;
+	cursor: pointer;
+	background: none;
+	float: right;
+	width: 2rem;
+	height: 2rem;
+	-webkit-app-region: no-drag;
+	transition: 250ms;
+
+	&:hover {
+		color: white;
+	}
+}
+
+#minimize:hover,
+#setting:hover {
+	background-color: #9c9c9c;
+}
+
+#maximize:hover {
+	background-color: #13acfc;
+}
+
+#shutdown:hover {
+	background-color: #ff0000;
+}

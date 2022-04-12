@@ -5,6 +5,7 @@ import { SettingFilled } from '@ant-design/icons';
 import MeetingStatus from './MeetingStatus/MeetingStatus';
 import MediaDevices from './MediaDevices/MediaDevices';
 import AutoLogin from './AutoLogin/AutoLogin';
+import About from './About/About';
 
 const { Link } = Anchor;
 
@@ -16,7 +17,6 @@ export default function Setting(props) {
 				visible={props.visible}
 				closable={false}
 				onCancel={props.closeFunc}
-				getContainer={props.fatherRef}
 				destroyOnClose={true}
 				centered={true}
 				zIndex={1000}
@@ -30,6 +30,7 @@ export default function Setting(props) {
 							<Link href='#login' title='登录' />
 							<Link href='#mediaDevices' title='音视频设备' />
 							<Link href='#meetingStatus' title='与会状态' />
+							<Link href='#about' title='关于' />
 						</Anchor>
 					</div>
 					<div className='settings'>
@@ -51,6 +52,13 @@ export default function Setting(props) {
 							<div>
 								<h2 id='meetingStatus'>与会状态</h2>
 								<MeetingStatus />
+							</div>
+							<Divider>
+								<SettingFilled />
+							</Divider>
+							<div>
+								<h2 id='about'>关于</h2>
+								<About />
 							</div>
 						</>
 					</div>

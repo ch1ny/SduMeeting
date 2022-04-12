@@ -19,6 +19,7 @@ module.exports = {
 	entry: {
 		login: './src/Views/Login/index.jsx',
 		main: './src/Views/Main/index.jsx',
+		register: './src/Views/Register/index.jsx',
 	},
 	output: {
 		path: path.resolve(__dirname, './build'),
@@ -74,6 +75,11 @@ module.exports = {
 		new HtmlWebpackPlugin({
 			filename: 'main/index.html',
 			chunks: ['main'],
+			template: './public/index.html',
+		}),
+		new HtmlWebpackPlugin({
+			filename: 'register/index.html',
+			chunks: ['register'],
 			template: './public/index.html',
 		}),
 	],
