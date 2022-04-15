@@ -3,6 +3,11 @@
 * {
 	margin: 0%;
 }
+
+html {
+	font-size: 2vmin;
+}
+
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
@@ -32,7 +37,7 @@ input:-webkit-autofill:active {
 		align-items: center;
 
 		.title {
-			font-size: 2rem;
+			font-size: 1.75rem;
 			user-select: none;
 		}
 
@@ -44,7 +49,7 @@ input:-webkit-autofill:active {
 		.inputs {
 			width: 70%;
 
-			.ant-input-affix-wrapper.ant-input-password,
+			.ant-input-affix-wrapper,
 			.ant-input,
 			input:-webkit-autofill,
 			input:-webkit-autofill:hover,
@@ -67,16 +72,20 @@ input:-webkit-autofill:active {
 				}
 			}
 
-			.ant-form-item-has-error :not(.ant-input-disabled):not(.ant-input-borderless) {
-				&.ant-input {
-					&,
-					&:focus {
-						background-color: rgba($color: #000000, $alpha: 0);
-						box-shadow: none;
-					}
-				}
+			.ant-form-item-has-error :not(.ant-input-disabled):not(.ant-input-borderless).ant-input,
+			.ant-form-item-has-error
+				:not(.ant-input-affix-wrapper-disabled):not(.ant-input-affix-wrapper-borderless).ant-input-affix-wrapper,
+			.ant-form-item-has-error
+				:not(.ant-input-number-affix-wrapper-disabled):not(.ant-input-number-affix-wrapper-borderless).ant-input-number-affix-wrapper,
+			.ant-form-item-has-error
+				:not(.ant-input-disabled):not(.ant-input-borderless).ant-input:hover,
+			.ant-form-item-has-error
+				:not(.ant-input-affix-wrapper-disabled):not(.ant-input-affix-wrapper-borderless).ant-input-affix-wrapper:hover,
+			.ant-form-item-has-error
+				:not(.ant-input-number-affix-wrapper-disabled):not(.ant-input-number-affix-wrapper-borderless).ant-input-number-affix-wrapper:hover {
+				background-color: rgba($color: #000000, $alpha: 0);
+				box-shadow: none;
 			}
-
 			.ant-input-group-addon {
 				color: white;
 				background-color: rgba($color: #000000, $alpha: 0);
@@ -84,7 +93,7 @@ input:-webkit-autofill:active {
 				// border-right: none;
 				border: none;
 				user-select: none;
-				font-size: 1.25rem;
+				font-size: 1.15rem;
 			}
 		}
 	}

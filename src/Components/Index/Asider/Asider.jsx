@@ -1,7 +1,9 @@
 import { ContactsFilled, MediumCircleFilled, MessageFilled, UserOutlined } from '@ant-design/icons';
 import { Avatar, Badge, Dropdown, Menu } from 'antd';
 import classNames from 'classnames';
+import jwtDecode from 'jwt-decode';
 import React, { useEffect, useState } from 'react';
+import store from 'Utils/Store/store';
 import './style.scss';
 
 export default function Asider(props) {
@@ -9,6 +11,14 @@ export default function Asider(props) {
 	useEffect(() => {
 		const onlineStatus = localStorage.getItem('onlineStatus');
 		setOnlineStatus(onlineStatus === null ? 1 : parseInt(onlineStatus));
+	}, []);
+
+	const [userName, setUserName] = useState(undefined);
+	useEffect(() => {
+		window.ipcRenderer.invoke('GET_USER_AUTH_TOKEN_AFTER_LOGIN').then((authToken) => {
+			store.dispatch(setAuthToken(authToken));
+			setUserName(jwtDecode(authToken).userName);
+		});
 	}, []);
 
 	return (
@@ -48,7 +58,14 @@ export default function Asider(props) {
 						dot
 						color={computeOnlineStatusColor(onlineStatus)}
 						style={{ transition: '500ms' }}>
-						<Avatar shape='square' icon={<UserOutlined />} size={40} />
+						<Avatar
+							shape='square'
+							size={40}
+							style={{
+								backgroundColor: '#0bacff',
+							}}>
+							{userName}
+						</Avatar>
 					</Badge>
 				</Dropdown>
 			</div>

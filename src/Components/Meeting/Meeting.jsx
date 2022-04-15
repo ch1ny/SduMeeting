@@ -1,4 +1,6 @@
+import jwtDecode from 'jwt-decode';
 import React, { useEffect, useState } from 'react';
+import store from 'Utils/Store/store';
 import SFU from 'Utils/WebRTC/SFU';
 import MeetingList from './MeetingList/MeetingList';
 import MeetingRoom from './MeetingRoom/MeetingRoom';
@@ -8,9 +10,15 @@ export default function Meeting() {
 	const [meetingInfo, setMeetingInfo] = useState(undefined);
 	const [sfu, setSfu] = useState(undefined);
 	const [joined, setJoined] = useState(false);
+
+	const [userId, setUserId] = useState(undefined);
+	useEffect(() => {
+		setUserId(jwtDecode(store.getState().authToken).id);
+	}, []);
+
 	useEffect(() => {
 		if (meetingInfo) {
-			setSfu(new SFU(meetingInfo.joinName, meetingInfo.joinName, meetingInfo.meetingId));
+			setSfu(new SFU(userId, meetingInfo.joinName, meetingInfo.meetingId));
 		} else if (sfu) {
 			sfu.socket.close();
 			setJoined(false);
@@ -39,6 +47,7 @@ export default function Meeting() {
 				<MeetingRoom
 					sfu={sfu}
 					meetingId={meetingInfo.meetingId}
+					userId={userId}
 					joinName={meetingInfo.joinName}
 					autoOpenMicroPhone={meetingInfo.autoOpenMicroPhone}
 					autoOpenCamera={meetingInfo.autoOpenCamera}

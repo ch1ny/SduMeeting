@@ -10,11 +10,13 @@ import React, { useEffect, useState } from 'react';
 import eventBus from 'Utils/EventBus/EventBus';
 import './style.scss';
 
-export default function DragBar(props) {
+export default function DragBar() {
 	const [isMaximized, setIsMaximized] = useState(false);
 	useEffect(() => {
-		const windowMaximizedChangeListener = () => {
-			setIsMaximized(!isMaximized);
+		let isMax = isMaximized;
+		const windowMaximizedChangeListener = function () {
+			setIsMaximized(!isMax);
+			isMax = !isMax;
 		};
 		window.ipcRenderer.on(
 			'EXCHANGE_MAIN_WINDOW_MAXIMIZED_STATUS',

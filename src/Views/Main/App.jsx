@@ -1,6 +1,11 @@
 import React from 'react';
 import './App.scss';
-import { DEVICE_TYPE, exchangeMediaDevice, updateAvailableDevices } from 'Utils/Store/actions';
+import {
+	DEVICE_TYPE,
+	exchangeMediaDevice,
+	updateAvailableDevices,
+	setAuthToken,
+} from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
 import Index from 'Components/Index/Index';
 
@@ -9,6 +14,9 @@ export default class App extends React.Component {
 	constructor(props) {
 		super(props);
 		window.ipcRenderer = window.require('electron').ipcRenderer; // 全局引入 electron 模块
+		window.ipcRenderer.invoke('GET_USER_AUTH_TOKEN_AFTER_LOGIN').then((authToken) => {
+			store.dispatch(setAuthToken(authToken));
+		});
 	}
 
 	componentDidMount() {

@@ -8,7 +8,6 @@ import Icon, {
 	LeftOutlined,
 } from '@ant-design/icons';
 import { Button, message, Modal } from 'antd';
-import classNames from 'classnames';
 import React, { useState, useEffect, useRef } from 'react';
 import eventBus from 'Utils/EventBus/EventBus';
 import { usePrevious } from 'Utils/MyHooks/MyHooks';
@@ -175,7 +174,7 @@ export default function MeetingRoom(props) {
 			clonedStream.addTrack(track);
 			setLocalPlayedStream(clonedStream);
 			videoRef.current.srcObject = clonedStream;
-			setMembers(new Map(members.set(props.joinName, { stream: clonedStream })));
+			setMembers(new Map(members.set(props.userId, { stream: clonedStream })));
 		})();
 	}, [usingVideoDevice]);
 
@@ -203,7 +202,6 @@ export default function MeetingRoom(props) {
 	/**
 	 * NOTE: WebRTC 控制部分
 	 */
-	// TODO: 这里 joinName 未来需要改为用户ID
 	const [members, setMembers] = useState(new Map());
 	useEffect(() => {
 		setMemberHeight(scrollMembersRef.current.clientHeight);

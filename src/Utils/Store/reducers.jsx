@@ -4,6 +4,7 @@ import {
 	UPDATE_AVAILABLE_AUDIO_DEVICES,
 	EXCHANGE_AUDIO_DEVICE,
 	EXCHANGE_VIDEO_DEVICE,
+	SET_AUTH_TOKEN,
 } from './actions';
 
 function updateAvailableVideoDevices(state = [], action) {
@@ -44,11 +45,17 @@ function exchangeAudioDevice(state = null, action) {
 	}
 }
 
+function setAuthToken(state = null, action) {
+	if (action.type === SET_AUTH_TOKEN) return action.token;
+	return state;
+}
+
 const reducers = combineReducers({
 	availableVideoDevices: updateAvailableVideoDevices,
 	availableAudioDevices: updateAvailableAudioDevices,
 	usingVideoDevice: exchangeVideoDevice,
 	usingAudioDevice: exchangeAudioDevice,
+	authToken: setAuthToken,
 });
 
 export default reducers;

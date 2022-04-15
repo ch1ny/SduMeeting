@@ -8,6 +8,8 @@ import {
 } from '@ant-design/icons';
 import { Button, Checkbox, Divider, Empty, Form, Input, Modal } from 'antd';
 import './style.scss';
+import store from 'Utils/Store/store';
+import jwtDecode from 'jwt-decode';
 
 export default function MeetingList(props) {
 	const [meetings, setMeetings] = useState([]);
@@ -19,6 +21,8 @@ export default function MeetingList(props) {
 	const [autoOpenCamera, setAutoOpenCamera] = useState(
 		localStorage.getItem('autoOpenCamera') === 'true'
 	);
+
+	const [username] = useState(jwtDecode(store.getState().authToken).username);
 
 	return (
 		<>
@@ -91,6 +95,7 @@ export default function MeetingList(props) {
 					</Form.Item>
 					<Form.Item
 						name='joinName'
+						initialValue={username}
 						rules={[
 							{
 								required: true,

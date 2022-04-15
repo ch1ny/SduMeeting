@@ -17,7 +17,6 @@ export default function Setting(props) {
 				visible={props.visible}
 				closable={false}
 				onCancel={props.closeFunc}
-				destroyOnClose={true}
 				centered={true}
 				zIndex={1000}
 				footer={null}>

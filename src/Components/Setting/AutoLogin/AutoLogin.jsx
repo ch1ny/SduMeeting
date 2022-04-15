@@ -10,7 +10,6 @@ export default function AutoLogin() {
 				checked={autoLogin}
 				onChange={(e) => {
 					setAutoLogin(e.target.checked);
-					console.log(autoLogin);
 					localStorage.setItem('autoLogin', e.target.checked);
 				}}>
 				自动登录

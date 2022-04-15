@@ -1,140 +1,149 @@
 @import '~antd/dist/antd.css';
 
 * {
-    margin: 0;
-    padding: 0;
+	margin: 0;
+	padding: 0;
+}
+
+html {
+	font-size: 5vmin;
 }
 
 body {
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-    background-color: rgba($color: #000000, $alpha: 0);
+	width: 100vw;
+	height: 100vh;
+	overflow: hidden;
+	background-color: rgba($color: #000000, $alpha: 0);
 }
 
 #mainBody {
-    position: absolute;
-    left: 0.1rem;
-    top: 0.1rem;
-    width: calc(100vw - 0.2rem);
-    height: calc(100vh - 0.2rem);
-    overflow: hidden;
-    box-shadow: 0 0 0.1rem rgba(0, 0, 0, 0.8);
-    animation-duration: 250ms;
-    animation-fill-mode: forwards;
-    animation-timing-function: linear;
-    animation-direction: normal;
-    animation-play-state: running;
+	position: absolute;
+	left: 0.1rem;
+	top: 0.1rem;
+	width: calc(100vw - 0.2rem);
+	height: calc(100vh - 0.2rem);
+	overflow: hidden;
+	box-shadow: 0 0 0.1rem rgba(0, 0, 0, 0.8);
+	animation-duration: 250ms;
+	animation-fill-mode: forwards;
+	animation-timing-function: linear;
+	animation-direction: normal;
+	animation-play-state: running;
 }
 
 #header {
-    width: 100%;
-    height: 40%;
+	width: 100%;
+	height: 40%;
 }
 
 #titleBar {
-    position: absolute;
-    width: 100%;
-    height: 2rem;
-    color: white;
-    font-size: 1.3rem;
-    line-height: 2rem;
-    user-select: none;
+	position: absolute;
+	width: 100%;
+	height: 2rem;
+	color: white;
+	font-size: 1.3rem;
+	line-height: 2rem;
+	user-select: none;
 }
 
 #dragBar {
-    -webkit-app-region: drag;
-    position: absolute;
-    left: 0.1rem;
-    top: 0.1rem;
-    width: 100%;
-    height: calc(40% - 0.1rem);
-    display: inline-block;
+	-webkit-app-region: drag;
+	position: absolute;
+	left: 0.1rem;
+	top: 0.1rem;
+	width: 100%;
+	height: calc(40% - 0.1rem);
+	display: inline-block;
 }
 
 #canvas {
-    width: 100%;
-    height: 100%;
+	width: 100%;
+	height: 100%;
 }
 
 .titleBtn {
-    border: none;
-    outline: none;
-    color: white;
-    background: none;
-    float: right;
-    width: 2rem;
-    height: 2rem;
-    -webkit-app-region: no-drag;
-    transition: 250ms;
+	border: none;
+	outline: none;
+	color: white;
+	background: none;
+	float: right;
+	width: 2rem;
+	height: 2rem;
+	-webkit-app-region: no-drag;
+	transition: 250ms;
 }
 
 #shutdown:hover,
 #switch:hover,
 #minimize:hover {
-    background-color: rgba(255, 255, 255, 0.3);
+	background-color: rgba(255, 255, 255, 0.3);
 }
 
 @keyframes rotateIn {
-    from {
-        transform: perspective(1000px) rotateY(-90deg) scale(0.65);
-    }
+	from {
+		transform: perspective(1000px) rotateY(-90deg) scale(0.65);
+	}
 
-    to {
-        transform: perspective(1000px) rotateY(0deg) scale(1);
-    }
+	to {
+		transform: perspective(1000px) rotateY(0deg) scale(1);
+	}
 }
 
 @keyframes rotateOut {
-    from {
-        transform: perspective(1000px) rotateY(0deg) scale(1);
-    }
+	from {
+		transform: perspective(1000px) rotateY(0deg) scale(1);
+	}
 
-    to {
-        transform: perspective(1000px) rotateY(90deg) scale(0.65);
-    }
+	to {
+		transform: perspective(1000px) rotateY(90deg) scale(0.65);
+	}
 }
 
 .main {
-    width: 100%;
-    height: 60%;
-    text-align: center;
+	width: 100%;
+	height: 60%;
+	text-align: center;
 }
 
 .main .form {
-    position: absolute;
-    width: 100%;
-    height: 60%;
-    background-color: white;
-}
+	position: absolute;
+	width: 100%;
+	height: 60%;
+	background-color: white;
 
-.main .form {
-    width: 100%;
-    height: 100%;
+	.ant-form.ant-form-horizontal {
+		.ant-row.ant-form-item {
+			margin: 0.5rem;
+		}
+		.ant-form-item-explain {
+			display: none;
+		}
+	}
 
-    div {
-        margin-block: 1rem;
-    }
+	&#registerForm {
+		align-items: center;
+		justify-content: center;
+	}
 }
 
 .submit {
-    position: relative;
-    font-size: 1.25rem;
-    padding: 0.75rem;
-    width: 50%;
-    background-color: #ec221b;
-    color: white;
-    border: none;
-    border-radius: 0.25rem;
-    outline: none;
-    box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.3);
-    transition: 300ms;
-    overflow: hidden;
-    -webkit-tap-highlight-color: transparent;
-    z-index: 1;
-    user-select: none;
+	position: relative;
+	font-size: 1.25rem;
+	padding: 0.75rem;
+	width: 50%;
+	background-color: #ec221b;
+	color: white;
+	border: none;
+	border-radius: 0.25rem;
+	outline: none;
+	box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.3);
+	transition: 300ms;
+	overflow: hidden;
+	-webkit-tap-highlight-color: transparent;
+	z-index: 1;
+	user-select: none;
 }
 
 .submit:hover {
-    background-color: #ff486b;
+	background-color: #ff486b;
 }
