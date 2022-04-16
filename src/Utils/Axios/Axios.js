@@ -2,7 +2,7 @@ import axios from 'axios';
 import store from 'Utils/Store/store';
 
 const instance = axios.create({
-	baseURL: 'http://121.40.95.78:8000/',
+	baseURL: 'http://meeting.aiolia.top:8080/',
 });
 instance.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
 

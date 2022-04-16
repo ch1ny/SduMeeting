@@ -1,5 +1,6 @@
 import jwtDecode from 'jwt-decode';
 import React, { useEffect, useState } from 'react';
+import eventBus from 'Utils/EventBus/EventBus';
 import store from 'Utils/Store/store';
 import SFU from 'Utils/WebRTC/SFU';
 import MeetingList from './MeetingList/MeetingList';
@@ -30,11 +31,13 @@ export default function Meeting() {
 		if (sfu) {
 			sfu.on('connect', () => {
 				console.log('SFU 连接成功');
+				eventBus.emit('ATTEMPT_TO_JOIN');
 				sfu.join();
 				setJoined(true);
 			});
 			sfu.on('error', () => {
 				console.warn('SFU 连接失败');
+				eventBus.emit('ATTEMPT_TO_JOIN');
 				setJoined(false);
 				setSfu(undefined);
 			});

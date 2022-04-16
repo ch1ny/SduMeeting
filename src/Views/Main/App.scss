@@ -3,16 +3,17 @@
 * {
 	margin: 0;
 	padding: 0;
+	background: rgba(0, 0, 0, 0);
 }
 
 .App {
 	position: absolute;
-	left: 1.25px;
-	top: 1.25px;
-	width: calc(100vw - 2.5px);
-	height: calc(100vh - 2.5px);
+	left: 0.1rem;
+	top: 0.1rem;
+	width: calc(100vw - 0.2rem);
+	height: calc(100vh - 0.2rem);
 	overflow: hidden;
-	box-shadow: 0 0 1px rgba(0, 0, 0, 0.8);
+	box-shadow: 0 0 0.1rem rgba(0, 0, 0, 0.8);
 }
 
 ::-webkit-scrollbar {

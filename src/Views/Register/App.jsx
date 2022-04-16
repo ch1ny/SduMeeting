@@ -5,7 +5,7 @@ import {
 	MailOutlined,
 	UserOutlined,
 } from '@ant-design/icons';
-import { Button, Form, Input, notification } from 'antd';
+import { Button, Form, Input, notification, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
 import ajax from 'Utils/Axios/Axios';
 import './App.scss';
@@ -23,9 +23,13 @@ export default function App() {
 		};
 	}, []);
 
+	const [chosenEmail, setChosenEmail] = useState('@mail.sdu.edu.cn');
+
 	const [form] = Form.useForm();
 
 	const [isRegistering, setIsRegistering] = useState(false);
+
+	const { Option } = Select;
 
 	return (
 		<div className='register' style={{ backgroundImage: `url(${bg})` }}>
@@ -34,7 +38,7 @@ export default function App() {
 				<div className='inputs'>
 					<Form
 						onFinish={(values) => {
-							submitForm(values, setIsRegistering);
+							submitForm(values, chosenEmail, setIsRegistering);
 						}}
 						autoComplete='off'
 						form={form}>
@@ -96,7 +100,12 @@ export default function App() {
 							name={'email'}>
 							<Input
 								placeholder='请输入山大邮箱'
-								addonAfter='@mail.sdu.edu.cn'
+								addonAfter={
+									<Select defaultValue={chosenEmail} onSelect={setChosenEmail}>
+										<Option value='@mail.sdu.edu.cn'>@mail.sdu.edu.cn</Option>
+										<Option value='@sdu.edu.cn'>@sdu.edu.cn</Option>
+									</Select>
+								}
 								prefix={<MailOutlined />}
 							/>
 						</Form.Item>
@@ -120,9 +129,9 @@ export default function App() {
 											.then((values) => {
 												setSendCaptchaTick(-1);
 												const { username, email } = values;
-												ajax.post('/code', {
+												ajax.post('/login_and_register/code', {
 													username,
-													email: `${email}@mail.sdu.edu.cn`,
+													email: `${email}${chosenEmail}`,
 												}).then((response) => {
 													if (response.code === 200) {
 														notification.success({
@@ -160,13 +169,13 @@ export default function App() {
 	);
 }
 
-async function submitForm(values, setIsRegistering) {
+async function submitForm(values, chosenEmail, setIsRegistering) {
 	setIsRegistering(true);
 	const { username, password, captcha, email } = values;
-	const res = await ajax.post('/register', {
+	const res = await ajax.post('/login_and_register/register', {
 		username,
 		password,
-		email: `${email}@mail.sdu.edu.cn`,
+		email: `${email}${chosenEmail}`,
 		code: captcha,
 	});
 	if (res.code === 200) {

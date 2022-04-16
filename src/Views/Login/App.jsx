@@ -78,7 +78,7 @@ export default function App() {
 				setIsLogining(true);
 				const text = values.username;
 				const password = values.password;
-				const res = await ajax.post('/login', { text, password });
+				const res = await ajax.post('/login_and_register/login', { text, password });
 				if (res.code === 200) {
 					message.success('登录成功');
 					localStorage.setItem('rememberPassword', rememberPassword);

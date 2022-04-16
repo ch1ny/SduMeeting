@@ -13,31 +13,31 @@ export default class RTC extends EventEmitter {
 		return this._sender;
 	}
 
-	getReceivers(pubid) {
-		return this._receivers.get(pubid);
+	getReceivers(pubId) {
+		return this._receivers.get(pubId);
 	}
 
-	createSender(pubid, stream) {
+	createSender(pubId, stream) {
 		let sender = {
 			offerSent: false,
 			pc: null,
 		};
 		sender.pc = new RTCPeerConnection({ iceServers: [{ urls: ices }] });
 		sender.pc.addStream(stream);
-		this.emit('localstream', pubid, stream);
+		this.emit('localstream', pubId, stream);
 		this._sender = sender;
 		return sender;
 	}
 
-	createReceiver(pubid) {
-		const _receiver = this._receivers.get(pubid);
+	createReceiver(pubId) {
+		const _receiver = this._receivers.get(pubId);
 		// INFO: 阻止重复建立接收器
 		if (_receiver) return _receiver;
 		try {
 			let receiver = {
 				offerSent: false,
 				pc: undefined,
-				id: pubid,
+				id: pubId,
 				streams: [],
 			};
 			const pc = new RTCPeerConnection({ iceServers: [{ urls: ices }] });
@@ -53,20 +53,20 @@ export default class RTC extends EventEmitter {
 			pc.onaddstream = (e) => {
 				const stream = e.stream;
 				console.log(`receiver.pc.onaddstream => ${stream.id}`);
-				const receiver = this._receivers.get(pubid);
+				const receiver = this._receivers.get(pubId);
 				receiver.streams.push(stream);
-				this.emit('addstream', pubid, stream);
+				this.emit('addstream', pubId, stream);
 			};
 
 			pc.onremovestream = (e) => {
 				const stream = e.stream;
 				console.log(`receiver.pc.onremovestream => ${stream.id}`);
-				this.emit('removestream', pubid, stream);
+				this.emit('removestream', pubId, stream);
 			};
 
 			receiver.pc = pc;
-			console.log(`createReceiver::id => ${pubid}`);
-			this._receivers.set(pubid, receiver);
+			console.log(`createReceiver::id => ${pubId}`);
+			this._receivers.set(pubId, receiver);
 			return receiver;
 		} catch (e) {
 			console.log(e);
@@ -74,14 +74,14 @@ export default class RTC extends EventEmitter {
 		}
 	}
 
-	closeReceiver(pubid) {
-		const receiver = this._receivers.get(pubid);
+	closeReceiver(pubId) {
+		const receiver = this._receivers.get(pubId);
 		if (receiver) {
 			receiver.streams.forEach((stream) => {
-				this.emit('removestream', pubid, stream);
+				this.emit('removestream', pubId, stream);
 			});
 			receiver.pc.close();
-			this._receivers.delete(pubid);
+			this._receivers.delete(pubId);
 		}
 	}
 }

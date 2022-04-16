@@ -1,8 +1,9 @@
-import { ContactsFilled, MediumCircleFilled, MessageFilled, UserOutlined } from '@ant-design/icons';
+import { ContactsFilled, MediumCircleFilled, MessageFilled } from '@ant-design/icons';
 import { Avatar, Badge, Dropdown, Menu } from 'antd';
 import classNames from 'classnames';
 import jwtDecode from 'jwt-decode';
 import React, { useEffect, useState } from 'react';
+import { setAuthToken } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
 import './style.scss';
 
@@ -17,7 +18,7 @@ export default function Asider(props) {
 	useEffect(() => {
 		window.ipcRenderer.invoke('GET_USER_AUTH_TOKEN_AFTER_LOGIN').then((authToken) => {
 			store.dispatch(setAuthToken(authToken));
-			setUserName(jwtDecode(authToken).userName);
+			setUserName(jwtDecode(authToken).username);
 		});
 	}, []);
 

@@ -10,6 +10,9 @@ import { Button, Checkbox, Divider, Empty, Form, Input, Modal } from 'antd';
 import './style.scss';
 import store from 'Utils/Store/store';
 import jwtDecode from 'jwt-decode';
+import eventBus from 'Utils/EventBus/EventBus';
+
+// TODO: 要写一个 EventBus.once 替换掉这个方法
 
 export default function MeetingList(props) {
 	const [meetings, setMeetings] = useState([]);
@@ -21,6 +24,8 @@ export default function MeetingList(props) {
 	const [autoOpenCamera, setAutoOpenCamera] = useState(
 		localStorage.getItem('autoOpenCamera') === 'true'
 	);
+
+	const [isJoining, setIsJoining] = useState(false);
 
 	const [username] = useState(jwtDecode(store.getState().authToken).username);
 
@@ -63,17 +68,24 @@ export default function MeetingList(props) {
 				onCancel={() => {
 					setShowJoinModal(false);
 				}}
-				destroyOnClose={true}>
+				closable={false}
+				maskClosable={!isJoining}
+				destroyOnClose={false}>
 				<Form
 					className='join-form'
 					initialValues={{
 						remember: true,
 					}}
 					onFinish={(values) => {
-						setShowJoinModal(false);
+						setIsJoining(true);
+						eventBus.on('ATTEMPT_TO_JOIN', () => {
+							setIsJoining(false);
+							setShowJoinModal(false);
+							eventBus.offAll('ATTEMPT_TO_JOIN');
+						});
 						values.autoOpenCamera = autoOpenCamera;
 						values.autoOpenMicroPhone = autoOpenMicroPhone;
-						console.log(values);
+						// console.log(values);
 						props.joinMeeting(values);
 					}}>
 					<Form.Item
@@ -128,7 +140,7 @@ export default function MeetingList(props) {
 						</Checkbox>
 					</Form.Item>
 					<Form.Item>
-						<Button type='primary' htmlType='submit'>
+						<Button type='primary' htmlType='submit' loading={isJoining}>
 							加入会议
 						</Button>
 					</Form.Item>

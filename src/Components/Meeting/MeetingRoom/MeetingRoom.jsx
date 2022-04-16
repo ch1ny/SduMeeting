@@ -17,6 +17,8 @@ import MeetingMember from './MeetingMember/MeetingMember';
 import './style.scss';
 
 export default function MeetingRoom(props) {
+	const [allMembers, setAllMembers] = useState(new Object());
+
 	const [usingVideoDevice, setUsingVideoDevice] = useState(store.getState().usingVideoDevice);
 	const [usingAudioDevice, setUsingAudioDevice] = useState(store.getState().usingAudioDevice);
 
@@ -212,12 +214,21 @@ export default function MeetingRoom(props) {
 	useEffect(() => {
 		if (props.sfu) {
 			props.sfu.on('addRemoteStream', (id, stream) => {
-				console.log('===addRemoteStream===');
-				setMembers(new Map(members.set(id, { stream })));
+				setMembers(new Map(members.set(id, { stream, name: allMembers[`${id}`]['name'] })));
 			});
 			props.sfu.on('removeRemoteStream', (id, stream) => {
 				members.delete(id);
 				setMembers(new Map(members));
+			});
+			props.sfu.on('onNewMemberJoin', (newMember) => {
+				console.log('===onNewMemberJoin===');
+				console.log(newMember);
+				setAllMembers(Object.assign(newMember, allMembers));
+			});
+			props.sfu.on('onJoinSuccess', (nowAllMembers) => {
+				console.log('===onJoinSuccess===');
+				console.log(nowAllMembers);
+				setAllMembers(Object.assign(allMembers, nowAllMembers));
 			});
 		}
 	}, [props.sfu]);
@@ -322,7 +333,7 @@ export default function MeetingRoom(props) {
 										<MeetingMember
 											key={key}
 											stream={value.stream}
-											member={`S:${key}`}
+											member={`${value.name}`}
 											muted={localPlayedStream === value.stream}
 										/>
 									);
