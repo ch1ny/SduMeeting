@@ -71,7 +71,7 @@ function createLoginWindow() {
 
 	if (process.env.NODE_ENV === 'development') {
 		loginWindow.loadURL('http://localhost:9000/login');
-		loginWindow.webContents.openDevTools();
+		// loginWindow.webContents.openDevTools();
 	} else {
 		loginWindow.loadURL(
 			url.format({

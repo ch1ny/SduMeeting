@@ -103,15 +103,16 @@ export default class SFU extends EventEmitter {
 	// 新成员入会
 	onNewMemberJoin(message) {
 		const newMember = new Object();
-		Object.defineProperty(newMember, `${message.data.newUserInfo.id}`, {
-			value: message.data.newUserInfo,
-		});
-		this.emit('onNewMemberJoin', newMember);
+		this.emit('onNewMemberJoin', message.data.newUserInfo);
 	}
 
 	// 成功加入会议
 	onJoinSuccess(message) {
 		this.emit('onJoinSuccess', message.data.allUserInfos);
+
+		for (const pubId of message.data.pubIds) {
+			this._onRtcCreateReceiver(pubId);
+		}
 	}
 
 	send(data) {

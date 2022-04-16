@@ -17,7 +17,14 @@ import MeetingMember from './MeetingMember/MeetingMember';
 import './style.scss';
 
 export default function MeetingRoom(props) {
-	const [allMembers, setAllMembers] = useState(new Object());
+	const [allMembers, setAllMembers] = useState(new Map());
+	useEffect(() => {
+		setAllMembers(new Map(allMembers.set(props.userId, props.joinName)));
+	}, []);
+	useEffect(() => {
+		console.log('++新状态++');
+		console.log(allMembers);
+	}, [allMembers]);
 
 	const [usingVideoDevice, setUsingVideoDevice] = useState(store.getState().usingVideoDevice);
 	const [usingAudioDevice, setUsingAudioDevice] = useState(store.getState().usingAudioDevice);
@@ -214,7 +221,7 @@ export default function MeetingRoom(props) {
 	useEffect(() => {
 		if (props.sfu) {
 			props.sfu.on('addRemoteStream', (id, stream) => {
-				setMembers(new Map(members.set(id, { stream, name: allMembers[`${id}`]['name'] })));
+				setMembers(new Map(members.set(id, { stream })));
 			});
 			props.sfu.on('removeRemoteStream', (id, stream) => {
 				members.delete(id);
@@ -222,13 +229,15 @@ export default function MeetingRoom(props) {
 			});
 			props.sfu.on('onNewMemberJoin', (newMember) => {
 				console.log('===onNewMemberJoin===');
-				console.log(newMember);
-				setAllMembers(Object.assign(newMember, allMembers));
+				setAllMembers(new Map(allMembers.set(newMember.id, newMember.name)));
 			});
 			props.sfu.on('onJoinSuccess', (nowAllMembers) => {
 				console.log('===onJoinSuccess===');
-				console.log(nowAllMembers);
-				setAllMembers(Object.assign(allMembers, nowAllMembers));
+				const ids = Object.keys(nowAllMembers);
+				for (const id of ids) {
+					allMembers.set(Number(id), nowAllMembers[`${id}`].name);
+				}
+				setAllMembers(new Map(allMembers));
 			});
 		}
 	}, [props.sfu]);
@@ -333,7 +342,7 @@ export default function MeetingRoom(props) {
 										<MeetingMember
 											key={key}
 											stream={value.stream}
-											member={`${value.name}`}
+											member={allMembers.get(key)}
 											muted={localPlayedStream === value.stream}
 										/>
 									);
