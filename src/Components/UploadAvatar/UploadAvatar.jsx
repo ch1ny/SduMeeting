@@ -1,17 +1,10 @@
-// src/components/UploadAvatar/index.jsx
-// 上传头像组件
 import React, { useState } from 'react';
 import { Button, Image, message, Upload } from 'antd';
 import ImgCrop from 'antd-img-crop';
 import './style.scss';
-/**
- * @param  avatar     传入头像
- * @param  setAvatar  设置头像方法
- */
+
 export default function UploadAvatar(props) {
-	// * 按钮loading
 	const [loading, setLoading] = useState(false);
-	// todo 上传前校验
 	const beforeUpload = (file) => {
 		const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
 		if (!isJpgOrPng) {
@@ -27,7 +20,6 @@ export default function UploadAvatar(props) {
 
 		return isJpgOrPng && isLt4M;
 	};
-	// * Upload配置
 	const uploadProps = {
 		showUploadList: false,
 		beforeUpload,
@@ -52,7 +44,12 @@ export default function UploadAvatar(props) {
 	return (
 		<div className='uploadAvatarContainer'>
 			<div className='uploadAvatarImageContainer'>
-				<Image width={120} height={120} src={props.avatar} />
+				<Image
+					width={120}
+					height={120}
+					src={props.avatar}
+					preview={{ getContainer: props.getContainer }}
+				/>
 			</div>
 			<div className='uploadAvatarTriggerContainer'>
 				<ImgCrop rotate grid>

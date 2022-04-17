@@ -7,6 +7,10 @@ import { setAuthToken } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
 import './style.scss';
 
+function getMainContent() {
+	return document.getElementById('mainContent');
+}
+
 export default function User() {
 	const [userId, setUserId] = useState(undefined);
 	const [email, setEmail] = useState(undefined);
@@ -51,7 +55,11 @@ export default function User() {
 		<>
 			<div className='userInfoContainer'>
 				<div>
-					<UploadAvatar avatar={profile} onCropped={uploadAvatar} />
+					<UploadAvatar
+						avatar={profile}
+						onCropped={uploadAvatar}
+						getContainer={getMainContent}
+					/>
 				</div>
 			</div>
 		</>

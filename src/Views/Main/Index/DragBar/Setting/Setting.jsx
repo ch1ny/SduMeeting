@@ -8,6 +8,10 @@ import AutoLogin from './AutoLogin/AutoLogin';
 import About from './About/About';
 import eventBus from 'Utils/EventBus/EventBus';
 
+function getMainContent() {
+	return document.getElementById('mainContent');
+}
+
 const { Link } = Anchor;
 
 export default function Setting(props) {
@@ -24,6 +28,7 @@ export default function Setting(props) {
 				onCancel={props.closeFunc}
 				centered={true}
 				zIndex={1000}
+				getContainer={getMainContent}
 				footer={null}>
 				<div className='settingContainer'>
 					<div className='anchorContainer'>

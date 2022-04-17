@@ -6,6 +6,8 @@ import SoundMeter from 'Utils/SoundMeter/SoundMeter';
 import { DEVICE_TYPE, exchangeMediaDevice, updateAvailableDevices } from 'Utils/Store/actions';
 import eventBus from 'Utils/EventBus/EventBus';
 
+const { Option } = Select;
+
 export default function MediaDevices() {
 	const [videoDevices, setVideoDevices] = useState(store.getState().availableVideoDevices);
 	const [audioDevices, setAudioDevices] = useState(store.getState().availableAudioDevices);
@@ -76,8 +78,6 @@ export default function MediaDevices() {
 			eventBus.off('CLOSE_SETTING_MODAL', onCloseSettingModal);
 		};
 	}, []);
-
-	const { Option } = Select;
 	return (
 		<>
 			请选择录音设备:

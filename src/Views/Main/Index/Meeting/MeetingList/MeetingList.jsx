@@ -12,6 +12,10 @@ import store from 'Utils/Store/store';
 import jwtDecode from 'jwt-decode';
 import eventBus from 'Utils/EventBus/EventBus';
 
+function getMainContent() {
+	return document.getElementById('mainContent');
+}
+
 // TODO: 要写一个 EventBus.once 替换掉这个方法
 
 export default function MeetingList(props) {
@@ -68,6 +72,7 @@ export default function MeetingList(props) {
 				onCancel={() => {
 					setShowJoinModal(false);
 				}}
+				getContainer={getMainContent}
 				closable={false}
 				maskClosable={!isJoining}
 				destroyOnClose={false}>

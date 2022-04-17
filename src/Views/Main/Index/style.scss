@@ -10,5 +10,19 @@
 		/* background-color: #eaeaea; */
 		height: calc(100% - 2rem);
 		width: calc(100% - 4rem);
+
+		.ant-modal-mask,
+		.ant-modal-wrap {
+			height: calc(100% - 2rem);
+			top: 2rem;
+		}
+	}
+
+	.content.ant-scrolling-effect {
+		.ant-image-preview-mask,
+		.ant-image-preview-wrap {
+			height: calc(100% - 2rem);
+			top: 2rem;
+		}
 	}
 }
