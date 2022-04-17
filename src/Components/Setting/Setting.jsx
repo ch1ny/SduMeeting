@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Anchor, Divider, Modal } from 'antd';
 import './style.scss';
 import { SettingFilled } from '@ant-design/icons';
@@ -6,10 +6,15 @@ import MeetingStatus from './MeetingStatus/MeetingStatus';
 import MediaDevices from './MediaDevices/MediaDevices';
 import AutoLogin from './AutoLogin/AutoLogin';
 import About from './About/About';
+import eventBus from 'Utils/EventBus/EventBus';
 
 const { Link } = Anchor;
 
 export default function Setting(props) {
+	useEffect(() => {
+		if (!props.visible) eventBus.emit('CLOSE_SETTING_MODAL');
+	}, [props.visible]);
+
 	return (
 		<>
 			<Modal

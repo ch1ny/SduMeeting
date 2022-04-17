@@ -7,6 +7,7 @@ const {
 	nativeImage,
 	globalShortcut,
 	safeStorage,
+	dialog,
 } = require('electron');
 const path = require('path');
 const url = require('url');
@@ -19,6 +20,8 @@ let screenWidth, screenHeight;
 const ipc = require('electron').ipcMain;
 const DIRNAME = process.env.NODE_ENV === 'development' ? path.join(__dirname, 'public') : __dirname;
 const EXEPATH = path.dirname(app.getPath('exe'));
+
+requestInstanceLock();
 
 function createLoginWindow() {
 	loginWindow = new BrowserWindow({
@@ -329,4 +332,26 @@ function readyToUpdate() {
 	if (mainWindow) mainWindow.close();
 	child.unref();
 	app.quit();
+}
+
+/**
+ * 尝试获得唯一实例锁
+ */
+function requestInstanceLock() {
+	const instanceLock = app.requestSingleInstanceLock();
+	if (!instanceLock) app.quit();
+	else {
+		app.on('second-instance', () => {
+			const existWindow = mainWindow || loginWindow;
+			if (existWindow) {
+				existWindow.show();
+				dialog.showMessageBoxSync(existWindow, {
+					message: '程序已经在运行中了！',
+					type: 'warning',
+					buttons: ['确定'],
+					title: '尝试重复启动实例',
+				});
+			}
+		});
+	}
 }

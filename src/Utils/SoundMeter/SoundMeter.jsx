@@ -1,4 +1,6 @@
-export default class SoundMeter {
+import { EventEmitter } from 'events';
+
+export default class SoundMeter extends EventEmitter {
 	instant;
 	script;
 	clip;
@@ -6,26 +8,23 @@ export default class SoundMeter {
 	context;
 	mic;
 	constructor(context) {
+		super();
 		this.context = context;
 		this.instant = 0.0;
 		this.slow = 0.0;
 		this.clip = 0.0;
 		this.script = context.createScriptProcessor(4096, 1, 1);
-		var that = this;
-		this.script.onaudioprocess = function (event) {
-			var input = event.inputBuffer.getChannelData(0);
-			var i;
-			var sum = 0.0;
-			var clipcount = 0;
-			for (i = 0; i < input.length; ++i) {
-				sum += input[i] * input[i];
-				if (Math.abs(input[i]) > 0.99) {
-					clipcount += 1;
-				}
+		this.script.onaudioprocess = (event) => {
+			const inputs = event.inputBuffer.getChannelData(0);
+			let volume = 0;
+			const clipcount = 0;
+			for (const input of inputs) {
+				volume = Math.max(volume, input);
 			}
-			that.instant = Math.sqrt(sum / input.length);
-			that.slow = 0.95 * that.slow + 0.05 * that.instant;
-			that.clip = clipcount / input.length;
+			this.instant = volume;
+			this.emit('COUNTED_VOLUME', volume);
+			this.slow = 0.95 * this.slow + 0.05 * this.instant;
+			this.clip = clipcount / inputs.length;
 		};
 	}
 	connectToSource = (stream, callback) => {
@@ -48,6 +47,6 @@ export default class SoundMeter {
 	stop = () => {
 		this.mic.disconnect();
 		this.script.disconnect();
-		return 1;
+		return 0;
 	};
 }

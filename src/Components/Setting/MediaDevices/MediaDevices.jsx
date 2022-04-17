@@ -4,8 +4,9 @@ import { CustomerServiceOutlined } from '@ant-design/icons';
 import store from 'Utils/Store/store';
 import SoundMeter from 'Utils/SoundMeter/SoundMeter';
 import { DEVICE_TYPE, exchangeMediaDevice, updateAvailableDevices } from 'Utils/Store/actions';
+import eventBus from 'Utils/EventBus/EventBus';
 
-export default function MediaDevices(props) {
+export default function MediaDevices() {
 	const [videoDevices, setVideoDevices] = useState(store.getState().availableVideoDevices);
 	const [audioDevices, setAudioDevices] = useState(store.getState().availableAudioDevices);
 	const [usingVideoDevice, setUsingVideoDevice] = useState(undefined);
@@ -27,18 +28,54 @@ export default function MediaDevices(props) {
 	const [isExamingMicroPhone, setIsExamingMicroPhone] = useState(false);
 	const [microPhoneVolume, setMicroPhoneVolume] = useState(0);
 	const [soundMeter, setSoundMeter] = useState(null);
-	const [examMicroPhoneInterval, setExamMicroPhoneInterval] = useState(null);
 	const examMicroPhoneRef = useRef();
 	useEffect(() => {
 		setSoundMeter(new SoundMeter(new window.AudioContext()));
 		return () => {
-			clearInterval(examMicroPhoneInterval);
-			setExamMicroPhoneInterval(null);
+			if (soundMeter) soundMeter.stop();
+			setSoundMeter(null);
 		};
 	}, []);
+	useEffect(() => {
+		if (soundMeter)
+			soundMeter.on('COUNTED_VOLUME', (volume) => {
+				setMicroPhoneVolume(Number((volume * 100).toFixed(0)));
+			});
+	}, [soundMeter]);
+	useEffect(() => {
+		if (isExamingMicroPhone) {
+			soundMeterConnect(examMicroPhoneRef, soundMeter);
+		} else {
+			if (soundMeter) {
+				soundMeter.stop();
+				examMicroPhoneRef.current.pause();
+				examMicroPhoneRef.current.srcObject = null;
+			}
+			setMicroPhoneVolume(0);
+		}
+	}, [isExamingMicroPhone]);
 
 	const [isExamingCamera, setIsExamingCamera] = useState(false);
 	const examCameraRef = useRef();
+	useEffect(() => {
+		if (isExamingCamera) {
+			videoConnect(examCameraRef);
+		} else {
+			examCameraRef.current.pause();
+			examCameraRef.current.srcObject = null;
+		}
+	}, [isExamingCamera]);
+
+	useEffect(() => {
+		const onCloseSettingModal = function () {
+			setIsExamingCamera(false);
+			setIsExamingMicroPhone(false);
+		};
+		eventBus.on('CLOSE_SETTING_MODAL', onCloseSettingModal);
+		return () => {
+			eventBus.off('CLOSE_SETTING_MODAL', onCloseSettingModal);
+		};
+	}, []);
 
 	const { Option } = Select;
 	return (
@@ -52,12 +89,7 @@ export default function MediaDevices(props) {
 					store.dispatch(exchangeMediaDevice(DEVICE_TYPE.AUDIO_DEVICE, option));
 					if (isExamingMicroPhone) {
 						soundMeter.stop();
-						soundMeterConnect(
-							examMicroPhoneRef,
-							soundMeter,
-							setExamMicroPhoneInterval,
-							setMicroPhoneVolume
-						);
+						soundMeterConnect(examMicroPhoneRef, soundMeter);
 					}
 				}}
 				value={usingAudioDevice}>
@@ -72,24 +104,6 @@ export default function MediaDevices(props) {
 					<Button
 						style={{ width: '7em' }}
 						onClick={() => {
-							if (isExamingMicroPhone) {
-								new Promise((resolve) => {
-									soundMeter.stop();
-									examMicroPhoneRef.current.pause();
-									examMicroPhoneRef.current.srcObject = null;
-									clearInterval(examMicroPhoneInterval);
-									resolve();
-								}).then(() => {
-									setMicroPhoneVolume(0);
-								});
-							} else {
-								soundMeterConnect(
-									examMicroPhoneRef,
-									soundMeter,
-									setExamMicroPhoneInterval,
-									setMicroPhoneVolume
-								);
-							}
 							setIsExamingMicroPhone(!isExamingMicroPhone);
 						}}>
 						{isExamingMicroPhone ? '停止检查' : '检查麦克风'}
@@ -134,12 +148,6 @@ export default function MediaDevices(props) {
 				<Button
 					style={{ width: '7em' }}
 					onClick={() => {
-						if (isExamingCamera) {
-							examCameraRef.current.pause();
-							examCameraRef.current.srcObject = null;
-						} else {
-							videoConnect(examCameraRef);
-						}
 						setIsExamingCamera(!isExamingCamera);
 					}}>
 					{isExamingCamera ? '停止检查' : '检查摄像头'}
@@ -222,12 +230,7 @@ function getUserMediaDevices() {
 	});
 }
 
-async function soundMeterConnect(
-	examMicroPhoneRef,
-	soundMeter,
-	setExamMicroPhoneInterval,
-	setMicroPhoneVolume
-) {
+async function soundMeterConnect(examMicroPhoneRef, soundMeter) {
 	const device = store.getState().usingAudioDevice;
 	const audioConstraints = {
 		deviceId: {
@@ -242,12 +245,6 @@ async function soundMeterConnect(
 			console.log(err);
 			return;
 		}
-		setExamMicroPhoneInterval(
-			setInterval(() => {
-				const volume = Number((soundMeter.instant * 100).toFixed(0));
-				setMicroPhoneVolume(volume > 100 ? 100 : volume);
-			}, 100)
-		);
 	});
 }
 
