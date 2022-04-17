@@ -7,7 +7,7 @@ import {
 	setAuthToken,
 } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
-import Index from 'Components/Index/Index';
+import Index from './Index/Index';
 
 // INFO: 由于需要在所有组件挂载之前全局引入 electron ，故只能使用带有构造函数的类声明 App 组件
 export default class App extends React.Component {
