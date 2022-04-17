@@ -1,5 +1,5 @@
-import { ContactsFilled, MediumCircleFilled, MessageFilled } from '@ant-design/icons';
-import { Avatar, Badge, Dropdown, Menu } from 'antd';
+import { MessageOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons';
+import { Avatar, Badge } from 'antd';
 import classNames from 'classnames';
 import jwtDecode from 'jwt-decode';
 import React, { useEffect, useState } from 'react';
@@ -8,67 +8,40 @@ import store from 'Utils/Store/store';
 import './style.scss';
 
 export default function Asider(props) {
-	const [onlineStatus, setOnlineStatus] = useState(undefined);
-	useEffect(() => {
-		const onlineStatus = localStorage.getItem('onlineStatus');
-		setOnlineStatus(onlineStatus === null ? 1 : parseInt(onlineStatus));
-	}, []);
-
+	const [userId, setUserId] = useState(undefined);
 	const [userName, setUserName] = useState(undefined);
+	const [profile, setProfile] = useState(undefined);
 	useEffect(() => {
 		window.ipcRenderer.invoke('GET_USER_AUTH_TOKEN_AFTER_LOGIN').then((authToken) => {
 			store.dispatch(setAuthToken(authToken));
-			setUserName(jwtDecode(authToken).username);
+			const { username, id, profile } = jwtDecode(authToken);
+			setUserId(id);
+			setUserName(username);
+			setProfile(
+				profile ? !profile : `http://meeting.aiolia.top:8080/file/pic/user/${id}.jpg`
+			);
 		});
 	}, []);
+
+	useEffect(
+		() =>
+			store.subscribe(() => {
+				const { profile, id } = jwtDecode(store.getState().authToken);
+				setProfile(
+					profile
+						? !profile
+						: `http://meeting.aiolia.top:8080/file/pic/user/${id}.jpg?${Date.now()}`
+				);
+			}),
+		[]
+	);
 
 	return (
 		<div className='tabbar'>
 			<div className='avatarContainer'>
-				<Dropdown
-					overlay={
-						<Menu
-							style={{ width: '5rem' }}
-							onClick={({ key }) => {
-								const newStatus = parseInt(key);
-								if (onlineStatus !== newStatus) {
-									setOnlineStatus(newStatus);
-									localStorage.setItem('onlineStatus', newStatus);
-								}
-							}}>
-							<Menu.Item key={1} style={{ fontSize: '0.75rem' }}>
-								<Badge dot color='green' />
-								在线
-							</Menu.Item>
-							<Menu.Item key={2} style={{ fontSize: '0.75rem' }}>
-								<Badge dot color='gold' />
-								离开
-							</Menu.Item>
-							<Menu.Item key={3} style={{ fontSize: '0.75rem' }}>
-								<Badge dot color='red' />
-								忙碌
-							</Menu.Item>
-							<Menu.Item key={0} style={{ fontSize: '0.75rem' }}>
-								<Badge dot color='#c3c3c3' />
-								隐身
-							</Menu.Item>
-						</Menu>
-					}
-					trigger={['click']}>
-					<Badge
-						dot
-						color={computeOnlineStatusColor(onlineStatus)}
-						style={{ transition: '500ms' }}>
-						<Avatar
-							shape='square'
-							size={40}
-							style={{
-								backgroundColor: '#0bacff',
-							}}>
-							{userName}
-						</Avatar>
-					</Badge>
-				</Dropdown>
+				<Avatar shape='square' size={50} src={profile}>
+					{userName}
+				</Avatar>
 			</div>
 			<div className='tabContainer'>
 				<div
@@ -81,7 +54,7 @@ export default function Asider(props) {
 					})}
 					tab_id={0}>
 					<Badge dot>
-						<MessageFilled className='tab' />
+						<MessageOutlined className='tab' />
 					</Badge>
 				</div>
 				<div
@@ -94,7 +67,7 @@ export default function Asider(props) {
 					})}
 					tab_id={1}>
 					<Badge dot>
-						<ContactsFilled className='tab' />
+						<TeamOutlined className='tab' />
 					</Badge>
 				</div>
 				<div
@@ -107,7 +80,7 @@ export default function Asider(props) {
 					})}
 					tab_id={2}>
 					<Badge dot>
-						<MediumCircleFilled className='tab' />
+						<UserOutlined className='tab' />
 					</Badge>
 				</div>
 			</div>

@@ -5,7 +5,7 @@ import {
 	SettingOutlined,
 	SwitcherOutlined,
 } from '@ant-design/icons';
-import Setting from 'Components/Setting/Setting';
+import Setting from './Setting/Setting';
 import React, { useEffect, useState } from 'react';
 import eventBus from 'Utils/EventBus/EventBus';
 import './style.scss';

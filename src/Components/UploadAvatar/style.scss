@@ -1,0 +1,15 @@
+.uploadAvatarContainer {
+	display: flex;
+	flex-direction: column;
+	padding: 1rem;
+	align-items: center;
+	justify-content: center;
+
+	.uploadAvatarImageContainer {
+		margin-bottom: 0.5rem;
+	}
+
+	.uploadAvatarTriggerContainer {
+		margin-top: 0.5rem;
+	}
+}

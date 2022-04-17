@@ -115,7 +115,7 @@ export default function MediaDevices() {
 						showInfo={false}
 						strokeColor={
 							isExamingMicroPhone
-								? microPhoneVolume > 60
+								? microPhoneVolume > 70
 									? '#e91013'
 									: '#108ee9'
 								: 'gray'

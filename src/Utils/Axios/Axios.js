@@ -41,6 +41,31 @@ const ajax = {
 				});
 		});
 	},
+	file: function (url, params, headers = {}) {
+		const param = new FormData();
+		for (const key in params) {
+			if (Object.hasOwnProperty.call(params, key)) {
+				param.append(key, params[key]);
+			}
+		}
+		return new Promise((resolve, reject) => {
+			instance({
+				method: 'post',
+				url,
+				data: param,
+				headers: Object.assign(headers, { 'Content-Type': 'multipart/form-data' }),
+			})
+				.then((response) => {
+					resolve(response.data);
+				})
+				.catch((error) => {
+					reject({
+						error,
+						ajax: true,
+					});
+				});
+		});
+	},
 	get: function (url, params, headers) {},
 };
 
