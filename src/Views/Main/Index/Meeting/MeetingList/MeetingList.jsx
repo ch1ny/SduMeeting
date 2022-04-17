@@ -11,12 +11,7 @@ import './style.scss';
 import store from 'Utils/Store/store';
 import jwtDecode from 'jwt-decode';
 import eventBus from 'Utils/EventBus/EventBus';
-
-function getMainContent() {
-	return document.getElementById('mainContent');
-}
-
-// TODO: 要写一个 EventBus.once 替换掉这个方法
+import { getMainContent } from 'Utils/Global';
 
 export default function MeetingList(props) {
 	const [meetings, setMeetings] = useState([]);
@@ -83,10 +78,9 @@ export default function MeetingList(props) {
 					}}
 					onFinish={(values) => {
 						setIsJoining(true);
-						eventBus.on('ATTEMPT_TO_JOIN', () => {
+						eventBus.once('ATTEMPT_TO_JOIN', () => {
 							setIsJoining(false);
 							setShowJoinModal(false);
-							eventBus.offAll('ATTEMPT_TO_JOIN');
 						});
 						values.autoOpenCamera = autoOpenCamera;
 						values.autoOpenMicroPhone = autoOpenMicroPhone;

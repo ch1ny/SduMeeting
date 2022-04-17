@@ -3,13 +3,10 @@ import UploadAvatar from 'Components/UploadAvatar/UploadAvatar';
 import jwtDecode from 'jwt-decode';
 import React, { useEffect, useState } from 'react';
 import ajax from 'Utils/Axios/Axios';
+import { getMainContent } from 'Utils/Global';
 import { setAuthToken } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
 import './style.scss';
-
-function getMainContent() {
-	return document.getElementById('mainContent');
-}
 
 export default function User() {
 	const [userId, setUserId] = useState(undefined);

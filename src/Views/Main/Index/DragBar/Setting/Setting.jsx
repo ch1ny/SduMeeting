@@ -7,10 +7,7 @@ import MediaDevices from './MediaDevices/MediaDevices';
 import AutoLogin from './AutoLogin/AutoLogin';
 import About from './About/About';
 import eventBus from 'Utils/EventBus/EventBus';
-
-function getMainContent() {
-	return document.getElementById('mainContent');
-}
+import { getMainContent } from 'Utils/Global';
 
 const { Link } = Anchor;
 
