@@ -231,7 +231,7 @@ export default function App() {
 									className='submit'
 									onClick={login}
 									disabled={isLogining}>
-									{isLogining && <LoadingOutlined />} 登 录
+									<>{isLogining && <LoadingOutlined />} 登 录</>
 								</RippleButton>
 							</Form.Item>
 						</Form>
