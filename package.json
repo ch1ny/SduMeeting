@@ -9,7 +9,6 @@
 		"@babel/core": "^7.17.5",
 		"@babel/plugin-proposal-class-properties": "^7.16.7",
 		"@babel/preset-env": "^7.16.11",
-		"@babel/preset-flow": "^7.16.7",
 		"@babel/preset-react": "^7.16.7",
 		"babel-loader": "^8.2.3",
 		"clean-webpack-plugin": "^4.0.0",
@@ -17,7 +16,6 @@
 		"electron": "^17.1.0",
 		"electron-packager": "^15.4.0",
 		"file-loader": "^6.2.0",
-		"flow-bin": "^0.176.2",
 		"html-webpack-plugin": "^5.5.0",
 		"javascript-obfuscator": "^4.0.0",
 		"react": "^17.0.2",
@@ -36,8 +34,7 @@
 		"start": "webpack serve --mode development --env development",
 		"elect": "set NODE_ENV=development&&electron .",
 		"assets": "assetsAfterBuild.bat",
-		"win": "yarn build&&yarn assets&&electron-packager ./build SduMeeting --icon=./public/electronAssets/favicon.ico --platform=win32 --arch=x64 --out ./dist --asar --overwrite&&nodeModulesAfterDist.bat win32 x64",
-		"flow": "flow"
+		"win": "yarn build&&yarn assets&&electron-packager ./build SduMeeting --icon=./public/electronAssets/favicon.ico --platform=win32 --arch=x64 --out ./dist --asar --overwrite&&nodeModulesAfterDist.bat win32 x64"
 	},
 	"dependencies": {
 		"@ant-design/icons": "^4.7.0",
