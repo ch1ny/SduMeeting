@@ -21,7 +21,7 @@ const ipc = require('electron').ipcMain;
 const DIRNAME = process.env.NODE_ENV === 'development' ? path.join(__dirname, 'public') : __dirname;
 const EXEPATH = path.dirname(app.getPath('exe'));
 
-requestInstanceLock();
+if (process.env.NODE_ENV !== 'development') requestInstanceLock();
 
 function createLoginWindow() {
 	loginWindow = new BrowserWindow({

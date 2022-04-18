@@ -9,7 +9,7 @@
 		top: 2rem;
 		/* background-color: #eaeaea; */
 		height: calc(100% - 2rem);
-		width: calc(100% - 4rem);
+		width: calc(100% - 4rem) !important;
 
 		.ant-modal-mask,
 		.ant-modal-wrap {
@@ -22,6 +22,7 @@
 		.ant-image-preview-mask,
 		.ant-image-preview-wrap {
 			height: calc(100% - 2rem);
+			width: 100%;
 			top: 2rem;
 		}
 	}

@@ -10,7 +10,9 @@ export default class SFU extends EventEmitter {
 		this.userName = userName;
 		this.roomId = Number(roomId);
 
-		const sfuUrl = 'ws://121.40.95.78:3000/ws?userId=' + userId + '&roomId=' + roomId;
+		// const sfuUrl = 'ws://localhost:3000/ws?userId=' + userId + '&roomId=' + roomId;
+		const sfuUrl = 'ws://webrtc.aiolia.top:3000/ws?userId=' + userId + '&roomId=' + roomId;
+		// const sfuUrl = 'ws://121.40.95.78:3000/ws?userId=' + userId + '&roomId=' + roomId;
 
 		this.socket = new WebSocket(sfuUrl);
 
