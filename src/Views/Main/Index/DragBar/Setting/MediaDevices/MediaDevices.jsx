@@ -9,6 +9,10 @@ import eventBus from 'Utils/EventBus/EventBus';
 const { Option } = Select;
 
 export default function MediaDevices() {
+	message.config({
+		maxCount: 1,
+	});
+
 	const [videoDevices, setVideoDevices] = useState(store.getState().availableVideoDevices);
 	const [audioDevices, setAudioDevices] = useState(store.getState().availableAudioDevices);
 	const [usingVideoDevice, setUsingVideoDevice] = useState(undefined);
@@ -30,6 +34,7 @@ export default function MediaDevices() {
 	const [isExamingMicroPhone, setIsExamingMicroPhone] = useState(false);
 	const [microPhoneVolume, setMicroPhoneVolume] = useState(0);
 	const [soundMeter, setSoundMeter] = useState(null);
+	const [isSoundMeterConnecting, setIsSoundMeterConnecting] = useState(false);
 	const examMicroPhoneRef = useRef();
 	useEffect(() => {
 		setSoundMeter(new SoundMeter(new window.AudioContext()));
@@ -39,10 +44,15 @@ export default function MediaDevices() {
 		};
 	}, []);
 	useEffect(() => {
-		if (soundMeter)
+		if (soundMeter) {
+			soundMeter.on('STREAM_CONNECTED', () => {
+				message.success('完成音频设备连接');
+				setIsSoundMeterConnecting(false);
+			});
 			soundMeter.on('COUNTED_VOLUME', (volume) => {
 				setMicroPhoneVolume(Number((volume * 100).toFixed(0)));
 			});
+		}
 	}, [soundMeter]);
 	useEffect(() => {
 		if (isExamingMicroPhone) {
@@ -72,6 +82,7 @@ export default function MediaDevices() {
 		const onCloseSettingModal = function () {
 			setIsExamingCamera(false);
 			setIsExamingMicroPhone(false);
+			setIsSoundMeterConnecting(false);
 		};
 		eventBus.on('CLOSE_SETTING_MODAL', onCloseSettingModal);
 		return () => {
@@ -104,8 +115,10 @@ export default function MediaDevices() {
 					<Button
 						style={{ width: '7em' }}
 						onClick={() => {
+							if (!isExamingMicroPhone) setIsSoundMeterConnecting(true);
 							setIsExamingMicroPhone(!isExamingMicroPhone);
-						}}>
+						}}
+						loading={isSoundMeterConnecting}>
 						{isExamingMicroPhone ? '停止检查' : '检查麦克风'}
 					</Button>
 				</div>

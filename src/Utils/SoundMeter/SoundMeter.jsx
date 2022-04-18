@@ -22,7 +22,7 @@ export default class SoundMeter extends EventEmitter {
 		};
 	}
 	connectToSource = (stream, callback) => {
-		console.log('SoundMeter connecting');
+		this.emit('STREAM_CONNECTED');
 		try {
 			this.mic = this.context.createMediaStreamSource(stream);
 			this.mic.connect(this.script);

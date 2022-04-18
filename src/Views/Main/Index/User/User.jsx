@@ -18,14 +18,19 @@ export default function User() {
 		setUserId(id);
 		setEmail(email);
 		setUsername(username);
-		setProfile(profile ? !profile : `http://meeting.aiolia.top:8080/file/pic/user/${id}.jpg`);
+		setProfile(
+			profile ? `http://meeting.aiolia.top:8080/file/pic/user/${id}.${profile}` : undefined
+		);
 	}, []);
 
 	const uploadAvatar = function (file) {
+		console.log(file);
+		const fileType = file.type.split('/')[1];
 		return new Promise((resolve) => {
 			ajax.file('/file/updateUserProfile', {
 				uid: userId,
 				img: file,
+				fileType,
 			})
 				.then((res) => {
 					if (res.code === 200) {
@@ -33,7 +38,7 @@ export default function User() {
 						message.success('头像上传成功！');
 						// INFO: 通过追加 params 实现刷新图片缓存
 						setProfile(
-							`http://meeting.aiolia.top:8080/file/pic/user/${userId}.jpg?${Date.now()}`
+							`http://meeting.aiolia.top:8080/file/pic/user/${userId}.${fileType}?${Date.now()}`
 						);
 						store.dispatch(setAuthToken(res.data.token));
 					} else {

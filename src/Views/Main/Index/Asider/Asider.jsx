@@ -18,7 +18,9 @@ export default function Asider(props) {
 			setUserId(id);
 			setUserName(username);
 			setProfile(
-				profile ? !profile : `http://meeting.aiolia.top:8080/file/pic/user/${id}.jpg`
+				profile
+					? `http://meeting.aiolia.top:8080/file/pic/user/${id}.${profile}?${Date.now()}`
+					: profile
 			);
 		});
 	}, []);
@@ -29,8 +31,8 @@ export default function Asider(props) {
 				const { profile, id } = jwtDecode(store.getState().authToken);
 				setProfile(
 					profile
-						? !profile
-						: `http://meeting.aiolia.top:8080/file/pic/user/${id}.jpg?${Date.now()}`
+						? `http://meeting.aiolia.top:8080/file/pic/user/${id}.${profile}?${Date.now()}`
+						: profile
 				);
 			}),
 		[]
@@ -39,7 +41,7 @@ export default function Asider(props) {
 	return (
 		<div className='tabbar'>
 			<div className='avatarContainer'>
-				<Avatar shape='square' size={50} src={profile}>
+				<Avatar shape='square' size={50} src={profile} style={{ background: '#808080' }}>
 					{userName}
 				</Avatar>
 			</div>

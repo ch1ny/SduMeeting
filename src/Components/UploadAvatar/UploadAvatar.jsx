@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Button, Image, message, Upload } from 'antd';
+import { Avatar, Button, Image, message, Upload } from 'antd';
 import ImgCrop from 'antd-img-crop';
 import './style.scss';
+import { UserOutlined } from '@ant-design/icons';
 
 export default function UploadAvatar(props) {
 	const [loading, setLoading] = useState(false);
@@ -33,8 +34,6 @@ export default function UploadAvatar(props) {
 			}
 		},
 		customRequest: async ({ file }) => {
-			const formData = new FormData();
-			formData.append('avatarfile', file);
 			props.onCropped(file).then(() => {
 				setLoading(false);
 			});
@@ -48,7 +47,8 @@ export default function UploadAvatar(props) {
 					width={120}
 					height={120}
 					src={props.avatar}
-					preview={{ getContainer: props.getContainer }}
+					placeholder={<Avatar shape='square' size={120} icon={<UserOutlined />} />}
+					preview={props.avatar ? { getContainer: props.getContainer } : false}
 				/>
 			</div>
 			<div className='uploadAvatarTriggerContainer'>

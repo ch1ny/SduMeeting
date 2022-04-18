@@ -1,3 +1,4 @@
+import { message } from 'antd';
 import jwtDecode from 'jwt-decode';
 import React, { useEffect, useState } from 'react';
 import eventBus from 'Utils/EventBus/EventBus';
@@ -36,6 +37,7 @@ export default function Meeting() {
 				setJoined(true);
 			});
 			sfu.on('error', () => {
+				message.error('房间连接失败！');
 				console.warn('SFU 连接失败');
 				eventBus.emit('ATTEMPT_TO_JOIN');
 				setJoined(false);
