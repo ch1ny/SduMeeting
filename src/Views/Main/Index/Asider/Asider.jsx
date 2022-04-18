@@ -29,6 +29,7 @@ export default function Asider(props) {
 		() =>
 			store.subscribe(() => {
 				const { profile, id } = jwtDecode(store.getState().authToken);
+				// INFO: 通过追加 params 实现刷新图片缓存
 				setProfile(
 					profile
 						? `http://meeting.aiolia.top:8080/file/pic/user/${id}.${profile}?${Date.now()}`

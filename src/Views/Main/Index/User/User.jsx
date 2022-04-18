@@ -24,23 +24,28 @@ export default function User() {
 	}, []);
 
 	const uploadAvatar = function (file) {
-		console.log(file);
 		const fileType = file.type.split('/')[1];
 		return new Promise((resolve) => {
+			const startTime = Date.now();
 			ajax.file('/file/updateUserProfile', {
-				uid: userId,
 				img: file,
 				fileType,
 			})
 				.then((res) => {
 					if (res.code === 200) {
-						console.log(res);
-						message.success('头像上传成功！');
-						// INFO: 通过追加 params 实现刷新图片缓存
-						setProfile(
-							`http://meeting.aiolia.top:8080/file/pic/user/${userId}.${fileType}?${Date.now()}`
-						);
+						setProfile(URL.createObjectURL(file));
 						store.dispatch(setAuthToken(res.data.token));
+						// 计算上传时间
+						const postTime = Date.now() - startTime;
+						if (postTime > 250) {
+							message.warn(
+								`你上传图片耗时${(postTime / 1000).toFixed(
+									2
+								)}秒，为了您的使用体验，请尽可能上传小体积图片`
+							);
+						} else {
+							message.success('头像上传成功！');
+						}
 					} else {
 						message.error(`头像上传失败，${res.message}`);
 					}
