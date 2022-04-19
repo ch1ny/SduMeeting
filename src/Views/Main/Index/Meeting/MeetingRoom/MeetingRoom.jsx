@@ -450,6 +450,9 @@ async function setMediaStream(mediaType, object) {
 				},
 				width: 1920,
 				height: 1080,
+				frameRate: {
+					max: 24
+				}
 			};
 			return await navigator.mediaDevices.getUserMedia({
 				video: videoConstraints,

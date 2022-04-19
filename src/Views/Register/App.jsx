@@ -90,7 +90,7 @@ export default function App() {
 							rules={[
 								{
 									required: true,
-									message: '请输入山大邮箱',
+									message: '请输入邮箱',
 								},
 								{
 									pattern: /^[^@]+$/,
@@ -99,7 +99,7 @@ export default function App() {
 							]}
 							name={'email'}>
 							<Input
-								placeholder='请输入山大邮箱'
+								placeholder='请输入邮箱'
 								addonAfter={
 									<Select defaultValue={chosenEmail} onSelect={setChosenEmail}>
 										<Option value='@mail.sdu.edu.cn'>@mail.sdu.edu.cn</Option>
@@ -151,7 +151,7 @@ export default function App() {
 													}
 												});
 											})
-											.catch(() => {});
+											.catch(() => { });
 									}}>
 									{sendCaptchaTick > 0
 										? `${sendCaptchaTick}秒后可再次发送`

@@ -26,7 +26,7 @@ if (process.env.NODE_ENV !== 'development') requestInstanceLock();
 function createLoginWindow() {
 	loginWindow = new BrowserWindow({
 		width: parseInt(screenWidth * 0.35),
-		height: parseInt(screenHeight * 0.45),
+		height: parseInt(screenHeight * 0.5),
 		frame: false,
 		transparent: true,
 		show: false,
