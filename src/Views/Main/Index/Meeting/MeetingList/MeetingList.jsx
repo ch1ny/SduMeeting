@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
 	ClockCircleOutlined,
 	CommentOutlined,
@@ -9,9 +9,9 @@ import {
 import { Button, Checkbox, Divider, Empty, Form, Input, Modal } from 'antd';
 import './style.scss';
 import store from 'Utils/Store/store';
-import jwtDecode from 'jwt-decode';
 import eventBus from 'Utils/EventBus/EventBus';
 import { getMainContent } from 'Utils/Global';
+import { decodeJWT } from 'Utils/Global';
 
 export default function MeetingList(props) {
 	const [meetings, setMeetings] = useState([]);
@@ -26,7 +26,15 @@ export default function MeetingList(props) {
 
 	const [isJoining, setIsJoining] = useState(false);
 
-	const [username] = useState(jwtDecode(store.getState().authToken).username);
+	const [username, setUsername] = useState(undefined);
+	useEffect(() => {
+		return store.subscribe(() => {
+			const authToken = store.getState().authToken
+			if (authToken) {
+				setUsername(decodeJWT(authToken).username)
+			}
+		})
+	}, [])
 
 	return (
 		<>

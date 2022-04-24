@@ -1,7 +1,7 @@
 import { message } from 'antd';
-import jwtDecode from 'jwt-decode';
 import React, { useEffect, useState } from 'react';
 import eventBus from 'Utils/EventBus/EventBus';
+import { decodeJWT } from 'Utils/Global';
 import store from 'Utils/Store/store';
 import SFU from 'Utils/WebRTC/SFU';
 import MeetingList from './MeetingList/MeetingList';
@@ -15,7 +15,9 @@ export default function Meeting() {
 
 	const [userId, setUserId] = useState(undefined);
 	useEffect(() => {
-		setUserId(jwtDecode(store.getState().authToken).id);
+		return store.subscribe(() => {
+			setUserId(decodeJWT(store.getState().authToken).id);
+		})
 	}, []);
 
 	useEffect(() => {

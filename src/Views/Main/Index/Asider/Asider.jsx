@@ -1,8 +1,8 @@
 import { MessageOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons';
 import { Avatar, Badge } from 'antd';
 import classNames from 'classnames';
-import jwtDecode from 'jwt-decode';
 import React, { useEffect, useState } from 'react';
+import { decodeJWT } from 'Utils/Global';
 import { setAuthToken } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
 import './style.scss';
@@ -14,7 +14,7 @@ export default function Asider(props) {
 	useEffect(() => {
 		window.ipcRenderer.invoke('GET_USER_AUTH_TOKEN_AFTER_LOGIN').then((authToken) => {
 			store.dispatch(setAuthToken(authToken));
-			const { username, id, profile } = jwtDecode(authToken);
+			const { username, id, profile } = decodeJWT(authToken);
 			setUserId(id);
 			setUserName(username);
 			setProfile(
@@ -28,7 +28,7 @@ export default function Asider(props) {
 	useEffect(
 		() =>
 			store.subscribe(() => {
-				const { profile, id } = jwtDecode(store.getState().authToken);
+				const { profile, id } = decodeJWT(store.getState().authToken);
 				// INFO: 通过追加 params 实现刷新图片缓存
 				setProfile(
 					profile

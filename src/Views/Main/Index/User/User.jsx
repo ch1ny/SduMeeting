@@ -1,8 +1,8 @@
 import { message } from 'antd';
 import UploadAvatar from 'Components/UploadAvatar/UploadAvatar';
-import jwtDecode from 'jwt-decode';
 import React, { useEffect, useState } from 'react';
 import ajax from 'Utils/Axios/Axios';
+import { decodeJWT } from 'Utils/Global';
 import { getMainContent } from 'Utils/Global';
 import { setAuthToken } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
@@ -14,13 +14,15 @@ export default function User() {
 	const [username, setUsername] = useState(undefined);
 	const [profile, setProfile] = useState(undefined);
 	useEffect(() => {
-		const { email, id, profile, username } = jwtDecode(store.getState().authToken);
-		setUserId(id);
-		setEmail(email);
-		setUsername(username);
-		setProfile(
-			profile ? `http://meeting.aiolia.top:8080/file/pic/user/${id}.${profile}` : undefined
-		);
+		return store.subscribe(() => {
+			const { email, id, profile, username } = decodeJWT(store.getState().authToken);
+			setUserId(id);
+			setEmail(email);
+			setUsername(username);
+			setProfile(
+				profile ? `http://meeting.aiolia.top:8080/file/pic/user/${id}.${profile}` : undefined
+			);
+		})
 	}, []);
 
 	const uploadAvatar = function (file) {

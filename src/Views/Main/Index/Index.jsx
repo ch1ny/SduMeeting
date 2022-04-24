@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import Asider from './Asider/Asider';
+import Chats from './Chats/Chats';
 import DragBar from './DragBar/DragBar';
 import Meeting from './Meeting/Meeting';
 import './style.scss';
 import User from './User/User';
 
 export default function Index() {
-	const [selectedTab, setSelectedTab] = useState(undefined);
+	const [selectedTab, setSelectedTab] = useState(0);
 
 	return (
 		<>
@@ -25,7 +26,7 @@ export default function Index() {
 											style={{
 												display: selectedTab === 0 ? 'block' : 'none',
 											}}>
-											聊天
+											<Chats />
 										</div>
 										<div
 											style={{
