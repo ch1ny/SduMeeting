@@ -1,0 +1,60 @@
+.chatInputControlPanel {
+	width: 100%;
+	height: 2rem;
+	border-block: 1px solid #cccccc;
+	background-color: whitesmoke;
+	display: flex;
+
+	.chatInputControlButtons {
+		height: 2rem;
+		width: 2rem;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		font-size: 1rem;
+		transition: 150ms;
+
+		&:hover {
+			background-color: #ccccccff;
+		}
+	}
+}
+
+.chatInputContentDiv {
+	width: 100%;
+	height: calc(100% - 2rem - 2px);
+	background-color: white;
+	outline: none;
+	padding: 0.625rem;
+	font-size: 1rem;
+
+	img {
+		max-height: 1.5em;
+	}
+}
+
+.emojisContainer {
+	display: flex;
+	flex-wrap: wrap;
+	align-content: flex-start;
+	width: 10rem;
+	height: 8rem;
+
+	.emojiBlock {
+		width: 2rem;
+		height: 2rem;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+
+		&:hover {
+			background-color: #cccccc80;
+		}
+
+		.emoji {
+			width: 1.725rem;
+			height: 1.725rem;
+			background-size: cover;
+		}
+	}
+}
