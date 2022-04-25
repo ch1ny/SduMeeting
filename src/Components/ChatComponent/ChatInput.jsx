@@ -1,5 +1,5 @@
 import { SmileOutlined } from "@ant-design/icons";
-import { Popover } from "antd";
+import { Button, Popover } from "antd";
 import React, { useEffect, useRef, useState } from "react";
 import { emojiRegExp } from "./emoji";
 import './style.scss'
@@ -11,18 +11,13 @@ export default function ChatInput(props) {
         // 光标位置
         const caretOffset = getCaretPosition(inputRef.current)
         let htmlStr = rawHtml
-        // const regex1 = new RegExp("(i?)(\<img)(?!(.*?class=['\"](.*)['\"])[^\>]+\>)", "gmi");
-        // //给不含class="" 或 class='' 的img标签加上class=""
-        // htmlstr = htmlstr.replace(regex1, "$2 class=\"\"$3");
-        // //正则匹配含有class的img标签
-        // const regex2 = new RegExp("(i?)(\<img.*?class=['\"])(['\"][^\>]+\>)", "gmi");
-        // //在img标签的class里面增加类名
-        // htmlstr = htmlstr.replace(regex2, "$2test-class$3");
 
-        // NOTE: 很离谱，这里必须要使用 &zwj; 隔开，不然就有bug
-        htmlStr = htmlStr.replace(emojiRegExp, `<img class="emoji" src="./emoji/$2.png" />&zwj;`)
+        // NOTE: 很离谱，这里必须要使用 &thinsp; 隔开，不然就有bug
+        htmlStr = htmlStr.replace(emojiRegExp, `<img class="emoji" src="./emoji/$2.png">`)
+
         inputRef.current.innerHTML = htmlStr
-        setLastEditRange(setCaretPosition(inputRef.current, caretOffset))
+        setLastEditRange(setCaretPosition(inputRef.current, caretOffset + htmlStr.length - rawHtml.length))
+        inputRef.current.focus()
     }, [rawHtml])
 
     // 表情选择气泡
@@ -30,6 +25,14 @@ export default function ChatInput(props) {
 
     // 上一轮光标位置
     const [lastEditRange, setLastEditRange] = useState(undefined)
+
+    // 发送消息
+    const sendMessage = function () {
+        const regex = new RegExp("<img class=\"emoji\" src=\"./emoji/(.*?).png\">", "gim")
+        const rawMessage = rawHtml.replace(regex, "[:$1:]")
+        console.log(rawMessage);
+        setRawHtml('')
+    }
 
     return (
         <>
@@ -109,6 +112,15 @@ export default function ChatInput(props) {
                     >
                         <SmileOutlined />
                     </Popover>
+                </div>
+                <div style={{ marginLeft: 'auto' }}>
+                    <Button
+                        type="primary"
+                        onClick={sendMessage}
+                        disabled={rawHtml === ''}
+                    >
+                        发送
+                    </Button>
                 </div>
             </div>
             <div

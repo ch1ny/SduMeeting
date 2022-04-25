@@ -1,12 +1,13 @@
 #chatsHeader {
-	height: 2rem;
+	height: calc(2rem - 2px);
 	background-color: #dcdcdc;
 	text-align: center;
+	border-block: 1px solid #cccccc;
 
 	div {
 		display: inline-block;
 		height: 100%;
-		line-height: 2rem;
+		line-height: calc(2rem - 2px);
 	}
 
 	#controlPanel {
@@ -36,14 +37,15 @@
 
 	#chatsFriendsPanel {
 		height: 100%;
-		width: 13rem;
+		width: calc(13rem - 1px);
+		border-right: 1px solid #cccccc;
 	}
 
 	#chatsMainPanel {
 		height: 100%;
 		flex-grow: 1;
 		flex-shrink: 1;
-		background-color: #d3d3d354;
+		background-color: #e3e3e3f4;
 
 		#chatMainComponent {
 			width: 100%;
@@ -52,6 +54,7 @@
 			#chatMessages {
 				width: 100%;
 				height: 65%;
+				background-color: whitesmoke;
 			}
 
 			#chatInput {
