@@ -37,8 +37,9 @@
 	display: flex;
 	flex-wrap: wrap;
 	align-content: flex-start;
-	width: 10rem;
+	width: 10.25rem;
 	height: 8rem;
+	overflow-y: scroll;
 
 	.emojiBlock {
 		width: 2rem;
