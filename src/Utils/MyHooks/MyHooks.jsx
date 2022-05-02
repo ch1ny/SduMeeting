@@ -1,4 +1,4 @@
-const { useRef, useEffect } = require('react');
+const { useState, useRef, useReducer, useEffect } = require('react');
 
 /**
  * 【自定义Hooks】保留数据在上一个时刻的状态

@@ -7,7 +7,7 @@ import {
 } from '@ant-design/icons';
 import { Button, Form, Input, notification, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
-import ajax from 'Utils/Axios/Axios';
+import { ajax } from 'Utils/Axios/Axios';
 import './App.scss';
 import bg from './bg.jpg';
 

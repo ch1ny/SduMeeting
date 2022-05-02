@@ -8,14 +8,12 @@ import store from 'Utils/Store/store';
 import './style.scss';
 
 export default function Asider(props) {
-	const [userId, setUserId] = useState(undefined);
 	const [userName, setUserName] = useState(undefined);
 	const [profile, setProfile] = useState(undefined);
 	useEffect(() => {
 		window.ipcRenderer.invoke('GET_USER_AUTH_TOKEN_AFTER_LOGIN').then((authToken) => {
 			store.dispatch(setAuthToken(authToken));
 			const { username, id, profile } = decodeJWT(authToken);
-			setUserId(id);
 			setUserName(username);
 			setProfile(
 				profile
@@ -25,16 +23,25 @@ export default function Asider(props) {
 		});
 	}, []);
 
+	const [unreadMessagesNumber, setUnreadMessagesNumber] = useState(0);
 	useEffect(
 		() =>
 			store.subscribe(() => {
-				const { profile, id } = decodeJWT(store.getState().authToken);
+				const state = store.getState();
+				const { profile, id } = decodeJWT(state.authToken);
 				// INFO: 通过追加 params 实现刷新图片缓存
 				setProfile(
 					profile
 						? `http://meeting.aiolia.top:8080/file/pic/user/${id}.${profile}?${Date.now()}`
 						: profile
 				);
+				let unreadNum = 0;
+				for (const key in state.unreadMessages) {
+					if (Object.hasOwnProperty.call(state.unreadMessages, key)) {
+						unreadNum += state.unreadMessages[key].length;
+					}
+				}
+				setUnreadMessagesNumber(unreadNum);
 			}),
 		[]
 	);
@@ -56,7 +63,7 @@ export default function Asider(props) {
 						selected: props.selectedTab === 0,
 					})}
 					tab_id={0}>
-					<Badge dot>
+					<Badge count={unreadMessagesNumber} size={'small'}>
 						<MessageOutlined className='tab' />
 					</Badge>
 				</div>
@@ -69,9 +76,7 @@ export default function Asider(props) {
 						selected: props.selectedTab === 1,
 					})}
 					tab_id={1}>
-					<Badge dot>
-						<TeamOutlined className='tab' />
-					</Badge>
+					<TeamOutlined className='tab' />
 				</div>
 				<div
 					onClick={() => {
@@ -82,9 +87,7 @@ export default function Asider(props) {
 						selected: props.selectedTab === 2,
 					})}
 					tab_id={2}>
-					<Badge dot>
-						<UserOutlined className='tab' />
-					</Badge>
+					<UserOutlined className='tab' />
 				</div>
 			</div>
 		</div>

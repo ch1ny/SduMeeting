@@ -1,7 +1,7 @@
 import { message } from 'antd';
 import UploadAvatar from 'Components/UploadAvatar/UploadAvatar';
 import React, { useEffect, useState } from 'react';
-import ajax from 'Utils/Axios/Axios';
+import { ajax } from 'Utils/Axios/Axios';
 import { decodeJWT } from 'Utils/Global';
 import { getMainContent } from 'Utils/Global';
 import { setAuthToken } from 'Utils/Store/actions';

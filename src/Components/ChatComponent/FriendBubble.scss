@@ -1,0 +1,41 @@
+.friendBubbles {
+	width: 100%;
+	display: flex;
+	padding: 0.25rem;
+	align-items: center;
+	user-select: none;
+	border-bottom: 1px solid #e3e3e3f4;
+
+	.avatarContainer {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.textContainer {
+		margin-inline: 5px;
+		flex-grow: 1;
+		max-width: calc(100% - 45px - 3rem);
+
+		.userName {
+			font-size: 20px;
+		}
+		.newestMessage {
+			font-size: 10px;
+			overflow-x: hidden;
+			white-space: nowrap;
+			text-overflow: ellipsis;
+		}
+	}
+
+	.rightDiv {
+		margin-left: auto;
+		margin-right: 3px;
+		flex-grow: 1;
+		text-align: right;
+	}
+
+	&:hover {
+		background-color: #e3e3e3f4;
+	}
+}

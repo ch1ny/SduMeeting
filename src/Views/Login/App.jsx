@@ -4,7 +4,7 @@ import RippleButton from 'Components/RippleButton/RippleButton';
 import './App.scss';
 import { Victor } from 'Components/Victor/Victor';
 import { Checkbox, Form, Input, message } from 'antd';
-import ajax from 'Utils/Axios/Axios';
+import { ajax } from 'Utils/Axios/Axios';
 import { LogoIcon, ShutdownIcon, MinimizeIcon, RegisterIcon } from 'Components/MyIcon/MyIcon';
 
 export default function App() {

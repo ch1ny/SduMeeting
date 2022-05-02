@@ -10,6 +10,12 @@
 		line-height: calc(2rem - 2px);
 	}
 
+	#chatsTitle {
+		font-size: 1.25rem;
+		font-weight: bold;
+		line-height: 1.625rem;
+	}
+
 	#controlPanel {
 		float: right;
 
@@ -39,13 +45,31 @@
 		height: 100%;
 		width: calc(13rem - 1px);
 		border-right: 1px solid #cccccc;
+		background-color: #fcfcfc;
+		overflow-y: overlay;
+		display: flex;
+		flex-direction: column-reverse;
+		justify-content: flex-end;
+
+		&::-webkit-scrollbar {
+			width: 0.2rem; // 纵向滚动条宽度
+		}
+
+		&::-webkit-scrollbar-thumb {
+			background-color: #a8a8a8;
+			border-radius: 0%;
+		}
+
+		&::-webkit-scrollbar-track {
+			background-color: rgba($color: #000000, $alpha: 0);
+		}
 	}
 
 	#chatsMainPanel {
 		height: 100%;
 		flex-grow: 1;
 		flex-shrink: 1;
-		background-color: #e3e3e3f4;
+		background-color: #fff;
 
 		#chatMainComponent {
 			width: 100%;
@@ -55,6 +79,9 @@
 				width: 100%;
 				height: 65%;
 				background-color: whitesmoke;
+				display: flex;
+				flex-direction: column;
+				// justify-content: flex-end;
 			}
 
 			#chatInput {
