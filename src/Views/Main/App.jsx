@@ -1,20 +1,19 @@
 import React from 'react';
-import './App.scss';
 import {
 	DEVICE_TYPE,
 	exchangeMediaDevice,
-	updateAvailableDevices,
 	setAuthToken,
+	updateAvailableDevices,
 } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
+import './App.scss';
 import Index from './Index/Index';
 
 // INFO: 由于需要在所有组件挂载之前全局引入 electron ，故只能使用带有构造函数的类声明 App 组件
 export default class App extends React.Component {
 	constructor(props) {
 		super(props);
-		window.ipcRenderer = window.require('electron').ipcRenderer; // 全局引入 electron 模块
-		window.ipcRenderer.invoke('GET_USER_AUTH_TOKEN_AFTER_LOGIN').then((authToken) => {
+		window.ipc.invoke('GET_USER_AUTH_TOKEN_AFTER_LOGIN').then((authToken) => {
 			store.dispatch(setAuthToken(authToken));
 		});
 	}
@@ -39,7 +38,7 @@ export default class App extends React.Component {
 		window.navigator.mediaDevices.getDisplayMedia = () => {
 			return new Promise(async (resolve, reject) => {
 				try {
-					const source = await window.ipcRenderer.invoke('DESKTOP_CAPTURE');
+					const source = await window.ipc.invoke('DESKTOP_CAPTURE');
 					const stream = await window.navigator.mediaDevices.getUserMedia({
 						audio: {
 							mandatory: {

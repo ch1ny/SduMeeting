@@ -5,7 +5,7 @@ export default function About(props) {
 	const [appVersion, setAppVersion] = useState(undefined);
 	useEffect(() => {
 		(async () => {
-			setAppVersion(await window.ipcRenderer.invoke('APP_VERSION'));
+			setAppVersion(await window.ipc.invoke('APP_VERSION'));
 		})();
 	}, []);
 

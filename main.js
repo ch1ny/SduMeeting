@@ -13,12 +13,20 @@ const path = require('path');
 const url = require('url');
 const Store = require('electron-store');
 const store = new Store();
+const fs = require('fs-extra');
 
 let loginWindow, mainWindow;
 let tray;
 let screenWidth, screenHeight;
 const ipc = require('electron').ipcMain;
 const DIRNAME = process.env.NODE_ENV === 'development' ? path.join(__dirname, 'public') : __dirname;
+/**
+ * exe 所在的文件夹目录，
+ * 例 exe 的完整路径为
+ * D:/山大会议/SduMeeting.exe
+ * 则 EXEPATH 的值为
+ * D:/山大会议
+ */
 const EXEPATH = path.dirname(app.getPath('exe'));
 
 if (process.env.NODE_ENV !== 'development') requestInstanceLock();
@@ -34,8 +42,7 @@ function createLoginWindow() {
 		resizable: process.env.NODE_ENV === 'development',
 		fullscreenable: false,
 		webPreferences: {
-			nodeIntegration: true,
-			contextIsolation: false,
+			preload: path.join(DIRNAME, 'electronAssets/preload.js'),
 		},
 	});
 
@@ -150,8 +157,7 @@ function createMainWindow() {
 			show: false,
 			fullscreenable: false,
 			webPreferences: {
-				nodeIntegration: true,
-				contextIsolation: false,
+				preload: path.join(DIRNAME, 'electronAssets/preload.js'),
 			},
 		});
 

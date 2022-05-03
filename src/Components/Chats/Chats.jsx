@@ -28,7 +28,6 @@ import invokeSocket from 'Utils/ChatSocket/ChatSocket';
 import {
 	ACCEPT_FRIEND_REQUEST,
 	CALL_STATUS_FREE,
-	CALL_STATUS_OFFERED,
 	CALL_STATUS_OFFERING,
 	CHAT_PRIVATE_WEBRTC_DISCONNECT,
 	CHAT_SEND_FRIEND_REQUEST,
@@ -39,6 +38,7 @@ import { decodeJWT, getMainContent } from 'Utils/Global';
 import {
 	ADD_MESSAGE_HISTORY,
 	ADD_UNREAD_MESSAGE,
+	setCallStatus,
 	setMessageHistory,
 	setUnreadMessages,
 } from 'Utils/Store/actions';
@@ -67,7 +67,7 @@ export default function Chats() {
 
 	const [requests, setRequests] = useState([]);
 	useEffect(() => {
-		window.ipcRenderer.invoke('GET_USER_AUTH_TOKEN_AFTER_LOGIN').then((token) => {
+		window.ipc.invoke('GET_USER_AUTH_TOKEN_AFTER_LOGIN').then((token) => {
 			const chatSocket = invokeSocket(token);
 			chatSocket.on('onopen', () => {
 				console.log('chatsocket连接成功');
@@ -204,14 +204,6 @@ function ChatMainComponent(props) {
 		setNowChattingProfile(profile);
 	}, [props.id, props.username, props.profile]);
 
-	const [callStatus, setCallStatus] = useState(CALL_STATUS_FREE);
-	const [showCalledModal, setShowCalledModal] = useState(false);
-	useEffect(() => {
-		if (callStatus === CALL_STATUS_OFFERED) {
-			setShowCalledModal(true);
-		}
-	}, [callStatus]);
-
 	return (
 		<>
 			<div id='chatMainComponent'>
@@ -224,50 +216,59 @@ function ChatMainComponent(props) {
 						myId={myId}
 						onCall={() => {
 							// TODO: 补充发起会话函数，发送 OFFER 信号
-							console.log({
-								sender: myId,
-								receiver: props.id,
-							});
-							setCallStatus(CALL_STATUS_OFFERING);
-							Modal.info({
-								title: '发起通话',
-								content: (
-									<>
-										<LoadingOutlined style={{ color: 'dodgerblue' }} />
-										<span style={{ marginLeft: '10px' }}>
-											已向 {props.username} 发送视频通话请求，正在等待对方响应
-										</span>
-									</>
-								),
-								width: '60%',
-								centered: true,
-								okButtonProps: {
-									type: 'default',
-								},
-								okText: (
-									<>
-										<DisconnectOutlined style={{ color: 'orange' }} />
-										<span>挂断电话</span>
-									</>
-								),
-								onOk: () => {
-									setCallStatus(CALL_STATUS_FREE);
-									// TODO: 发送断开连接的ws
-									invokeSocket().send({
-										type: CHAT_PRIVATE_WEBRTC_DISCONNECT,
-										sender: myId,
-										receiver: props.id,
-										target: props.id,
-									});
-								},
-								getContainer: getMainContent,
-							});
+							if (store.getState().callStatus === CALL_STATUS_FREE) {
+								store.dispatch(setCallStatus(CALL_STATUS_OFFERING));
+								invokeSocket().send({
+									sender: myId,
+									receiver: props.id,
+								});
+								Modal.info({
+									title: '发起通话',
+									content: (
+										<>
+											<LoadingOutlined style={{ color: 'dodgerblue' }} />
+											<span style={{ marginLeft: '10px' }}>
+												已向 {props.username}{' '}
+												发送视频通话请求，正在等待对方响应
+											</span>
+										</>
+									),
+									width: '60%',
+									centered: true,
+									okButtonProps: {
+										type: 'default',
+									},
+									okText: (
+										<>
+											<DisconnectOutlined style={{ color: 'orange' }} />
+											<span>挂断电话</span>
+										</>
+									),
+									onOk: () => {
+										store.dispatch(setCallStatus(CALL_STATUS_FREE));
+										// TODO: 发送断开连接的ws
+										invokeSocket().send({
+											type: CHAT_PRIVATE_WEBRTC_DISCONNECT,
+											sender: myId,
+											receiver: props.id,
+											target: props.id,
+										});
+									},
+									getContainer: getMainContent,
+								});
+							} else {
+								Modal.error({
+									title: '无法发起通话',
+									content:
+										'当前正处于通话状态中，请在退出其他通话后再次尝试发起通话',
+									width: '60%',
+									centered: true,
+								});
+							}
 						}}
 					/>
 				</div>
 			</div>
-
-			<Modal visible={showCalledModal} />
 		</>
 	);
 }

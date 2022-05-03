@@ -1,4 +1,3 @@
-import React, { useEffect, useState } from 'react';
 import {
 	ClockCircleOutlined,
 	CommentOutlined,
@@ -6,12 +5,13 @@ import {
 	PlusOutlined,
 	UserOutlined,
 } from '@ant-design/icons';
-import { Button, Checkbox, Divider, Empty, Form, Input, Modal } from 'antd';
-import './style.scss';
+import { Button, Checkbox, Divider, Empty, Form, Input, message, Modal } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { CALL_STATUS_FREE, CALL_STATUS_OFFERING } from 'Utils/Constraints';
+import { decodeJWT, getMainContent } from 'Utils/Global';
+import { setCallStatus } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
-import eventBus from 'Utils/EventBus/EventBus';
-import { getMainContent } from 'Utils/Global';
-import { decodeJWT } from 'Utils/Global';
+import './style.scss';
 
 export default function MeetingList(props) {
 	const [meetings, setMeetings] = useState([]);
@@ -29,12 +29,12 @@ export default function MeetingList(props) {
 	const [username, setUsername] = useState(undefined);
 	useEffect(() => {
 		return store.subscribe(() => {
-			const authToken = store.getState().authToken
+			const authToken = store.getState().authToken;
 			if (authToken) {
-				setUsername(decodeJWT(authToken).username)
+				setUsername(decodeJWT(authToken).username);
 			}
-		})
-	}, [])
+		});
+	}, []);
 
 	return (
 		<>
@@ -85,15 +85,19 @@ export default function MeetingList(props) {
 						remember: true,
 					}}
 					onFinish={(values) => {
-						setIsJoining(true);
-						eventBus.once('ATTEMPT_TO_JOIN', () => {
-							setIsJoining(false);
-							setShowJoinModal(false);
-						});
-						values.autoOpenCamera = autoOpenCamera;
-						values.autoOpenMicroPhone = autoOpenMicroPhone;
-						// console.log(values);
-						props.joinMeeting(values);
+						if (store.getState().callStatus === CALL_STATUS_FREE) {
+							store.dispatch(setCallStatus(CALL_STATUS_OFFERING));
+							setIsJoining(true);
+							eventBus.once('ATTEMPT_TO_JOIN', () => {
+								setIsJoining(false);
+								setShowJoinModal(false);
+							});
+							values.autoOpenCamera = autoOpenCamera;
+							values.autoOpenMicroPhone = autoOpenMicroPhone;
+							props.joinMeeting(values);
+						} else {
+							message.error('应用当前不处于空闲通话状态！');
+						}
 					}}>
 					<Form.Item
 						name='meetingId'

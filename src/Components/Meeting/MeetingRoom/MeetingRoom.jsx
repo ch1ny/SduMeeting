@@ -8,7 +8,7 @@ import Icon, {
 	LeftOutlined,
 } from '@ant-design/icons';
 import { Button, message, Modal } from 'antd';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import eventBus from 'Utils/EventBus/EventBus';
 import { usePrevious } from 'Utils/MyHooks/MyHooks';
 import { DEVICE_TYPE } from 'Utils/Store/actions';
@@ -128,11 +128,11 @@ export default function MeetingRoom(props) {
 			document.exitPictureInPicture();
 		};
 		videoRef.current.addEventListener('enterpictureinpicture', function () {
-			window.ipcRenderer.once('MAIN_WINDOW_RESTORE', _exitPictureInPicture);
+			window.ipc.once('MAIN_WINDOW_RESTORE', _exitPictureInPicture);
 		});
 		videoRef.current.addEventListener('leavepictureinpicture', function () {
-			window.ipcRenderer.send('MAIN_WINDOW_RESTORE');
-			window.ipcRenderer.removeListener('MAIN_WINDOW_RESTORE', _exitPictureInPicture);
+			window.ipc.send('MAIN_WINDOW_RESTORE');
+			window.ipc.removeListener('MAIN_WINDOW_RESTORE', _exitPictureInPicture);
 		});
 		return () => {
 			eventBus.off('MAIN_WINDOW_MINIMIZE', _requestPictureInPicture);
@@ -254,7 +254,7 @@ export default function MeetingRoom(props) {
 		fullScreenRef.current.addEventListener('fullscreenchange', () => {
 			const isFullScreen = document.fullscreenElement !== null;
 			setIsFullScreen(isFullScreen);
-			window.ipcRenderer.send('MAIN_WINDOW_FULL_SCREEN', isFullScreen);
+			window.ipc.send('MAIN_WINDOW_FULL_SCREEN', isFullScreen);
 		});
 	}, []);
 
@@ -451,8 +451,8 @@ async function setMediaStream(mediaType, object) {
 				width: 1920,
 				height: 1080,
 				frameRate: {
-					max: 24
-				}
+					max: 24,
+				},
 			};
 			return await navigator.mediaDevices.getUserMedia({
 				video: videoConstraints,

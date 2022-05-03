@@ -1,18 +1,16 @@
 import { LoadingOutlined, LockOutlined, UserOutlined } from '@ant-design/icons';
-import React, { useEffect, useRef, useState } from 'react';
-import RippleButton from 'Components/RippleButton/RippleButton';
-import './App.scss';
-import { Victor } from 'Components/Victor/Victor';
 import { Checkbox, Form, Input, message } from 'antd';
+import { LogoIcon, MinimizeIcon, RegisterIcon, ShutdownIcon } from 'Components/MyIcon/MyIcon';
+import RippleButton from 'Components/RippleButton/RippleButton';
+import { Victor } from 'Components/Victor/Victor';
+import React, { useEffect, useRef, useState } from 'react';
 import { ajax } from 'Utils/Axios/Axios';
-import { LogoIcon, ShutdownIcon, MinimizeIcon, RegisterIcon } from 'Components/MyIcon/MyIcon';
+import './App.scss';
 
 export default function App() {
 	message.config({
 		maxCount: 1,
 	});
-
-	const ipc = window.require('electron').ipcRenderer;
 
 	const [form] = Form.useForm();
 
@@ -25,7 +23,7 @@ export default function App() {
 	);
 	useEffect(() => {
 		if (rememberPassword) {
-			ipc.invoke('GET_LAST_PASSWORD').then((psw) => {
+			window.ipc.invoke('GET_LAST_PASSWORD').then((psw) => {
 				form.setFieldsValue({ password: psw });
 			});
 		}
@@ -84,9 +82,9 @@ export default function App() {
 					message.success('登录成功');
 					localStorage.setItem('rememberPassword', rememberPassword);
 					localStorage.setItem('autoLogin', autoLogin);
-					ipc.send('SAFE_PASSWORD', rememberPassword, password);
+					window.ipc.send('SAFE_PASSWORD', rememberPassword, password);
 					localStorage.setItem('userId', text);
-					ipc.send('USER_LOGIN', res.data.token);
+					window.ipc.send('USER_LOGIN', res.data.token);
 				} else {
 					message.error(res.message);
 					setIsLogining(false);
@@ -137,7 +135,7 @@ export default function App() {
 							id='shutdown'
 							title='退出'
 							onClick={() => {
-								ipc.send('QUIT');
+								window.ipc.send('QUIT');
 							}}>
 							<ShutdownIcon />
 						</button>
@@ -146,7 +144,7 @@ export default function App() {
 							id='minimize'
 							title='最小化'
 							onClick={() => {
-								ipc.send('MINIMIZE_LOGIN_WINDOW');
+								window.ipc.send('MINIMIZE_LOGIN_WINDOW');
 							}}>
 							<MinimizeIcon />
 						</button>

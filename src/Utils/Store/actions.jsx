@@ -15,6 +15,8 @@ export const REMOVE_UNREAD_MESSAGES = 'REMOVE_UNREAD_MESSAGES';
 // 管理消息记录
 export const ADD_MESSAGE_HISTORY = 'ADD_MESSAGE_HISTORY';
 export const REMOVE_MESSAGE_HISTORY = 'REMOVE_MESSAGE_HISTORY';
+// 应用通话状态
+export const SET_CALL_STATUS = 'SET_CALL_STATUS';
 
 /**
  * 其他常量
@@ -59,4 +61,8 @@ export function setUnreadMessages(operation, payload) {
 
 export function setMessageHistory(operation, payload) {
 	return { type: operation, payload };
+}
+
+export function setCallStatus(status) {
+	return { type: SET_CALL_STATUS, status };
 }

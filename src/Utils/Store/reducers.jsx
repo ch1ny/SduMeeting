@@ -1,15 +1,17 @@
 import { combineReducers } from '@reduxjs/toolkit';
+import { CALL_STATUS_FREE } from 'Utils/Constraints';
 import { decodeJWT } from 'Utils/Global';
 import {
-	UPDATE_AVAILABLE_VIDEO_DEVICES,
-	UPDATE_AVAILABLE_AUDIO_DEVICES,
+	ADD_MESSAGE_HISTORY,
+	ADD_UNREAD_MESSAGE,
 	EXCHANGE_AUDIO_DEVICE,
 	EXCHANGE_VIDEO_DEVICE,
-	SET_AUTH_TOKEN,
-	ADD_UNREAD_MESSAGE,
-	REMOVE_UNREAD_MESSAGES,
-	ADD_MESSAGE_HISTORY,
 	REMOVE_MESSAGE_HISTORY,
+	REMOVE_UNREAD_MESSAGES,
+	SET_AUTH_TOKEN,
+	SET_CALL_STATUS,
+	UPDATE_AVAILABLE_AUDIO_DEVICES,
+	UPDATE_AVAILABLE_VIDEO_DEVICES,
 } from './actions';
 
 let userId = undefined;
@@ -101,6 +103,13 @@ function setMessageHistory(state = {}, action) {
 	}
 }
 
+function setCallStatus(state = CALL_STATUS_FREE, action) {
+	if (action.type === SET_CALL_STATUS) {
+		return action.status;
+	}
+	return state;
+}
+
 const reducers = combineReducers({
 	availableVideoDevices: updateAvailableVideoDevices,
 	availableAudioDevices: updateAvailableAudioDevices,
@@ -109,6 +118,7 @@ const reducers = combineReducers({
 	authToken: setAuthToken,
 	unreadMessages: setUnreadMessages,
 	messageHistory: setMessageHistory,
+	callStatus: setCallStatus,
 });
 
 export default reducers;

@@ -11,7 +11,7 @@ export default function Asider(props) {
 	const [userName, setUserName] = useState(undefined);
 	const [profile, setProfile] = useState(undefined);
 	useEffect(() => {
-		window.ipcRenderer.invoke('GET_USER_AUTH_TOKEN_AFTER_LOGIN').then((authToken) => {
+		window.ipc.invoke('GET_USER_AUTH_TOKEN_AFTER_LOGIN').then((authToken) => {
 			store.dispatch(setAuthToken(authToken));
 			const { username, id, profile } = decodeJWT(authToken);
 			setUserName(username);
@@ -28,6 +28,7 @@ export default function Asider(props) {
 		() =>
 			store.subscribe(() => {
 				const state = store.getState();
+				if (!state.authToken) return;
 				const { profile, id } = decodeJWT(state.authToken);
 				// INFO: 通过追加 params 实现刷新图片缓存
 				setProfile(
