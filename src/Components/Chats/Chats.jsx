@@ -30,6 +30,7 @@ import {
 	ACCEPT_FRIEND_REQUEST,
 	CALL_STATUS_FREE,
 	CALL_STATUS_OFFERING,
+	CHAT_ANSWER_FRIEND_REQUEST,
 	CHAT_PRIVATE_WEBRTC_DISCONNECT,
 	CHAT_SEND_FRIEND_REQUEST,
 	NO_OPERATION_FRIEND_REQUEST,
@@ -76,7 +77,7 @@ export default function Chats() {
 					.get('/getFriendsAndMessages')
 					.then((res) => {
 						const { friends, messages, requests } = res.data;
-						// TODO: 初始化好友列表
+						// 初始化好友列表
 						dispatchFriendsList({ type: 'initFriends', friends });
 						// INFO: 初始化未读消息
 						for (const message of messages) {
@@ -107,7 +108,7 @@ export default function Chats() {
 						onClick={() => {
 							setShowAddFriendModal(true);
 						}}>
-						<Badge dot>
+						<Badge dot={requests.length !== 0}>
 							<UserAddOutlined />
 						</Badge>
 					</div>
@@ -180,7 +181,31 @@ export default function Chats() {
 			<AddFriendModal
 				visible={showAddFriendModal}
 				requests={requests}
-				replyRequests={() => {}}
+				replyRequests={(reply) => {
+					const { type, friend, index } = reply;
+					let agree;
+					switch (type) {
+						case 1:
+							agree = false;
+							break;
+						case 2:
+							agree = true;
+							break;
+						default:
+							return;
+					}
+					invokeSocket().send({
+						id: friend.uid,
+						type: CHAT_ANSWER_FRIEND_REQUEST,
+						agree,
+					});
+					if (agree) {
+						dispatchFriendsList({ type: 'addFriend', friend });
+					}
+					const newRequests = [...requests];
+					newRequests.splice(index, 1);
+					setRequests(newRequests);
+				}}
 				onCancel={() => {
 					setShowAddFriendModal(false);
 				}}
@@ -316,7 +341,7 @@ function AddFriendModal(props) {
 								{
 									label: (
 										<>
-											<Badge dot size={'small'}>
+											<Badge dot={props.requests.length !== 0} size={'small'}>
 												好友申请
 											</Badge>
 										</>
@@ -333,7 +358,7 @@ function AddFriendModal(props) {
 				<>
 					<div style={{ display: segment === '添加好友' ? '' : 'none', height: '40vh' }}>
 						<Input.Search
-							placeholder='输入关键字查询好友'
+							placeholder='输入昵称查询好友'
 							enterButton={
 								<>
 									<SearchOutlined style={{ marginRight: '0.5em' }} />
@@ -392,7 +417,7 @@ function AddFriendModal(props) {
 								className='demo-loadmore-list'
 								itemLayout='horizontal'
 								dataSource={props.requests}
-								renderItem={(item) => (
+								renderItem={(item, index) => (
 									<List.Item
 										actions={[
 											<div
@@ -420,7 +445,8 @@ function AddFriendModal(props) {
 														if (result) {
 															props.replyRequests({
 																type: result,
-																id: item.uid,
+																friend: item,
+																index,
 															});
 															break;
 														}

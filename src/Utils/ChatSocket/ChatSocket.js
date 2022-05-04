@@ -41,6 +41,12 @@ class ChatSocket extends EventEmitter {
 						getPopupContainer: getMainContent,
 					});
 					break;
+				case 'REPLY_SENDER_OK':
+					message.success({
+						content: '已成功回复好友请求',
+						getPopupContainer: getMainContent,
+					});
+					break;
 			}
 		};
 		socket.onerror = (evt) => {
