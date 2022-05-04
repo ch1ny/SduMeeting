@@ -15,6 +15,7 @@ import {
 	Empty,
 	Input,
 	List,
+	message,
 	Modal,
 	Segmented,
 	Skeleton,
@@ -23,7 +24,7 @@ import ChatInput from 'Components/ChatComponent/ChatInput';
 import ChatMessages from 'Components/ChatComponent/ChatMessages';
 import FriendBubble from 'Components/ChatComponent/FriendBubble';
 import React, { useEffect, useReducer, useState } from 'react';
-import { wsAjax } from 'Utils/Axios/Axios';
+import { ajax, wsAjax } from 'Utils/Axios/Axios';
 import invokeSocket from 'Utils/ChatSocket/ChatSocket';
 import {
 	ACCEPT_FRIEND_REQUEST,
@@ -276,18 +277,29 @@ function ChatMainComponent(props) {
 function AddFriendModal(props) {
 	const [segment, setSegment] = useState('添加好友');
 
-	const [searchResult, setSearchResult] = useState([
-		{
-			avatar: 'http://meeting.aiolia.top:8080/file/pic/user/7.jpeg',
-			name: '樊晨煜',
-			email: '1056317718@qq.com',
-			id: 7,
-		},
-	]);
+	const [searchResult, setSearchResult] = useState([]);
 	const [searching, setSearching] = useState(false);
 
-	const onSearch = () => {
+	const onSearch = (searchStr) => {
 		setSearching(true);
+		ajax.get('/login_and_register/findUser', {
+			name: searchStr,
+		})
+			.then((res) => {
+				if (res.code === 200) {
+					const { users } = res.data;
+					setSearchResult(users);
+					if (users.length === 0) {
+						message.warn({
+							content: '没有查询到相关用户',
+							getPopupContainer: getMainContent,
+						});
+					}
+				}
+			})
+			.finally(() => {
+				setSearching(false);
+			});
 	};
 
 	return (
@@ -322,7 +334,6 @@ function AddFriendModal(props) {
 					<div style={{ display: segment === '添加好友' ? '' : 'none', height: '40vh' }}>
 						<Input.Search
 							placeholder='输入关键字查询好友'
-							allowClear
 							enterButton={
 								<>
 									<SearchOutlined style={{ marginRight: '0.5em' }} />
@@ -347,7 +358,7 @@ function AddFriendModal(props) {
 													onClick={() => {
 														// INFO: 发送好友请求
 														invokeSocket().send({
-															toId: item.id,
+															toId: item.uid,
 															type: CHAT_SEND_FRIEND_REQUEST,
 														});
 													}}>
@@ -355,8 +366,18 @@ function AddFriendModal(props) {
 												</Button>,
 											]}>
 											<List.Item.Meta
-												avatar={<Avatar src={item.avatar} size={50} />}
-												title={<a href='#'>{item.name}</a>}
+												avatar={
+													<Avatar
+														src={
+															item.profile
+																? `http://meeting.aiolia.top:8080/file/pic/user/${item.uid}.${item.profile}`
+																: item.profile
+														}
+														size={50}
+														children={item.username}
+													/>
+												}
+												title={<a href='#'>{item.username}</a>}
 												description={item.email}
 											/>
 										</List.Item>
@@ -399,7 +420,7 @@ function AddFriendModal(props) {
 														if (result) {
 															props.replyRequests({
 																type: result,
-																id: item.id,
+																id: item.uid,
 															});
 															break;
 														}
@@ -433,12 +454,12 @@ function AddFriendModal(props) {
 												<Avatar
 													src={
 														item.profile
-															? `http://meeting.aiolia.top:8080/file/pic/user/${item.id}.${item.profile}`
-															: undefined
+															? `http://meeting.aiolia.top:8080/file/pic/user/${item.uid}.${item.profile}`
+															: item.profile
 													}
-													size={50}>
-													{item.username}
-												</Avatar>
+													size={50}
+													children={item.username}
+												/>
 											}
 											title={<a href='#'>{item.username}</a>}
 											description={item.email}
