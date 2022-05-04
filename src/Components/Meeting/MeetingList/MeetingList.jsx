@@ -8,6 +8,7 @@ import {
 import { Button, Checkbox, Divider, Empty, Form, Input, message, Modal } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { CALL_STATUS_FREE, CALL_STATUS_OFFERING } from 'Utils/Constraints';
+import eventBus from 'Utils/EventBus/EventBus';
 import { decodeJWT, getMainContent } from 'Utils/Global';
 import { setCallStatus } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
@@ -16,6 +17,7 @@ import './style.scss';
 export default function MeetingList(props) {
 	const [meetings, setMeetings] = useState([]);
 	const [showJoinModal, setShowJoinModal] = useState(false);
+	const [showRandomModal, setShowRandomModal] = useState(false);
 
 	const [autoOpenMicroPhone, setAutoOpenMicroPhone] = useState(
 		localStorage.getItem('autoOpenMicroPhone') === 'true'
@@ -48,7 +50,13 @@ export default function MeetingList(props) {
 							}}>
 							加入会议
 						</MeetingButton>
-						<MeetingButton icon={<ForwardOutlined />}>快速会议</MeetingButton>
+						<MeetingButton
+							icon={<ForwardOutlined />}
+							onClick={() => {
+								setShowRandomModal(true);
+							}}>
+							快速会议
+						</MeetingButton>
 						<MeetingButton icon={<ClockCircleOutlined />}>预定会议</MeetingButton>
 					</div>
 					<Divider style={{ margin: '1rem' }} />
@@ -116,6 +124,80 @@ export default function MeetingList(props) {
 							placeholder='输入会议号'
 						/>
 					</Form.Item>
+					<Form.Item
+						name='joinName'
+						initialValue={username}
+						rules={[
+							{
+								required: true,
+								message: '请输入与会名称',
+							},
+						]}>
+						<Input
+							prefix={<UserOutlined style={{ color: 'rgba(0, 0, 0, 0.25)' }} />}
+							placeholder='您的名称'
+						/>
+					</Form.Item>
+					<Form.Item>
+						<Checkbox
+							checked={autoOpenMicroPhone}
+							onChange={(e) => {
+								setAutoOpenMicroPhone(e.target.checked);
+								localStorage.setItem('autoOpenMicroPhone', e.target.checked);
+							}}>
+							与会时打开麦克风
+						</Checkbox>
+					</Form.Item>
+					<Form.Item>
+						<Checkbox
+							checked={autoOpenCamera}
+							onChange={(e) => {
+								setAutoOpenCamera(e.target.checked);
+								localStorage.setItem('autoOpenCamera', e.target.checked);
+							}}>
+							与会时打开摄像头
+						</Checkbox>
+					</Form.Item>
+					<Form.Item>
+						<Button type='primary' htmlType='submit' loading={isJoining}>
+							加入会议
+						</Button>
+					</Form.Item>
+				</Form>
+			</Modal>
+			<Modal
+				title={'快速会议'}
+				visible={showRandomModal}
+				footer={null}
+				onCancel={() => {
+					setShowRandomModal(false);
+				}}
+				getContainer={getMainContent}
+				closable={false}
+				maskClosable={!isJoining}
+				destroyOnClose={false}>
+				<Form
+					className='join-form'
+					initialValues={{
+						remember: true,
+					}}
+					onFinish={(values) => {
+						if (store.getState().callStatus === CALL_STATUS_FREE) {
+							store.dispatch(setCallStatus(CALL_STATUS_OFFERING));
+							setIsJoining(true);
+							eventBus.once('ATTEMPT_TO_JOIN', () => {
+								setIsJoining(false);
+								setShowRandomModal(false);
+							});
+							// TODO: 这里是快速生成的随机会议号
+							values.meetingId = Math.floor(Math.random() * 1e9);
+							values.autoOpenCamera = autoOpenCamera;
+							values.autoOpenMicroPhone = autoOpenMicroPhone;
+							props.joinMeeting(values);
+						} else {
+							message.error('应用当前不处于空闲通话状态！');
+						}
+					}}>
 					<Form.Item
 						name='joinName'
 						initialValue={username}
