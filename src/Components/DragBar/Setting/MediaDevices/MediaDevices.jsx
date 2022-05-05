@@ -1,10 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Button, message, Progress, Select } from 'antd';
 import { CustomerServiceOutlined } from '@ant-design/icons';
-import store from 'Utils/Store/store';
+import { Button, message, Progress, Select } from 'antd';
+import React, { useEffect, useRef, useState } from 'react';
+import eventBus from 'Utils/EventBus/EventBus';
+import { getDeviceStream } from 'Utils/Global';
 import SoundMeter from 'Utils/SoundMeter/SoundMeter';
 import { DEVICE_TYPE, exchangeMediaDevice, updateAvailableDevices } from 'Utils/Store/actions';
-import eventBus from 'Utils/EventBus/EventBus';
+import store from 'Utils/Store/store';
 
 const { Option } = Select;
 
@@ -244,13 +245,7 @@ function getUserMediaDevices() {
 }
 
 async function soundMeterConnect(examMicroPhoneRef, soundMeter) {
-	const device = store.getState().usingAudioDevice;
-	const audioConstraints = {
-		deviceId: {
-			exact: device.key,
-		},
-	};
-	const audioStream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
+	const audioStream = await getDeviceStream(DEVICE_TYPE.AUDIO_DEVICE);
 	examMicroPhoneRef.current.srcObject = audioStream;
 	examMicroPhoneRef.current.play();
 	soundMeter.connectToSource(audioStream, (err) => {
@@ -262,25 +257,7 @@ async function soundMeterConnect(examMicroPhoneRef, soundMeter) {
 }
 
 async function videoConnect(examCameraRef) {
-	const device = store.getState().usingVideoDevice;
-	switch (device.value) {
-		case 'screen':
-			examCameraRef.current.srcObject = await window.navigator.mediaDevices.getDisplayMedia();
-			break;
-		case 'null':
-			examCameraRef.current.srcObject = null;
-			break;
-		default:
-			const videoConstraints = {
-				deviceId: {
-					exact: device.key,
-				},
-			};
-			const videoStream = await navigator.mediaDevices.getUserMedia({
-				video: videoConstraints,
-			});
-			examCameraRef.current.srcObject = videoStream;
-			break;
-	}
+	const videoStream = await getDeviceStream(DEVICE_TYPE.VIDEO_DEVICE);
+	examCameraRef.current.srcObject = videoStream;
 	examCameraRef.current.play();
 }

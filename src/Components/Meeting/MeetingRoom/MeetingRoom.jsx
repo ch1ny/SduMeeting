@@ -10,6 +10,7 @@ import Icon, {
 import { Button, message, Modal } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
 import eventBus from 'Utils/EventBus/EventBus';
+import { getDeviceStream } from 'Utils/Global';
 import { usePrevious } from 'Utils/MyHooks/MyHooks';
 import { DEVICE_TYPE } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
@@ -168,10 +169,9 @@ export default function MeetingRoom(props) {
 	}, [audioTrack]);
 
 	useEffect(() => {
-		// console.log('视频设备', usingVideoDevice);
 		(async () => {
 			if (!usingVideoDevice) return;
-			const stream = await setMediaStream(DEVICE_TYPE.VIDEO_DEVICE, usingVideoDevice);
+			const stream = await getDeviceStream(DEVICE_TYPE.VIDEO_DEVICE);
 			const track = stream.getVideoTracks()[0];
 			track.enabled = isUsingCamera;
 			setVideoTrack(track);
@@ -188,10 +188,9 @@ export default function MeetingRoom(props) {
 	}, [usingVideoDevice]);
 
 	useEffect(() => {
-		// console.log('音频设备', usingAudioDevice);
 		(async () => {
 			if (!usingAudioDevice) return;
-			const stream = await setMediaStream(DEVICE_TYPE.AUDIO_DEVICE, usingAudioDevice);
+			const stream = await getDeviceStream(DEVICE_TYPE.AUDIO_DEVICE);
 			const track = stream.getAudioTracks()[0];
 			track.enabled = isUsingMicroPhone;
 			setAudioTrack(track);
@@ -438,35 +437,5 @@ function replaceRemoteTrack(senders, oldTrack, newTrack) {
 			sender.replaceTrack(newTrack);
 			break;
 		}
-	}
-}
-
-async function setMediaStream(mediaType, object) {
-	switch (mediaType) {
-		case DEVICE_TYPE.VIDEO_DEVICE:
-			const videoConstraints = {
-				deviceId: {
-					exact: object.key,
-				},
-				width: 1920,
-				height: 1080,
-				frameRate: {
-					max: 24,
-				},
-			};
-			return await navigator.mediaDevices.getUserMedia({
-				video: videoConstraints,
-			});
-		case DEVICE_TYPE.AUDIO_DEVICE:
-			const audioConstraints = {
-				deviceId: {
-					exact: object.key,
-				},
-			};
-			return await navigator.mediaDevices.getUserMedia({
-				audio: audioConstraints,
-			});
-		default:
-			console.warn('汤暖暖的，你能有这么多设备？');
 	}
 }
