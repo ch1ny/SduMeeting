@@ -18,13 +18,15 @@
 		max-width: calc(100% - 45px - 3rem);
 
 		.userName {
-			font-size: 20px;
+			font-size: 16px;
+			font-weight: bold;
 		}
 		.newestMessage {
-			font-size: 10px;
+			font-size: 12px;
 			overflow-x: hidden;
 			white-space: nowrap;
 			text-overflow: ellipsis;
+			min-height: calc(1em + 6px);
 		}
 	}
 

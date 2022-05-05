@@ -2,7 +2,9 @@ import React from 'react';
 import {
 	DEVICE_TYPE,
 	exchangeMediaDevice,
+	INIT_MESSAGE_HISTORY,
 	setAuthToken,
+	setMessageHistory,
 	updateAvailableDevices,
 } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
@@ -15,6 +17,28 @@ export default class App extends React.Component {
 		super(props);
 		window.ipc.invoke('GET_USER_AUTH_TOKEN_AFTER_LOGIN').then((authToken) => {
 			store.dispatch(setAuthToken(authToken));
+			window.ipc.invoke('GET_MESSAGE_HISTORY').then((history) => {
+				store.dispatch(setMessageHistory(INIT_MESSAGE_HISTORY, JSON.parse(history)));
+				store.subscribe(() => {
+					const { unreadMessages, messageHistory } = store.getState();
+					const alreadyReadMessages = {};
+					for (const id in messageHistory) {
+						if (Object.hasOwnProperty.call(messageHistory, id)) {
+							if (unreadMessages[`${id}`]) {
+								alreadyReadMessages[`${id}`] = messageHistory[`${id}`]
+									.filter(
+										(message) =>
+											!unreadMessages[`${id}`].some(
+												(unreadMessage) => message.id === unreadMessage.id
+											)
+									)
+									.slice(0, 5);
+							} else alreadyReadMessages[`${id}`] = messageHistory[`${id}`].slice(-5);
+						}
+					}
+					window.ipc.invoke('SET_MESSAGE_HISTORY', alreadyReadMessages);
+				});
+			});
 		});
 	}
 

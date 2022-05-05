@@ -1,6 +1,8 @@
 import { message } from 'antd';
 import { EventEmitter } from 'events';
 import { getMainContent } from 'Utils/Global';
+import { ADD_MESSAGE_HISTORY, setMessageHistory } from 'Utils/Store/actions';
+import store from 'Utils/Store/store';
 
 let chatSocket;
 function invokeSocket(token) {
@@ -46,6 +48,15 @@ class ChatSocket extends EventEmitter {
 						content: '已成功回复好友请求',
 						getPopupContainer: getMainContent,
 					});
+					break;
+				case 'MESSAGE_RECEIVER_OK':
+					// NOTE: 接收消息
+					this.emit('MESSAGE_RECEIVER_OK', msg);
+					break;
+				case 'MESSAGE_SENDER_OK':
+					//NOTE: 成功发送消息
+					msg.data.message.myId = msg.data.message.fromId;
+					store.dispatch(setMessageHistory(ADD_MESSAGE_HISTORY, msg.data.message));
 					break;
 			}
 		};

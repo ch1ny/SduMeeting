@@ -279,6 +279,41 @@ function createMainWindow() {
 			});
 		});
 
+		ipc.handle('SET_MESSAGE_HISTORY', (evt, messages) => {
+			fs.ensureDir(path.join(EXEPATH, '/data')).then(() => {
+				fs.writeFile(
+					path.join(EXEPATH, '/data/message_history_cache'),
+					JSON.stringify(messages),
+					'utf8',
+					(err) => {
+						if (err) {
+							console.log('write error');
+							console.log(err);
+						}
+					}
+				);
+			});
+		});
+
+		ipc.handle('GET_MESSAGE_HISTORY', () => {
+			return new Promise((resolve) => {
+				fs.ensureFile(path.join(EXEPATH, '/data/message_history_cache')).then(() => {
+					fs.readFile(
+						path.join(EXEPATH, '/data/message_history_cache'),
+						'utf8',
+						(err, data) => {
+							if (err) {
+								console.log('read error');
+								console.log(err);
+							} else {
+								resolve(data || '{}');
+							}
+						}
+					);
+				});
+			});
+		});
+
 		ipc.once('READY_TO_UPDATE', () => {
 			readyToUpdate();
 		});

@@ -1,11 +1,12 @@
 import { combineReducers } from '@reduxjs/toolkit';
 import { CALL_STATUS_FREE } from 'Utils/Constraints';
-import { decodeJWT } from 'Utils/Global';
 import {
 	ADD_MESSAGE_HISTORY,
 	ADD_UNREAD_MESSAGE,
 	EXCHANGE_AUDIO_DEVICE,
 	EXCHANGE_VIDEO_DEVICE,
+	GET_MORE_MESSAGE_HISTORY,
+	INIT_MESSAGE_HISTORY,
 	REMOVE_MESSAGE_HISTORY,
 	REMOVE_UNREAD_MESSAGES,
 	SET_AUTH_TOKEN,
@@ -13,8 +14,6 @@ import {
 	UPDATE_AVAILABLE_AUDIO_DEVICES,
 	UPDATE_AVAILABLE_VIDEO_DEVICES,
 } from './actions';
-
-let userId = undefined;
 
 function updateAvailableVideoDevices(state = [], action) {
 	switch (action.type) {
@@ -56,8 +55,6 @@ function exchangeAudioDevice(state = null, action) {
 
 function setAuthToken(state = null, action) {
 	if (action.type === SET_AUTH_TOKEN) {
-		const { id } = decodeJWT(action.token);
-		userId = id;
 		return action.token;
 	}
 	return state;
@@ -66,9 +63,11 @@ function setAuthToken(state = null, action) {
 function setUnreadMessages(state = {}, action) {
 	switch (action.type) {
 		case ADD_UNREAD_MESSAGE:
-			const { fromId, toId } = action.payload;
-			const messageOwnerId = fromId === userId ? toId : fromId;
-			const newArr = state[`${messageOwnerId}`] || new Array();
+			const { fromId, toId, myId } = action.payload;
+			const messageOwnerId = fromId === myId ? toId : fromId;
+			const newArr = state[`${messageOwnerId}`]
+				? [...state[`${messageOwnerId}`]]
+				: new Array();
 			newArr.push(action.payload);
 			return Object.assign({}, state, {
 				[`${messageOwnerId}`]: newArr,
@@ -85,14 +84,26 @@ function setUnreadMessages(state = {}, action) {
 
 function setMessageHistory(state = {}, action) {
 	switch (action.type) {
-		case ADD_MESSAGE_HISTORY:
-			const { fromId, toId } = action.payload;
-			const messageOwnerId = fromId === userId ? toId : fromId;
-			const newArr = state[`${messageOwnerId}`] || new Array();
-			newArr.push(action.payload);
+		case INIT_MESSAGE_HISTORY:
+			return action.payload;
+		case GET_MORE_MESSAGE_HISTORY:
+			const { chatId } = action.payload;
+			const newArr1 = state[`${chatId}`] ? [...state[`${chatId}`]] : new Array();
+			newArr1.unshift(action.payload);
 			return Object.assign({}, state, {
-				[`${messageOwnerId}`]: newArr,
+				[`${chatId}`]: newArr1,
 			});
+		case ADD_MESSAGE_HISTORY:
+			const { fromId, toId, myId } = action.payload;
+			const messageOwnerId = fromId === myId ? toId : fromId;
+			const newArr2 = state[`${messageOwnerId}`]
+				? [...state[`${messageOwnerId}`]]
+				: new Array();
+			newArr2.push(action.payload);
+			const newMessages = Object.assign({}, state, {
+				[`${messageOwnerId}`]: newArr2,
+			});
+			return newMessages;
 		case REMOVE_MESSAGE_HISTORY:
 			const { userId } = action.payload;
 			const newState = Object.assign({}, state);

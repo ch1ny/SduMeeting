@@ -32,6 +32,7 @@ import {
 	CALL_STATUS_OFFERING,
 	CHAT_ANSWER_FRIEND_REQUEST,
 	CHAT_PRIVATE_WEBRTC_DISCONNECT,
+	CHAT_READ_MESSAGE,
 	CHAT_SEND_FRIEND_REQUEST,
 	NO_OPERATION_FRIEND_REQUEST,
 	REJECT_FRIEND_REQUEST,
@@ -49,6 +50,29 @@ import './style.scss';
 
 export default function Chats() {
 	const [nowChatting, setNowChatting] = useState(undefined);
+	const [chatSocket, setChatSocket] = useState(undefined);
+	const onReceiveMessage = ({ data }) => {
+		// NOTE: 接收到消息，加入历史记录中，并根据当前打开的会话框决定是否加入未读消息队列中
+		const { message } = data;
+		message.myId = decodeJWT(store.getState().authToken).id;
+		if (!nowChatting || nowChatting.uid !== message.fromId) {
+			console.log({ nowChatting, message });
+			store.dispatch(setUnreadMessages(ADD_UNREAD_MESSAGE, message));
+			store.dispatch(setMessageHistory(ADD_MESSAGE_HISTORY, message));
+		} else {
+			store.dispatch(setMessageHistory(ADD_MESSAGE_HISTORY, message));
+			invokeSocket().send({
+				sender: nowChatting.uid,
+				type: CHAT_READ_MESSAGE,
+			});
+		}
+	};
+	useEffect(() => {
+		if (chatSocket) {
+			chatSocket.removeAllListeners('MESSAGE_RECEIVER_OK');
+			chatSocket.on('MESSAGE_RECEIVER_OK', onReceiveMessage);
+		}
+	}, [nowChatting]);
 	const [friendsList, dispatchFriendsList] = useReducer((state, action) => {
 		switch (action.type) {
 			case 'addFriend':
@@ -68,10 +92,25 @@ export default function Chats() {
 	}, new Map());
 
 	const [requests, setRequests] = useState([]);
+	const [unreadNumber, setUnreadNumber] = useState({});
+	useEffect(
+		() =>
+			store.subscribe(() => {
+				const unreadMessages = store.getState().unreadMessages;
+				const unreadNum = {};
+				for (const id in unreadMessages) {
+					if (Object.hasOwnProperty.call(unreadMessages, id)) {
+						unreadNum[id] = unreadMessages[id].length;
+					}
+				}
+				setUnreadNumber(unreadNum);
+			}),
+		[]
+	);
 	useEffect(() => {
 		window.ipc.invoke('GET_USER_AUTH_TOKEN_AFTER_LOGIN').then((token) => {
-			const chatSocket = invokeSocket(token);
-			chatSocket.on('onopen', () => {
+			const _chatSocket = invokeSocket(token);
+			_chatSocket.on('onopen', () => {
 				console.log('chatsocket连接成功');
 				wsAjax
 					.get('/getFriendsAndMessages')
@@ -80,11 +119,17 @@ export default function Chats() {
 						// 初始化好友列表
 						dispatchFriendsList({ type: 'initFriends', friends });
 						// INFO: 初始化未读消息
+						const unreadNum = {};
 						for (const message of messages) {
+							message.myId = decodeJWT(store.getState().authToken).id;
 							store.dispatch(setUnreadMessages(ADD_UNREAD_MESSAGE, message));
-							// TODO: 还需要与本地消息记录合并
+							// NOTE: 与本地消息记录合并
 							store.dispatch(setMessageHistory(ADD_MESSAGE_HISTORY, message));
+							unreadNum[`${message.fromId}`] = unreadNum[`${message.fromId}`]
+								? unreadNum[`${message.fromId}`] + 1
+								: 1;
 						}
+						setUnreadNumber(Object.assign({}, unreadNumber, unreadNum));
 						// 初始化好友请求
 						setRequests(requests);
 					})
@@ -92,6 +137,8 @@ export default function Chats() {
 						console.log(err);
 					});
 			});
+			_chatSocket.on('MESSAGE_RECEIVER_OK', onReceiveMessage);
+			setChatSocket(_chatSocket);
 		});
 	}, []);
 
@@ -128,12 +175,8 @@ export default function Chats() {
 									profile={friend.profile}
 									onClick={() => {
 										setNowChatting(friend);
-										// TODO: 签收未读消息
-										// invokeSocket().send({
-										// 	id: friend.uid,
-										// 	type: CHAT_READ_MESSAGE
-										// })
 									}}
+									unreadNumber={unreadNumber[`${friend.uid}`]}
 									style={{
 										backgroundColor: nowChatting === friend ? '#e3e3e3f4' : '',
 									}}
@@ -195,7 +238,7 @@ export default function Chats() {
 							return;
 					}
 					invokeSocket().send({
-						id: friend.uid,
+						id: friend.id,
 						type: CHAT_ANSWER_FRIEND_REQUEST,
 						agree,
 					});

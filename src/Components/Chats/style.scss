@@ -81,7 +81,8 @@
 				background-color: whitesmoke;
 				display: flex;
 				flex-direction: column;
-				// justify-content: flex-end;
+				overflow-y: auto;
+				padding-bottom: 0.5rem;
 			}
 
 			#chatInput {

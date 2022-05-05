@@ -1,6 +1,7 @@
 import { PictureOutlined, SmileOutlined, WhatsAppOutlined } from '@ant-design/icons';
 import { Button, message, Popover, Upload } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
+import invokeSocket from 'Utils/ChatSocket/ChatSocket';
 import { CHAT_SEND_PRIVATE_MESSAGE } from 'Utils/Constraints';
 import './ChatInput.scss';
 import { emojiRegExp } from './emoji';
@@ -34,14 +35,12 @@ export default function ChatInput(props) {
 		const emojiRegex = new RegExp('<img class="emoji" src="./emoji/(.*?).png">', 'gim');
 		const tagRegex = new RegExp('<.*?>', 'gim');
 		const rawMessage = rawHtml.replace(emojiRegex, '[:$1:]').replace(tagRegex, '');
-		console.log(rawMessage);
-		setRawHtml('');
-		const chatSocketMessage = {
+		invokeSocket().send({
 			toId: props.nowChattingId,
 			message: rawMessage,
 			type: CHAT_SEND_PRIVATE_MESSAGE,
-		};
-		// invokeSocket().send(chatSocketMessage);
+		});
+		setRawHtml('');
 	};
 
 	return (

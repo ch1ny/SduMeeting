@@ -1,7 +1,10 @@
-import { Avatar } from 'antd';
+import { HistoryOutlined } from '@ant-design/icons';
+import { Avatar, Button, message } from 'antd';
 import classNames from 'classnames';
 import React, { useEffect, useRef, useState } from 'react';
+import { wsAjax } from 'Utils/Axios/Axios';
 import { decodeJWT } from 'Utils/Global';
+import { GET_MORE_MESSAGE_HISTORY, setMessageHistory } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
 import './ChatMessages.scss';
 import { emojiRegExp } from './emoji';
@@ -12,30 +15,13 @@ const AN_HOUR_TIME = 60 * A_MINUTE_TIME;
 const A_DAY_TIME = 24 * AN_HOUR_TIME;
 
 export default function ChatMessages(props) {
-	const [messages, setMessages] = useState([
-		{
-			date: 1650678821296,
-			fromId: 7,
-			id: 23,
-			message:
-				'你好，我是德布罗煜[:doge:]ssssssssssssssssssssssssssssssssssssssssssssssssssssss',
-			toId: 11,
-		},
-		{
-			date: 1650678887404,
-			fromId: 11,
-			id: 24,
-			message: 'hello[:hehe:]',
-			toId: 10,
-		},
-		{
-			date: 1650678888404,
-			fromId: 11,
-			id: 25,
-			message: '<button onclick="window.close();">嵌入攻击测试</button>',
-			toId: 10,
-		},
-	]);
+	const [messages, setMessages] = useState(new Array());
+	useEffect(() => {
+		setMessages(store.getState().messageHistory[`${props.id}`] || new Array());
+		return store.subscribe(() => {
+			setMessages(store.getState().messageHistory[`${props.id}`] || new Array());
+		});
+	}, [props.id]);
 
 	const [myId, setMyId] = useState(undefined);
 	const [myName, setMyName] = useState(undefined);
@@ -56,8 +42,44 @@ export default function ChatMessages(props) {
 		});
 	}, []);
 
+	const [gettingHistoryMessage, setGettingHistoryMessage] = useState(false);
+
 	return (
 		<>
+			<Button
+				type='link'
+				icon={<HistoryOutlined />}
+				loading={gettingHistoryMessage}
+				onClick={() => {
+					// NOTE: 查询历史消息
+					setGettingHistoryMessage(true);
+					wsAjax
+						.get('/getHistoryMessage', {
+							toId: props.id,
+							messageId: messages ? messages[0].id : undefined,
+						})
+						.then((res) => {
+							if (res.code === 200) {
+								const { list } = res.data;
+								if (list.length === 0)
+									message.warn({
+										content: '没有更早的消息了',
+									});
+								else
+									for (const message of list) {
+										message.chatId = props.id;
+										store.dispatch(
+											setMessageHistory(GET_MORE_MESSAGE_HISTORY, message)
+										);
+									}
+							}
+						})
+						.finally(() => {
+							setGettingHistoryMessage(false);
+						});
+				}}>
+				查看更多消息
+			</Button>
 			{messages.map((message, index) => (
 				<React.Fragment key={message.id}>
 					{(index === 0 ||
