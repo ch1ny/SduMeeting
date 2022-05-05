@@ -1,8 +1,16 @@
-import { PictureOutlined, SmileOutlined, WhatsAppOutlined } from '@ant-design/icons';
+import {
+	CloudSyncOutlined,
+	PictureOutlined,
+	SmileOutlined,
+	WhatsAppOutlined,
+} from '@ant-design/icons';
 import { Button, message, Popover, Upload } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
+import { wsAjax } from 'Utils/Axios/Axios';
 import invokeSocket from 'Utils/ChatSocket/ChatSocket';
 import { CHAT_SEND_PRIVATE_MESSAGE } from 'Utils/Constraints';
+import { setMessageHistory, SYNC_CLOUD_MESSAGE_HISTORY } from 'Utils/Store/actions';
+import store from 'Utils/Store/store';
 import './ChatInput.scss';
 import { emojiRegExp } from './emoji';
 
@@ -157,6 +165,39 @@ export default function ChatInput(props) {
 				</Upload>
 				<div className='chatInputControlButtons' title='发起通话' onClick={props.onCall}>
 					<WhatsAppOutlined />
+				</div>
+				<div
+					className='chatInputControlButtons'
+					title='强制同步聊天记录'
+					onClick={() => {
+						wsAjax
+							.get('/getHistoryMessage', {
+								toId: props.nowChattingId,
+							})
+							.then((res) => {
+								if (res.code === 200) {
+									const { list } = res.data;
+									store.dispatch(
+										setMessageHistory(SYNC_CLOUD_MESSAGE_HISTORY, {
+											[`${props.nowChattingId}`]: list.reverse(),
+										})
+									);
+									message.success({
+										content: '聊天消息同步成功',
+									});
+								} else {
+									message.error({
+										content: '聊天消息同步失败',
+									});
+								}
+							})
+							.catch((err) => {
+								message.error({
+									content: '聊天消息同步失败',
+								});
+							});
+					}}>
+					<CloudSyncOutlined />
 				</div>
 				<div style={{ marginLeft: 'auto' }}>
 					<Button type='primary' onClick={sendMessage} disabled={rawHtml === ''}>

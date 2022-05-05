@@ -56,7 +56,7 @@ export default function ChatMessages(props) {
 					wsAjax
 						.get('/getHistoryMessage', {
 							toId: props.id,
-							messageId: messages ? messages[0].id : undefined,
+							messageId: messages && messages[0] ? messages[0].id : undefined,
 						})
 						.then((res) => {
 							if (res.code === 200) {

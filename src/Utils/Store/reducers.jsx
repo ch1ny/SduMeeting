@@ -11,6 +11,7 @@ import {
 	REMOVE_UNREAD_MESSAGES,
 	SET_AUTH_TOKEN,
 	SET_CALL_STATUS,
+	SYNC_CLOUD_MESSAGE_HISTORY,
 	UPDATE_AVAILABLE_AUDIO_DEVICES,
 	UPDATE_AVAILABLE_VIDEO_DEVICES,
 } from './actions';
@@ -86,6 +87,8 @@ function setMessageHistory(state = {}, action) {
 	switch (action.type) {
 		case INIT_MESSAGE_HISTORY:
 			return action.payload;
+		case SYNC_CLOUD_MESSAGE_HISTORY:
+			return Object.assign({}, state, action.payload);
 		case GET_MORE_MESSAGE_HISTORY:
 			const { chatId } = action.payload;
 			const newArr1 = state[`${chatId}`] ? [...state[`${chatId}`]] : new Array();

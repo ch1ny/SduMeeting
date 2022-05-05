@@ -66,6 +66,12 @@ export default function Chats() {
 				type: CHAT_READ_MESSAGE,
 			});
 		}
+		dispatchFriendsList({
+			type: 'upgradeFriend',
+			friend: {
+				uid: message.fromId,
+			},
+		});
 	};
 	useEffect(() => {
 		if (chatSocket) {
@@ -118,7 +124,7 @@ export default function Chats() {
 						const { friends, messages, requests } = res.data;
 						// 初始化好友列表
 						dispatchFriendsList({ type: 'initFriends', friends });
-						// INFO: 初始化未读消息
+						// NOTE: 初始化未读消息
 						const unreadNum = {};
 						for (const message of messages) {
 							message.myId = decodeJWT(store.getState().authToken).id;
@@ -263,16 +269,6 @@ function ChatMainComponent(props) {
 		setMyId(decodeJWT(store.getState().authToken).id);
 	}, []);
 
-	const [nowChattingId, setNowChattingId] = useState(undefined);
-	const [nowChattingUsername, setNowChattingUsername] = useState(undefined);
-	const [nowChattingProfile, setNowChattingProfile] = useState(undefined);
-	useEffect(() => {
-		const { id, username, profile } = props;
-		setNowChattingId(id);
-		setNowChattingUsername(username);
-		setNowChattingProfile(profile);
-	}, [props.id, props.username, props.profile]);
-
 	return (
 		<>
 			<div id='chatMainComponent'>
@@ -281,7 +277,7 @@ function ChatMainComponent(props) {
 				</div>
 				<div id='chatInput'>
 					<ChatInput
-						nowChattingId={nowChattingId}
+						nowChattingId={props.id}
 						myId={myId}
 						onCall={() => {
 							// TODO: 补充发起会话函数，发送 OFFER 信号
