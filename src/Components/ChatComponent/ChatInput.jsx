@@ -555,6 +555,10 @@ const emojis = [
 		id: 'thumbUp',
 	},
 	{
+		title: '藏狐',
+		id: 'tibetanFox',
+	},
+	{
 		title: '偷笑',
 		id: 'titter',
 	},
