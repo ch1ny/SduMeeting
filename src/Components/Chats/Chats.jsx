@@ -73,10 +73,16 @@ export default function Chats() {
 			},
 		});
 	};
+	const onSendMessage = (friendId) => {
+		dispatchFriendsList({ type: 'upgradeFriend', friend: { uid: friendId } });
+	};
+
 	useEffect(() => {
 		if (chatSocket) {
 			chatSocket.removeAllListeners('MESSAGE_RECEIVER_OK');
+			chatSocket.removeAllListeners('MESSAGE_SENDER_OK');
 			chatSocket.on('MESSAGE_RECEIVER_OK', onReceiveMessage);
+			chatSocket.on('MESSAGE_SENDER_OK', onSendMessage);
 		}
 	}, [nowChatting]);
 	const [friendsList, dispatchFriendsList] = useReducer((state, action) => {
@@ -144,6 +150,7 @@ export default function Chats() {
 					});
 			});
 			_chatSocket.on('MESSAGE_RECEIVER_OK', onReceiveMessage);
+			_chatSocket.on('MESSAGE_SENDER_OK', onSendMessage);
 			setChatSocket(_chatSocket);
 		});
 	}, []);

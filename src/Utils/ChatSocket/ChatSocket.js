@@ -57,6 +57,7 @@ class ChatSocket extends EventEmitter {
 					//NOTE: 成功发送消息
 					msg.data.message.myId = msg.data.message.fromId;
 					store.dispatch(setMessageHistory(ADD_MESSAGE_HISTORY, msg.data.message));
+					this.emit('MESSAGE_SENDER_OK', msg.data.message.toId);
 					break;
 			}
 		};
