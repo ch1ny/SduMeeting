@@ -22,8 +22,8 @@ export default function ChatInput(props) {
 		const caretOffset = getCaretPosition(inputRef.current);
 		let htmlStr = rawHtml;
 
-		// NOTE: 很离谱，这里必须要使用 &thinsp; 隔开，不然就有bug
-		htmlStr = htmlStr.replace(emojiRegExp, `<img class="emoji" src="./emoji/$2.png">`);
+		// NOTE: 很离谱，这里必须要使用 &zwj; 隔开，不然就有bug
+		htmlStr = htmlStr.replace(emojiRegExp, `<img class="emoji" src="./emoji/$2.png">&zwj;`);
 
 		inputRef.current.innerHTML = htmlStr;
 		setLastEditRange(
