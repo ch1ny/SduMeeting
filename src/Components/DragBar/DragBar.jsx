@@ -5,9 +5,9 @@ import {
 	SettingOutlined,
 	SwitcherOutlined,
 } from '@ant-design/icons';
+import Setting from 'Components/Setting/Setting';
 import React, { useEffect, useState } from 'react';
 import eventBus from 'Utils/EventBus/EventBus';
-import Setting from './Setting/Setting';
 import './style.scss';
 
 export default function DragBar() {
@@ -70,7 +70,7 @@ export default function DragBar() {
 					<SettingOutlined />
 				</button>
 			</div>
-			{/* INFO: 挂载的设置页面 */}
+			{/* NOTE: 挂载的设置页面 */}
 			<Setting
 				visible={showSetting}
 				closeFunc={() => {
