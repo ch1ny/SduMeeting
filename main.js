@@ -238,6 +238,12 @@ function createMainWindow() {
 			mainWindow.webContents.send('MAIN_WINDOW_RESTORE');
 		});
 
+		mainWindow.on('moved', () => {
+			if (mainWindow.getPosition()[1] <= 0) {
+				mainWindow.maximize();
+			}
+		});
+
 		ipc.on('EXCHANGE_MAIN_WINDOW_MAXIMIZED_STATUS', () => {
 			if (mainWindow.isMaximized()) {
 				mainWindow.unmaximize();
