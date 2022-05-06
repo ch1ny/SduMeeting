@@ -174,7 +174,7 @@ function dateToTime(date) {
 			case 4:
 			case 5:
 			case 6:
-				return `${translateDayNumberToDayChara(messageTime)} ${messageTime}`;
+				return `${translateDayNumberToDayChara(messageDate.getDay())} ${messageTime}`;
 			default:
 				if (isSameYear(date, now)) {
 					const messageMonth = messageDate.getMonth();

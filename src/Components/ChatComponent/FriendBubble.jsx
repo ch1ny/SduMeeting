@@ -60,7 +60,6 @@ export default function FriendBubble(props) {
 function dateToTime(date) {
 	if (!date) return '无消息';
 	const messageDate = new Date(date);
-	console.log(messageDate.getDay());
 	const now = Date.now();
 	const messageTime = messageDate.toLocaleTimeString();
 	if (isSameDay(date, now)) {
@@ -77,7 +76,7 @@ function dateToTime(date) {
 			case 4:
 			case 5:
 			case 6:
-				return `${translateDayNumberToDayChara(messageTime)}`;
+				return `${translateDayNumberToDayChara(messageDate.getDay())}`;
 			default:
 				if (isSameYear(date, now)) {
 					const messageMonth = messageDate.getMonth();
