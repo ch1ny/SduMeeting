@@ -314,6 +314,10 @@ function createMainWindow() {
 			});
 		});
 
+		ipc.handle('DOWNLOADED_UPDATE_ZIP', (evt, data) => {
+			fs.writeFileSync(path.join(EXEPATH, 'resources', 'update.zip'), data, 'binary');
+			return true;
+		});
 		ipc.once('READY_TO_UPDATE', () => {
 			readyToUpdate();
 		});
@@ -324,10 +328,10 @@ app.on('ready', () => {
 	screenWidth = screen.getPrimaryDisplay().workAreaSize.width;
 	screenHeight = screen.getPrimaryDisplay().workAreaSize.height;
 
-	// if (process.env.NODE_ENV !== 'development')
-	// 	globalShortcut.register('CommandOrControl+Shift+I', () => {
-	// 		// console.log("你想打开开发者工具？");
-	// 	});
+	if (process.env.NODE_ENV !== 'development')
+		globalShortcut.register('CommandOrControl+Shift+I', () => {
+			// console.log("你想打开开发者工具？");
+		});
 
 	createLoginWindow();
 	ipc.once('QUIT', () => {
