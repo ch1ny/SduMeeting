@@ -41,8 +41,8 @@ function getDeviceStream(device) {
 				deviceId: {
 					exact: audioDevice.key,
 				},
-				noiseSuppression: false,
-				echoCancellation: true,
+				noiseSuppression: localStorage.getItem('noiseSuppression') !== 'false',
+				echoCancellation: localStorage.getItem('echoCancellation') !== 'false',
 			};
 			return navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
 		case DEVICE_TYPE.VIDEO_DEVICE:

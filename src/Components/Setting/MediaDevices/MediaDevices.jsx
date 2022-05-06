@@ -1,5 +1,5 @@
 import { CustomerServiceOutlined } from '@ant-design/icons';
-import { Button, message, Progress, Select } from 'antd';
+import { Button, Checkbox, message, Progress, Select } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
 import eventBus from 'Utils/EventBus/EventBus';
 import { getDeviceStream } from 'Utils/Global';
@@ -90,6 +90,17 @@ export default function MediaDevices() {
 			eventBus.off('CLOSE_SETTING_MODAL', onCloseSettingModal);
 		};
 	}, []);
+
+	const [noiseSuppression, setNoiseSuppression] = useState(
+		localStorage.getItem('noiseSuppression') !== 'false'
+	);
+	useEffect(() => {
+		console.log(noiseSuppression);
+	}, [noiseSuppression]);
+	const [echoCancellation, setEchoCancellation] = useState(
+		localStorage.getItem('echoCancellation') !== 'false'
+	);
+
 	return (
 		<>
 			请选择录音设备:
@@ -138,6 +149,31 @@ export default function MediaDevices() {
 					/>
 				</div>
 				<audio ref={examMicroPhoneRef} />
+			</div>
+			<div style={{ display: 'flex', marginTop: '0.5em' }}>
+				<div style={{ fontWeight: 'bold' }}>音频选项：</div>
+				<div
+					style={{
+						display: 'flex',
+						justifyContent: 'center',
+					}}>
+					<Checkbox
+						checked={noiseSuppression}
+						onChange={(evt) => {
+							setNoiseSuppression(evt.target.checked);
+							localStorage.setItem('noiseSuppression', evt.target.checked);
+						}}>
+						噪音抑制
+					</Checkbox>
+					<Checkbox
+						checked={echoCancellation}
+						onChange={(evt) => {
+							setEchoCancellation(evt.target.checked);
+							localStorage.setItem('echoCancellation', evt.target.checked);
+						}}>
+						回声消除
+					</Checkbox>
+				</div>
 			</div>
 			<br />
 			请选择录像设备:
