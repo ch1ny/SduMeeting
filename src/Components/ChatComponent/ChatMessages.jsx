@@ -3,16 +3,18 @@ import { Avatar, Button, message } from 'antd';
 import classNames from 'classnames';
 import React, { useEffect, useRef, useState } from 'react';
 import { wsAjax } from 'Utils/Axios/Axios';
-import { decodeJWT } from 'Utils/Global';
+import {
+	A_MINUTE_TIME,
+	decodeJWT,
+	isSameDay,
+	isSameWeek,
+	isSameYear,
+	translateDayNumberToDayChara,
+} from 'Utils/Global';
 import { GET_MORE_MESSAGE_HISTORY, setMessageHistory } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
 import './ChatMessages.scss';
 import { emojiRegExp } from './emoji';
-
-const A_SECOND_TIME = 1000;
-const A_MINUTE_TIME = 60 * A_SECOND_TIME;
-const AN_HOUR_TIME = 60 * A_MINUTE_TIME;
-const A_DAY_TIME = 24 * AN_HOUR_TIME;
 
 export default function ChatMessages(props) {
 	const [messages, setMessages] = useState(new Array());
@@ -172,7 +174,7 @@ function dateToTime(date) {
 			case 4:
 			case 5:
 			case 6:
-				return `${messageTime}`;
+				return `${translateDayNumberToDayChara(messageTime)} ${messageTime}`;
 			default:
 				if (isSameYear(date, now)) {
 					const messageMonth = messageDate.getMonth();
@@ -186,27 +188,4 @@ function dateToTime(date) {
 				}
 		}
 	}
-}
-
-function isSameDay(timeStampA, timeStampB) {
-	const dateA = new Date(timeStampA);
-	const dateB = new Date(timeStampB);
-	return dateA.setHours(0, 0, 0, 0) === dateB.setHours(0, 0, 0, 0);
-}
-
-function isSameWeek(timeStampA, timeStampB) {
-	let A = new Date(timeStampA).setHours(0, 0, 0, 0);
-	let B = new Date(timeStampB).setHours(0, 0, 0, 0);
-	const timeDistance = Math.abs(A - B);
-	return timeDistance / A_DAY_TIME;
-}
-
-function isSameYear(timeStampA, timeStampB) {
-	const dateA = new Date(timeStampA);
-	const dateB = new Date(timeStampB);
-	dateA.setHours(0, 0, 0, 0);
-	dateB.setHours(0, 0, 0, 0);
-	dateA.setMonth(0, 1);
-	dateB.setMonth(0, 1);
-	return dateA.getFullYear() === dateB.getFullYear();
 }

@@ -65,4 +65,47 @@ function getDeviceStream(device) {
 	}
 }
 
+export const A_SECOND_TIME = 1000;
+export const A_MINUTE_TIME = 60 * A_SECOND_TIME;
+export const AN_HOUR_TIME = 60 * A_MINUTE_TIME;
+export const A_DAY_TIME = 24 * AN_HOUR_TIME;
+export const isSameDay = (timeStampA, timeStampB) => {
+	const dateA = new Date(timeStampA);
+	const dateB = new Date(timeStampB);
+	return dateA.setHours(0, 0, 0, 0) === dateB.setHours(0, 0, 0, 0);
+};
+export const isSameWeek = (timeStampA, timeStampB) => {
+	let A = new Date(timeStampA).setHours(0, 0, 0, 0);
+	let B = new Date(timeStampB).setHours(0, 0, 0, 0);
+	const timeDistance = Math.abs(A - B);
+	return timeDistance / A_DAY_TIME;
+};
+export const isSameYear = (timeStampA, timeStampB) => {
+	const dateA = new Date(timeStampA);
+	const dateB = new Date(timeStampB);
+	dateA.setHours(0, 0, 0, 0);
+	dateB.setHours(0, 0, 0, 0);
+	dateA.setMonth(0, 1);
+	dateB.setMonth(0, 1);
+	return dateA.getFullYear() === dateB.getFullYear();
+};
+export const translateDayNumberToDayChara = (day) => {
+	switch (day) {
+		case 1:
+			return '星期一';
+		case 2:
+			return '星期二';
+		case 3:
+			return '星期三';
+		case 4:
+			return '星期四';
+		case 5:
+			return '星期五';
+		case 6:
+			return '星期六';
+		default:
+			return '星期天';
+	}
+};
+
 export { decodeJWT, getMainContent, getDeviceStream };
