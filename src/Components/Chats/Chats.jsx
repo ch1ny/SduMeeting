@@ -1,8 +1,6 @@
 import {
 	CheckOutlined,
 	CloseOutlined,
-	DisconnectOutlined,
-	LoadingOutlined,
 	PlusOutlined,
 	SearchOutlined,
 	UserAddOutlined,
@@ -22,16 +20,14 @@ import {
 } from 'antd';
 import ChatInput from 'Components/ChatComponent/ChatInput';
 import ChatMessages from 'Components/ChatComponent/ChatMessages';
+import { ChatRTC } from 'Components/ChatComponent/ChatRTC';
 import FriendBubble from 'Components/ChatComponent/FriendBubble';
 import React, { useEffect, useReducer, useState } from 'react';
 import { ajax, wsAjax } from 'Utils/Axios/Axios';
 import invokeSocket from 'Utils/ChatSocket/ChatSocket';
 import {
 	ACCEPT_FRIEND_REQUEST,
-	CALL_STATUS_FREE,
-	CALL_STATUS_OFFERING,
 	CHAT_ANSWER_FRIEND_REQUEST,
-	CHAT_PRIVATE_WEBRTC_DISCONNECT,
 	CHAT_READ_MESSAGE,
 	CHAT_SEND_FRIEND_REQUEST,
 	NO_OPERATION_FRIEND_REQUEST,
@@ -41,12 +37,13 @@ import { decodeJWT, getMainContent } from 'Utils/Global';
 import {
 	ADD_MESSAGE_HISTORY,
 	ADD_UNREAD_MESSAGE,
-	setCallStatus,
 	setMessageHistory,
 	setUnreadMessages,
 } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
 import './style.scss';
+
+export const ChatRTCContext = React.createContext(undefined);
 
 export default function Chats() {
 	const [nowChatting, setNowChatting] = useState(undefined);
@@ -56,7 +53,6 @@ export default function Chats() {
 		const { message } = data;
 		message.myId = decodeJWT(store.getState().authToken).id;
 		if (!nowChatting || nowChatting.uid !== message.fromId) {
-			console.log({ nowChatting, message });
 			store.dispatch(setUnreadMessages(ADD_UNREAD_MESSAGE, message));
 			store.dispatch(setMessageHistory(ADD_MESSAGE_HISTORY, message));
 		} else {
@@ -119,9 +115,11 @@ export default function Chats() {
 			}),
 		[]
 	);
+	const [chatRtc, setChatRtc] = useState(undefined);
 	useEffect(() => {
 		window.ipc.invoke('GET_USER_AUTH_TOKEN_AFTER_LOGIN').then((token) => {
 			const _chatSocket = invokeSocket(token);
+			const myId = decodeJWT(store.getState().authToken).id;
 			_chatSocket.on('onopen', () => {
 				console.log('chatsocket连接成功');
 				wsAjax
@@ -133,7 +131,7 @@ export default function Chats() {
 						// NOTE: 初始化未读消息
 						const unreadNum = {};
 						for (const message of messages) {
-							message.myId = decodeJWT(store.getState().authToken).id;
+							message.myId = myId;
 							store.dispatch(setUnreadMessages(ADD_UNREAD_MESSAGE, message));
 							// NOTE: 与本地消息记录合并
 							store.dispatch(setMessageHistory(ADD_MESSAGE_HISTORY, message));
@@ -152,13 +150,19 @@ export default function Chats() {
 			_chatSocket.on('MESSAGE_RECEIVER_OK', onReceiveMessage);
 			_chatSocket.on('MESSAGE_SENDER_OK', onSendMessage);
 			setChatSocket(_chatSocket);
+			setChatRtc(
+				new ChatRTC({
+					socket: _chatSocket,
+					myId,
+				})
+			);
 		});
 	}, []);
 
 	const [showAddFriendModal, setShowAddFriendModal] = useState(false);
 
 	return (
-		<>
+		<ChatRTCContext.Provider value={chatRtc}>
 			<div id='chatsHeader'>
 				<div id='chatsTitle'>{nowChatting ? nowChatting.username : '聊天界面'}</div>
 				<div id='controlPanel'>
@@ -266,7 +270,7 @@ export default function Chats() {
 					setShowAddFriendModal(false);
 				}}
 			/>
-		</>
+		</ChatRTCContext.Provider>
 	);
 }
 
@@ -285,59 +289,8 @@ function ChatMainComponent(props) {
 				<div id='chatInput'>
 					<ChatInput
 						nowChattingId={props.id}
+						nowChattingName={props.username}
 						myId={myId}
-						onCall={() => {
-							// TODO: 补充发起会话函数，发送 OFFER 信号
-							if (store.getState().callStatus === CALL_STATUS_FREE) {
-								store.dispatch(setCallStatus(CALL_STATUS_OFFERING));
-								invokeSocket().send({
-									sender: myId,
-									receiver: props.id,
-								});
-								Modal.info({
-									title: '发起通话',
-									content: (
-										<>
-											<LoadingOutlined style={{ color: 'dodgerblue' }} />
-											<span style={{ marginLeft: '10px' }}>
-												已向 {props.username}{' '}
-												发送视频通话请求，正在等待对方响应
-											</span>
-										</>
-									),
-									width: '60%',
-									centered: true,
-									okButtonProps: {
-										type: 'default',
-									},
-									okText: (
-										<>
-											<DisconnectOutlined style={{ color: 'orange' }} />
-											<span>挂断电话</span>
-										</>
-									),
-									onOk: () => {
-										store.dispatch(setCallStatus(CALL_STATUS_FREE));
-										// TODO: 发送断开连接的ws
-										invokeSocket().send({
-											type: CHAT_PRIVATE_WEBRTC_DISCONNECT,
-											sender: myId,
-											receiver: props.id,
-											target: props.id,
-										});
-									},
-									getContainer: getMainContent,
-								});
-							} else {
-								Modal.error({
-									title: '无法发起通话',
-									content:
-										'当前正处于通话状态中，请在退出其他通话后再次尝试发起通话',
-									width: '60%',
-									centered: true,
-								});
-							}
-						}}
 					/>
 				</div>
 			</div>

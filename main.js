@@ -43,6 +43,7 @@ function createLoginWindow() {
 		fullscreenable: false,
 		webPreferences: {
 			preload: path.join(DIRNAME, 'electronAssets/preload.js'),
+			devTools: process.env.NODE_ENV === 'development',
 		},
 	});
 
@@ -60,6 +61,13 @@ function createLoginWindow() {
 				// loginWindow.setSkipTaskbar(false)
 				// loginWindow.restore()
 			},
+			icon: nativeImage
+				.createFromPath(path.join(DIRNAME, 'electronAssets/img/trayIcon/showWindow.png'))
+				.resize({
+					width: 16,
+					height: 16,
+					quality: 'best',
+				}),
 		},
 		{
 			label: '退出',
@@ -158,8 +166,10 @@ function createMainWindow() {
 			fullscreenable: false,
 			webPreferences: {
 				preload: path.join(DIRNAME, 'electronAssets/preload.js'),
+				devTools: process.env.NODE_ENV === 'development',
 			},
 		});
+		mainWindow.setContentProtection(true);
 
 		if (process.env.NODE_ENV === 'development') {
 			mainWindow.loadURL('http://localhost:9000/main');
@@ -334,11 +344,6 @@ app.on('ready', () => {
 	screenWidth = screen.getPrimaryDisplay().workAreaSize.width;
 	screenHeight = screen.getPrimaryDisplay().workAreaSize.height;
 
-	if (process.env.NODE_ENV !== 'development')
-		globalShortcut.register('CommandOrControl+Shift+I', () => {
-			// console.log("你想打开开发者工具？");
-		});
-
 	createLoginWindow();
 	ipc.once('QUIT', () => {
 		if (process.platform !== 'darwin') {
@@ -364,10 +369,6 @@ app.on('activate', () => {
 	if (loginWindow === null) {
 		createLoginWindow();
 	}
-});
-
-app.on('will-quit', () => {
-	if (process.env.NODE_ENV !== 'development') globalShortcut.unregisterAll();
 });
 
 function readyToUpdate() {

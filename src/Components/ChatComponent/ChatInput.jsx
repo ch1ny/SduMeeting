@@ -1,20 +1,26 @@
 import {
 	CloudSyncOutlined,
+	DisconnectOutlined,
+	LoadingOutlined,
 	PictureOutlined,
 	SmileOutlined,
 	WhatsAppOutlined,
 } from '@ant-design/icons';
-import { Button, message, Popover, Upload } from 'antd';
+import { Button, message, Modal, Popover, Upload } from 'antd';
+import { ChatRTCContext } from 'Components/Chats/Chats';
 import React, { useEffect, useRef, useState } from 'react';
 import { wsAjax } from 'Utils/Axios/Axios';
 import invokeSocket from 'Utils/ChatSocket/ChatSocket';
-import { CHAT_SEND_PRIVATE_MESSAGE } from 'Utils/Constraints';
-import { setMessageHistory, SYNC_CLOUD_MESSAGE_HISTORY } from 'Utils/Store/actions';
+import { CALL_STATUS_FREE, CHAT_SEND_PRIVATE_MESSAGE } from 'Utils/Constraints';
+import { getMainContent } from 'Utils/Global';
+import { setCallStatus, setMessageHistory, SYNC_CLOUD_MESSAGE_HISTORY } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
 import './ChatInput.scss';
 import { emojiRegExp } from './emoji';
 
 export default function ChatInput(props) {
+	const chatRtc = React.useContext(ChatRTCContext);
+
 	const [rawHtml, setRawHtml] = useState('');
 	const inputRef = useRef();
 	useEffect(() => {
@@ -163,7 +169,51 @@ export default function ChatInput(props) {
 						<PictureOutlined />
 					</div>
 				</Upload>
-				<div className='chatInputControlButtons' title='发起通话' onClick={props.onCall}>
+				<div
+					className='chatInputControlButtons'
+					title='发起通话'
+					onClick={() => {
+						// TODO: 补充发起会话函数，发送 OFFER 信号
+						if (store.getState().callStatus === CALL_STATUS_FREE) {
+							const modal = Modal.info({
+								title: '发起通话',
+								content: (
+									<>
+										<LoadingOutlined style={{ color: 'dodgerblue' }} />
+										<span style={{ marginLeft: '10px' }}>
+											已向 {props.nowChattingName}{' '}
+											发送视频通话请求，正在等待对方响应
+										</span>
+									</>
+								),
+								width: '60%',
+								centered: true,
+								okButtonProps: {
+									type: 'default',
+								},
+								okText: (
+									<>
+										<DisconnectOutlined style={{ color: 'orange' }} />
+										<span>挂断电话</span>
+									</>
+								),
+								onOk: () => {
+									store.dispatch(setCallStatus(CALL_STATUS_FREE));
+									// TODO: 发送断开连接的ws
+									chatRtc.hangUp();
+								},
+								getContainer: getMainContent,
+							});
+							chatRtc.createOffer(props.nowChattingId, modal);
+						} else {
+							Modal.error({
+								title: '无法发起通话',
+								content: '当前正处于通话状态中，请在退出其他通话后再次尝试发起通话',
+								width: '60%',
+								centered: true,
+							});
+						}
+					}}>
 					<WhatsAppOutlined />
 				</div>
 				<div

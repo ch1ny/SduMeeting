@@ -94,9 +94,6 @@ export default function MediaDevices() {
 	const [noiseSuppression, setNoiseSuppression] = useState(
 		localStorage.getItem('noiseSuppression') !== 'false'
 	);
-	useEffect(() => {
-		console.log(noiseSuppression);
-	}, [noiseSuppression]);
 	const [echoCancellation, setEchoCancellation] = useState(
 		localStorage.getItem('echoCancellation') !== 'false'
 	);

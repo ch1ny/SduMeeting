@@ -1,5 +1,10 @@
 import { message } from 'antd';
 import { EventEmitter } from 'events';
+import {
+	CHAT_PRIVATE_WEBRTC_ANSWER,
+	CHAT_PRIVATE_WEBRTC_CANDIDATE,
+	CHAT_PRIVATE_WEBRTC_OFFER,
+} from 'Utils/Constraints';
 import { getMainContent } from 'Utils/Global';
 import { ADD_MESSAGE_HISTORY, setMessageHistory } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
@@ -54,10 +59,22 @@ class ChatSocket extends EventEmitter {
 					this.emit('MESSAGE_RECEIVER_OK', msg);
 					break;
 				case 'MESSAGE_SENDER_OK':
-					//NOTE: 成功发送消息
+					// NOTE: 成功发送消息
 					msg.data.message.myId = msg.data.message.fromId;
 					store.dispatch(setMessageHistory(ADD_MESSAGE_HISTORY, msg.data.message));
 					this.emit('MESSAGE_SENDER_OK', msg.data.message.toId);
+					break;
+				case CHAT_PRIVATE_WEBRTC_OFFER:
+					// NOTE: 接到 OFFER 请求
+					this.emit('ON_PRIVATE_WEBRTC_OFFER', msg);
+					break;
+				case CHAT_PRIVATE_WEBRTC_ANSWER:
+					// NOTE: 接到 ANSWER 响应
+					this.emit('ON_PRIVATE_WEBRTC_ANSWER', msg);
+					break;
+				case CHAT_PRIVATE_WEBRTC_CANDIDATE:
+					// NOTE: ICE候选者
+					this.emit('ON_PRIVATE_WEBRTC_CANDIDATE', msg);
 					break;
 			}
 		};
