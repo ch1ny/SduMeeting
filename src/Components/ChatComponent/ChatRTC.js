@@ -37,7 +37,6 @@ export class ChatRTC extends EventEmitter {
 
 		this.socket.on('ON_PRIVATE_WEBRTC_OFFER', (msg) => {
 			const rejectOffer = () => {
-				store.dispatch(setCallStatus(CALL_STATUS_FREE));
 				this.socket.send({
 					type: CHAT_PRIVATE_WEBRTC_ANSWER,
 					accept: false,
@@ -46,9 +45,11 @@ export class ChatRTC extends EventEmitter {
 				});
 				this.answerModal = null;
 			};
+
+			console.log(store.getState().callStatus === CALL_STATUS_FREE);
+
 			if (store.getState().callStatus === CALL_STATUS_FREE) {
 				this.answerAudioPrompt[0]();
-				store.dispatch(setCallStatus(CALL_STATUS_ANSWERING));
 				store.dispatch(setNowChattingId(msg.sender));
 				this.answerModal = Modal.confirm({
 					title: '视频通话邀请',
@@ -76,26 +77,30 @@ export class ChatRTC extends EventEmitter {
 			} else rejectOffer();
 		});
 
-		this.socket.on('ON_PRIVATE_WEBRTC_ANSWER', (msg) => {
-			this.callAudioPrompt[1]();
-			if (this.offerModal) {
-				this.offerModal.destroy();
-				this.offerModal = null;
-			}
-			if (msg.accept) {
-				this.receiveAnswer(msg.sdp);
-			} else {
-				message.error({
-					content: '对方拒绝了您的通话邀请',
-					duration: 2,
-				});
-				store.dispatch(setCallStatus(CALL_STATUS_FREE));
+		this.socket.on('ON_PRIVATE_WEBRTC_ANSWER', ({ accept, sdp, sender, receiver }) => {
+			if (sender === this.sender && receiver === this.receiver) {
+				this.callAudioPrompt[1]();
+				if (this.offerModal) {
+					this.offerModal.destroy();
+					this.offerModal = null;
+				}
+				if (accept) {
+					this.receiveAnswer(sdp);
+				} else {
+					message.error({
+						content: '对方拒绝了您的通话邀请',
+						duration: 2,
+					});
+					store.dispatch(setCallStatus(CALL_STATUS_FREE));
+				}
 			}
 		});
 
 		this.socket.on('ON_PRIVATE_WEBRTC_CANDIDATE', this.handleCandidate.bind(this));
 
-		this.socket.on('ON_PRIVATE_WEBRTC_DISCONNECT', this.onHangUp.bind(this));
+		this.socket.on('ON_PRIVATE_WEBRTC_DISCONNECT', (msg) => {
+			this.onHangUp(msg);
+		});
 	}
 
 	async createOffer(targetId, myName, offerModal) {
@@ -136,8 +141,9 @@ export class ChatRTC extends EventEmitter {
 	}
 
 	async createAnswer(sender, remoteSdp) {
-		this.sender = sender;
+		store.dispatch(setCallStatus(CALL_STATUS_ANSWERING));
 		store.dispatch(setNowWebrtcFriendId(sender));
+		this.sender = sender;
 		this.receiver = this.myId;
 		this.peer.setRemoteDescription(
 			new RTCSessionDescription({
@@ -221,20 +227,21 @@ export class ChatRTC extends EventEmitter {
 		store.dispatch(setCallStatus(CALL_STATUS_FREE));
 	}
 
-	onHangUp() {
-		this.sender = null;
-		this.receiver = null;
-		store.dispatch(setNowWebrtcFriendId(null));
-		if (this.answerModal) {
-			this.answerAudioPrompt[1]();
-			this.answerModal.destroy();
+	onHangUp({ sender, receiver }) {
+		if (sender === this.sender && receiver === this.receiver) {
+			this.receiver = null;
+			store.dispatch(setNowWebrtcFriendId(null));
+			if (this.answerModal) {
+				this.answerAudioPrompt[1]();
+				this.answerModal.destroy();
+			}
+			this.answerModal = null;
+			this.localStream = null;
+			this.remoteStream = null;
+			this.peer.close();
+			this.peer = this.#buildPeer();
+			store.dispatch(setCallStatus(CALL_STATUS_FREE));
 		}
-		this.answerModal = null;
-		this.localStream = null;
-		this.remoteStream = null;
-		this.peer.close();
-		this.peer = this.#buildPeer();
-		store.dispatch(setCallStatus(CALL_STATUS_FREE));
 	}
 
 	#buildPeer() {

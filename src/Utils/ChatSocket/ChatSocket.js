@@ -83,6 +83,7 @@ class ChatSocket extends EventEmitter {
 					break;
 				case CHAT_PRIVATE_WEBRTC_OFFER:
 					// NOTE: 接到 OFFER 请求
+					console.log(msg);
 					this.emit('ON_PRIVATE_WEBRTC_OFFER', msg);
 					break;
 				case CHAT_PRIVATE_WEBRTC_ANSWER:
@@ -94,7 +95,7 @@ class ChatSocket extends EventEmitter {
 					this.emit('ON_PRIVATE_WEBRTC_CANDIDATE', msg);
 					break;
 				case CHAT_PRIVATE_WEBRTC_DISCONNECT:
-					this.emit('ON_PRIVATE_WEBRTC_DISCONNECT');
+					this.emit('ON_PRIVATE_WEBRTC_DISCONNECT', msg);
 					break;
 			}
 		};
