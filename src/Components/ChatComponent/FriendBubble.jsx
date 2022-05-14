@@ -9,7 +9,7 @@ import './FriendBubble.scss';
 
 export default function FriendBubble(props) {
 	const [latestMessage, setLatestMessage] = useState(
-		(store.getState().messageHistory[`${props.id}`] || [{}]).slice(-1)[0]
+		(store.getState().messageHistory[`${props.id}`] || []).slice(-1)[0]
 	);
 
 	useEffect(() => {
@@ -47,10 +47,12 @@ export default function FriendBubble(props) {
 			</div>
 			<div className='textContainer'>
 				<div className='userName'>{props.username}</div>
-				<div className='newestMessage'>{latestMessage.message}</div>
+				<div className='newestMessage'>{latestMessage ? latestMessage.message : ''}</div>
 			</div>
 			<div className='rightDiv'>
-				<div className='newestMessageTime'>{dateToTime(latestMessage.date)}</div>
+				<div className='newestMessageTime'>
+					{latestMessage ? dateToTime(latestMessage.date) : '无消息'}
+				</div>
 				<Badge count={props.unreadNumber} size='small' />
 			</div>
 		</div>
