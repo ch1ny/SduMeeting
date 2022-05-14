@@ -3,9 +3,11 @@ import { EventEmitter } from 'events';
 import {
 	CHAT_PRIVATE_WEBRTC_ANSWER,
 	CHAT_PRIVATE_WEBRTC_CANDIDATE,
+	CHAT_PRIVATE_WEBRTC_DISCONNECT,
 	CHAT_PRIVATE_WEBRTC_OFFER,
 } from 'Utils/Constraints';
 import { getMainContent } from 'Utils/Global';
+import { AUDIO_TYPE, buildPropmt } from 'Utils/Prompt/Prompt';
 import { ADD_MESSAGE_HISTORY, setMessageHistory } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
 
@@ -20,14 +22,13 @@ class ChatSocket extends EventEmitter {
 	socket;
 	constructor(token) {
 		super();
+		const [playMessageAudio] = buildPropmt(AUDIO_TYPE.MESSAGE_RECEIVED);
 		const socket = new WebSocket('ws://meeting.aiolia.top:8006/ws', [token]);
 		socket.onopen = (evt) => {
 			console.log('websocket连接成功');
 			this.emit('onopen');
 		};
 		socket.onmessage = (evt) => {
-			console.log('----您有新的消息----');
-			console.log(evt);
 			const msg = JSON.parse(evt.data);
 			switch (msg.type) {
 				case 'REQUEST_SENDER_OK':
@@ -54,9 +55,25 @@ class ChatSocket extends EventEmitter {
 						getPopupContainer: getMainContent,
 					});
 					break;
+				case 'REPLY_RECEIVER_OK':
+					playMessageAudio();
+					message.success({
+						content: `用户 ${msg.data.username} 已成为您的好友`,
+						getPopupContainer: getMainContent,
+					});
+					const { id, username, email, profile } = msg.data;
+					const newFriend = {
+						uid: id,
+						username,
+						email,
+						profile,
+					};
+					this.emit('REPLY_RECEIVER_OK', newFriend);
+					break;
 				case 'MESSAGE_RECEIVER_OK':
 					// NOTE: 接收消息
 					this.emit('MESSAGE_RECEIVER_OK', msg);
+					playMessageAudio();
 					break;
 				case 'MESSAGE_SENDER_OK':
 					// NOTE: 成功发送消息
@@ -76,6 +93,9 @@ class ChatSocket extends EventEmitter {
 					// NOTE: ICE候选者
 					this.emit('ON_PRIVATE_WEBRTC_CANDIDATE', msg);
 					break;
+				case CHAT_PRIVATE_WEBRTC_DISCONNECT:
+					this.emit('ON_PRIVATE_WEBRTC_DISCONNECT');
+					break;
 			}
 		};
 		socket.onerror = (evt) => {
@@ -92,8 +112,8 @@ class ChatSocket extends EventEmitter {
 	}
 
 	send(msg) {
-		console.log('----发送了一条消息----');
-		console.log(msg);
+		// console.log('----发送了一条消息----');
+		// console.log(msg);
 		this.socket.send(JSON.stringify(msg));
 	}
 }

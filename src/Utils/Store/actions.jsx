@@ -1,6 +1,9 @@
 /**
  * action 类型
  */
+// 选择当前聊天的对象 ID
+export const SET_NOW_CHATTING_ID = 'SET_NOW_CHATTING_ID';
+export const SET_NOW_WEBRTC_FRIEND_ID = 'SET_NOW_WEBRTC_FRIEND_ID';
 // 更新可用的音视频设备
 export const UPDATE_AVAILABLE_VIDEO_DEVICES = 'UPDATE_AVAILABLE_VIDEO_DEVICES';
 export const UPDATE_AVAILABLE_AUDIO_DEVICES = 'UPDATE_AVAILABLE_AUDIO_DEVICES';
@@ -33,6 +36,14 @@ export const DEVICE_TYPE = {
 /**
  * action 活动
  */
+export function setNowChattingId(nowChattingId) {
+	return { type: SET_NOW_CHATTING_ID, nowChattingId };
+}
+
+export function setNowWebrtcFriendId(nowWebrtcFriendId) {
+	return { type: SET_NOW_WEBRTC_FRIEND_ID, nowWebrtcFriendId };
+}
+
 export function updateAvailableDevices(deviceType, devices) {
 	switch (deviceType) {
 		case DEVICE_TYPE.VIDEO_DEVICE:

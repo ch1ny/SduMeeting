@@ -11,10 +11,26 @@ import {
 	REMOVE_UNREAD_MESSAGES,
 	SET_AUTH_TOKEN,
 	SET_CALL_STATUS,
+	SET_NOW_CHATTING_ID,
+	SET_NOW_WEBRTC_FRIEND_ID,
 	SYNC_CLOUD_MESSAGE_HISTORY,
 	UPDATE_AVAILABLE_AUDIO_DEVICES,
 	UPDATE_AVAILABLE_VIDEO_DEVICES,
 } from './actions';
+
+function setNowChattingId(state = null, action) {
+	if (action.type === SET_NOW_CHATTING_ID) {
+		return action.nowChattingId;
+	}
+	return state;
+}
+
+function setNowWebrtcFriendId(state = null, action) {
+	if (action.type === SET_NOW_WEBRTC_FRIEND_ID) {
+		return action.nowWebrtcFriendId;
+	}
+	return state;
+}
 
 function updateAvailableVideoDevices(state = [], action) {
 	switch (action.type) {
@@ -55,9 +71,7 @@ function exchangeAudioDevice(state = null, action) {
 }
 
 function setAuthToken(state = null, action) {
-	if (action.type === SET_AUTH_TOKEN) {
-		return action.token;
-	}
+	if (action.type === SET_AUTH_TOKEN) return action.token;
 	return state;
 }
 
@@ -125,6 +139,8 @@ function setCallStatus(state = CALL_STATUS_FREE, action) {
 }
 
 const reducers = combineReducers({
+	nowChattingId: setNowChattingId,
+	nowWebrtcFriendId: setNowWebrtcFriendId,
 	availableVideoDevices: updateAvailableVideoDevices,
 	availableAudioDevices: updateAvailableAudioDevices,
 	usingVideoDevice: exchangeVideoDevice,

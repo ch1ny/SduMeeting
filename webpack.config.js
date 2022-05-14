@@ -53,12 +53,12 @@ module.exports = {
 				},
 			},
 			{
-				test: /\.(png|jpg|gif)$/,
+				test: /\.(png|jpg|gif|mp3)$/,
 				use: [
 					{
 						loader: 'url-loader',
 						options: {
-							limit: 1024, //对图片的大小做限制，1kb
+							limit: 1024, //对文件的大小做限制，1kb
 						},
 					},
 				],

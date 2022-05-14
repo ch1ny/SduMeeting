@@ -13,8 +13,7 @@ import {
 } from 'Utils/Global';
 import { GET_MORE_MESSAGE_HISTORY, setMessageHistory } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
-import './ChatMessages.scss';
-import { emojiRegExp } from './emoji';
+import { emojiRegExp } from '../../emoji';
 
 export default function ChatMessages(props) {
 	const [messages, setMessages] = useState(new Array());
@@ -46,10 +45,46 @@ export default function ChatMessages(props) {
 
 	const [gettingHistoryMessage, setGettingHistoryMessage] = useState(false);
 
+	const [onVideo, setOnVideo] = useState(props.onVideo);
+	useEffect(() => {
+		setOnVideo(props.onVideo);
+	}, [props.onVideo]);
+	const [avatars, setAvatars] = useState([undefined, undefined]);
+	useEffect(() => {
+		if (props.onVideo) {
+			setAvatars([
+				<div className='avatarTextDiv'>{myName}</div>,
+				<div className='avatarTextDiv'>{props.username}</div>,
+			]);
+		} else {
+			setAvatars([
+				<Avatar
+					shape='round'
+					src={
+						myProfile
+							? `http://meeting.aiolia.top:8080/file/pic/user/${myId}.${myProfile}`
+							: undefined
+					}>
+					{myName}
+				</Avatar>,
+				<Avatar
+					shape='round'
+					src={
+						props.profile
+							? `http://meeting.aiolia.top:8080/file/pic/user/${props.id}.${props.profile}`
+							: undefined
+					}>
+					{props.username}
+				</Avatar>,
+			]);
+		}
+	}, [props.username, props.id, props.profile, props.onVideo, myProfile]);
+
 	return (
 		<>
 			<Button
 				type='link'
+				className='moreMessagesButton'
 				icon={<HistoryOutlined />}
 				loading={gettingHistoryMessage}
 				onClick={() => {
@@ -95,34 +130,16 @@ export default function ChatMessages(props) {
 							message={message.message}
 							sender={message.fromId}
 							amISender={true}
-							avatar={
-								<Avatar
-									shape='round'
-									src={
-										myProfile
-											? `http://meeting.aiolia.top:8080/file/pic/user/${myId}.${myProfile}`
-											: undefined
-									}>
-									{myName}
-								</Avatar>
-							}
+							translate={!onVideo}
+							avatar={avatars[0]}
 						/>
 					) : (
 						<ChatMessage
 							message={message.message}
 							sender={message.fromId}
 							amISender={false}
-							avatar={
-								<Avatar
-									shape='round'
-									src={
-										props.profile
-											? `http://meeting.aiolia.top:8080/file/pic/user/${props.id}.${props.profile}`
-											: undefined
-									}>
-									{props.username}
-								</Avatar>
-							}
+							translate={!onVideo}
+							avatar={avatars[1]}
 						/>
 					)}
 				</React.Fragment>
@@ -139,8 +156,9 @@ function ChatMessage(props) {
 
 	const messageContainer = useRef();
 	useEffect(() => {
-		messageContainer.current.innerHTML = messageFormatter(props.message);
-	}, []);
+		if (props.translate) messageContainer.current.innerHTML = messageFormatter(props.message);
+		else messageContainer.current.innerText = props.message;
+	}, [props.translate]);
 
 	return (
 		<div className={classname}>

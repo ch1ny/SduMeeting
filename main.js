@@ -8,6 +8,7 @@ const {
 	globalShortcut,
 	safeStorage,
 	dialog,
+	shell,
 } = require('electron');
 const path = require('path');
 const url = require('url');
@@ -32,123 +33,129 @@ const EXEPATH = path.dirname(app.getPath('exe'));
 if (process.env.NODE_ENV !== 'development') requestInstanceLock();
 
 function createLoginWindow() {
-	loginWindow = new BrowserWindow({
-		width: parseInt(screenWidth * 0.35),
-		height: parseInt(screenHeight * 0.5),
-		frame: false,
-		transparent: true,
-		show: false,
-		// alwaysOnTop: true,
-		resizable: process.env.NODE_ENV === 'development',
-		fullscreenable: false,
-		webPreferences: {
-			preload: path.join(DIRNAME, 'electronAssets/preload.js'),
-			devTools: process.env.NODE_ENV === 'development',
-		},
-	});
+	return new Promise((resolve) => {
+		loginWindow = new BrowserWindow({
+			width: parseInt(screenWidth * 0.35),
+			height: parseInt(screenHeight * 0.5),
+			frame: false,
+			transparent: true,
+			show: false,
+			// alwaysOnTop: true,
+			skipTaskbar: true,
+			resizable: process.env.NODE_ENV === 'development',
+			fullscreenable: false,
+			webPreferences: {
+				preload: path.join(DIRNAME, 'electronAssets/preload.js'),
+				devTools: process.env.NODE_ENV === 'development',
+			},
+		});
 
-	const contextMenu = Menu.buildFromTemplate([
-		// {
-		//     label: 'Login',
-		//     click: () => {
-		//         loginWindow.setSize(1000, 1000)
-		//     }
-		// },
-		{
-			label: '打开主面板',
-			click: () => {
+		const contextMenu = Menu.buildFromTemplate([
+			// {
+			//     label: 'Login',
+			//     click: () => {
+			//         loginWindow.setSize(1000, 1000)
+			//     }
+			// },
+			{
+				label: '打开主面板',
+				click: () => {
+					loginWindow.show();
+					// loginWindow.setSkipTaskbar(false)
+					// loginWindow.restore()
+				},
+				icon: nativeImage
+					.createFromPath(
+						path.join(DIRNAME, 'electronAssets/img/trayIcon/showWindow.png')
+					)
+					.resize({
+						width: 16,
+						height: 16,
+						quality: 'best',
+					}),
+			},
+			{
+				label: '退出',
+				click: () => {
+					app.quit();
+				},
+				icon: nativeImage
+					.createFromPath(path.join(DIRNAME, 'electronAssets/img/trayIcon/quit.png'))
+					.resize({
+						width: 16,
+						height: 16,
+						quality: 'best',
+					}),
+			},
+		]);
+		// loginWindow.webContents.openDevTools()
+
+		tray = tray || new Tray(path.join(DIRNAME, 'electronAssets/favicon.ico'));
+
+		if (process.env.NODE_ENV === 'development') {
+			loginWindow.loadURL('http://localhost:9000/login');
+			// loginWindow.webContents.openDevTools();
+		} else {
+			loginWindow.loadURL(
+				url.format({
+					pathname: path.join(DIRNAME, 'login/index.html'),
+					protocol: 'file:',
+					slashes: true,
+				})
+			);
+		}
+
+		tray.setToolTip(`假装这是一个QQ\n(¯﹃¯)`);
+		tray.setContextMenu(contextMenu);
+		tray.on('click', () => {
+			if (loginWindow !== null) {
 				loginWindow.show();
-				// loginWindow.setSkipTaskbar(false)
-				// loginWindow.restore()
-			},
-			icon: nativeImage
-				.createFromPath(path.join(DIRNAME, 'electronAssets/img/trayIcon/showWindow.png'))
-				.resize({
-					width: 16,
-					height: 16,
-					quality: 'best',
-				}),
-		},
-		{
-			label: '退出',
-			click: () => {
-				app.quit();
-			},
-			icon: nativeImage
-				.createFromPath(path.join(DIRNAME, 'electronAssets/img/trayIcon/quit.png'))
-				.resize({
-					width: 16,
-					height: 16,
-					quality: 'best',
-				}),
-		},
-	]);
-	// loginWindow.webContents.openDevTools()
+			} else {
+				mainWindow.show();
+			}
+		});
 
-	tray = new Tray(path.join(DIRNAME, 'electronAssets/favicon.ico'));
+		ipc.handleOnce('GET_LAST_PASSWORD', () => {
+			let userPsw;
+			if (store.get('userSafePsw')) {
+				userPsw = safeStorage.decryptString(Buffer.from(store.get('userSafePsw').data));
+			}
+			return userPsw;
+		});
 
-	if (process.env.NODE_ENV === 'development') {
-		loginWindow.loadURL('http://localhost:9000/login');
-		// loginWindow.webContents.openDevTools();
-	} else {
-		loginWindow.loadURL(
-			url.format({
-				pathname: path.join(DIRNAME, 'login/index.html'),
-				protocol: 'file:',
-				slashes: true,
-			})
-		);
-	}
+		ipc.once('USER_LOGIN', (event, userToken) => {
+			ipc.handle('GET_USER_AUTH_TOKEN_AFTER_LOGIN', () => {
+				return userToken;
+			});
+			ipc.removeAllListeners('MINIMIZE_LOGIN_WINDOW');
+			ipc.removeAllListeners('SAFE_PASSWORD');
+			ipc.removeHandler('GET_LAST_PASSWORD');
+			createMainWindow().then(() => {
+				loginWindow.close();
+			});
+			ipc.removeAllListeners('USER_LOGIN');
+		});
 
-	tray.setToolTip(`假装这是一个QQ\n(¯﹃¯)`);
-	tray.setContextMenu(contextMenu);
-	tray.on('click', () => {
-		if (loginWindow !== null) {
+		ipc.once('SAFE_PASSWORD', (event, shouldSave, userPsw) => {
+			if (shouldSave) {
+				store.set('userSafePsw', safeStorage.encryptString(userPsw));
+			} else {
+				store.clear('userSafePsw');
+			}
+		});
+
+		ipc.on('MINIMIZE_LOGIN_WINDOW', () => {
+			loginWindow.hide();
+		});
+
+		loginWindow.on('closed', () => {
+			loginWindow = null;
+		});
+
+		loginWindow.on('ready-to-show', () => {
 			loginWindow.show();
-		} else {
-			mainWindow.show();
-		}
-	});
-
-	ipc.handleOnce('GET_LAST_PASSWORD', () => {
-		let userPsw;
-		if (store.get('userSafePsw')) {
-			userPsw = safeStorage.decryptString(Buffer.from(store.get('userSafePsw').data));
-		}
-		return userPsw;
-	});
-
-	ipc.once('USER_LOGIN', (event, userToken) => {
-		ipc.handle('GET_USER_AUTH_TOKEN_AFTER_LOGIN', () => {
-			return userToken;
+			resolve();
 		});
-		ipc.removeAllListeners('MINIMIZE_LOGIN_WINDOW');
-		ipc.removeAllListeners('SAFE_PASSWORD');
-		ipc.removeHandler('GET_LAST_PASSWORD');
-		createMainWindow().then(() => {
-			loginWindow.close();
-		});
-		ipc.removeAllListeners('USER_LOGIN');
-	});
-
-	ipc.once('SAFE_PASSWORD', (event, shouldSave, userPsw) => {
-		if (shouldSave) {
-			store.set('userSafePsw', safeStorage.encryptString(userPsw));
-		} else {
-			store.clear('userSafePsw');
-		}
-	});
-
-	ipc.on('MINIMIZE_LOGIN_WINDOW', () => {
-		loginWindow.hide();
-	});
-
-	loginWindow.on('closed', () => {
-		loginWindow = null;
-	});
-
-	loginWindow.on('ready-to-show', () => {
-		loginWindow.show();
 	});
 }
 
@@ -231,10 +238,6 @@ function createMainWindow() {
 			}
 		});
 
-		mainWindow.on('closed', () => {
-			mainWindow = null;
-		});
-
 		mainWindow.on('ready-to-show', () => {
 			if (isMaximized) {
 				mainWindow.maximize();
@@ -263,7 +266,7 @@ function createMainWindow() {
 		});
 
 		ipc.on('MINIMIZE_MAIN_WINDOW', () => {
-			mainWindow.hide();
+			mainWindow.minimize();
 		});
 
 		ipc.on('MAIN_WINDOW_RESTORE', () => {
@@ -337,6 +340,26 @@ function createMainWindow() {
 		ipc.once('READY_TO_UPDATE', () => {
 			readyToUpdate();
 		});
+
+		ipc.once('LOG_OUT', () => {
+			createLoginWindow().then(() => {
+				mainWindow.close();
+			});
+		});
+
+		mainWindow.on('closed', () => {
+			ipc.removeHandler('GET_USER_AUTH_TOKEN_AFTER_LOGIN');
+			ipc.removeAllListeners('EXCHANGE_MAIN_WINDOW_MAXIMIZED_STATUS');
+			ipc.removeAllListeners('MINIMIZE_MAIN_WINDOW');
+			ipc.removeAllListeners('MAIN_WINDOW_RESTORE');
+			ipc.removeAllListeners('MAIN_WINDOW_FULL_SCREEN');
+			ipc.removeHandler('DESKTOP_CAPTURE');
+			ipc.removeHandler('SET_MESSAGE_HISTORY');
+			ipc.removeHandler('GET_MESSAGE_HISTORY');
+			ipc.removeHandler('DOWNLOADED_UPDATE_ZIP');
+			ipc.removeAllListeners('READY_TO_UPDATE');
+			mainWindow = null;
+		});
 	});
 }
 
@@ -345,6 +368,11 @@ app.on('ready', () => {
 	screenHeight = screen.getPrimaryDisplay().workAreaSize.height;
 
 	createLoginWindow();
+
+	ipc.on('BEEP', () => {
+		shell.beep();
+	});
+
 	ipc.once('QUIT', () => {
 		if (process.platform !== 'darwin') {
 			app.quit();

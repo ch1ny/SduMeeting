@@ -18,8 +18,7 @@ import {
 	Segmented,
 	Skeleton,
 } from 'antd';
-import ChatInput from 'Components/ChatComponent/ChatInput';
-import ChatMessages from 'Components/ChatComponent/ChatMessages';
+import { ChatMainComponent } from 'Components/ChatComponent/ChatMainComponent/ChatMainComponent';
 import { ChatRTC } from 'Components/ChatComponent/ChatRTC';
 import FriendBubble from 'Components/ChatComponent/FriendBubble';
 import React, { useEffect, useReducer, useState } from 'react';
@@ -38,6 +37,7 @@ import {
 	ADD_MESSAGE_HISTORY,
 	ADD_UNREAD_MESSAGE,
 	setMessageHistory,
+	setNowChattingId,
 	setUnreadMessages,
 } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
@@ -75,12 +75,17 @@ export default function Chats() {
 
 	useEffect(() => {
 		if (chatSocket) {
-			chatSocket.removeAllListeners('MESSAGE_RECEIVER_OK');
-			chatSocket.removeAllListeners('MESSAGE_SENDER_OK');
 			chatSocket.on('MESSAGE_RECEIVER_OK', onReceiveMessage);
 			chatSocket.on('MESSAGE_SENDER_OK', onSendMessage);
 		}
+		return () => {
+			if (chatSocket) {
+				chatSocket.removeAllListeners('MESSAGE_RECEIVER_OK');
+				chatSocket.removeAllListeners('MESSAGE_SENDER_OK');
+			}
+		};
 	}, [nowChatting]);
+
 	const [friendsList, dispatchFriendsList] = useReducer((state, action) => {
 		switch (action.type) {
 			case 'addFriend':
@@ -99,12 +104,23 @@ export default function Chats() {
 		}
 	}, new Map());
 
+	useEffect(
+		() =>
+			store.subscribe(() => {
+				const { nowChattingId } = store.getState();
+				if (nowChattingId) {
+					setNowChatting(friendsList.get(nowChattingId));
+				}
+			}),
+		[friendsList]
+	);
+
 	const [requests, setRequests] = useState([]);
 	const [unreadNumber, setUnreadNumber] = useState({});
 	useEffect(
 		() =>
 			store.subscribe(() => {
-				const unreadMessages = store.getState().unreadMessages;
+				const { unreadMessages } = store.getState();
 				const unreadNum = {};
 				for (const id in unreadMessages) {
 					if (Object.hasOwnProperty.call(unreadMessages, id)) {
@@ -147,8 +163,9 @@ export default function Chats() {
 						console.log(err);
 					});
 			});
-			_chatSocket.on('MESSAGE_RECEIVER_OK', onReceiveMessage);
-			_chatSocket.on('MESSAGE_SENDER_OK', onSendMessage);
+			_chatSocket.on('REPLY_RECEIVER_OK', (friend) => {
+				dispatchFriendsList({ type: 'addFriend', friend });
+			});
 			setChatSocket(_chatSocket);
 			setChatRtc(
 				new ChatRTC({
@@ -191,7 +208,7 @@ export default function Chats() {
 									email={friend.email}
 									profile={friend.profile}
 									onClick={() => {
-										setNowChatting(friend);
+										store.dispatch(setNowChattingId(friendId));
 									}}
 									unreadNumber={unreadNumber[`${friend.uid}`]}
 									style={{
@@ -271,30 +288,6 @@ export default function Chats() {
 				}}
 			/>
 		</ChatRTCContext.Provider>
-	);
-}
-
-function ChatMainComponent(props) {
-	const [myId, setMyId] = useState(undefined);
-	useEffect(() => {
-		setMyId(decodeJWT(store.getState().authToken).id);
-	}, []);
-
-	return (
-		<>
-			<div id='chatMainComponent'>
-				<div id='chatMessages'>
-					<ChatMessages id={props.id} username={props.username} profile={props.profile} />
-				</div>
-				<div id='chatInput'>
-					<ChatInput
-						nowChattingId={props.id}
-						nowChattingName={props.username}
-						myId={myId}
-					/>
-				</div>
-			</div>
-		</>
 	);
 }
 
