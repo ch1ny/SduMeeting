@@ -40,7 +40,7 @@ function createLoginWindow() {
 			frame: false,
 			transparent: true,
 			show: false,
-			// alwaysOnTop: true,
+			alwaysOnTop: true,
 			skipTaskbar: true,
 			resizable: process.env.NODE_ENV === 'development',
 			fullscreenable: false,
