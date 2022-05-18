@@ -51,18 +51,10 @@ function createLoginWindow() {
 		});
 
 		const contextMenu = Menu.buildFromTemplate([
-			// {
-			//     label: 'Login',
-			//     click: () => {
-			//         loginWindow.setSize(1000, 1000)
-			//     }
-			// },
 			{
 				label: '打开主面板',
 				click: () => {
 					loginWindow.show();
-					// loginWindow.setSkipTaskbar(false)
-					// loginWindow.restore()
 				},
 				icon: nativeImage
 					.createFromPath(
@@ -123,14 +115,14 @@ function createLoginWindow() {
 			return userPsw;
 		});
 
-		ipc.once('USER_LOGIN', (event, userToken) => {
+		ipc.once('USER_LOGIN', (event, userToken, userEmail) => {
 			ipc.handle('GET_USER_AUTH_TOKEN_AFTER_LOGIN', () => {
 				return userToken;
 			});
 			ipc.removeAllListeners('MINIMIZE_LOGIN_WINDOW');
 			ipc.removeAllListeners('SAFE_PASSWORD');
 			ipc.removeHandler('GET_LAST_PASSWORD');
-			createMainWindow().then(() => {
+			createMainWindow(userEmail).then(() => {
 				loginWindow.close();
 			});
 			ipc.removeAllListeners('USER_LOGIN');
@@ -159,7 +151,7 @@ function createLoginWindow() {
 	});
 }
 
-function createMainWindow() {
+function createMainWindow(userEmail) {
 	return new Promise((resolve) => {
 		const windowSize = store.get('mainWindowSize');
 
@@ -202,6 +194,15 @@ function createMainWindow() {
 						mainWindow.minimize();
 					}
 				},
+				icon: nativeImage
+					.createFromPath(
+						path.join(DIRNAME, 'electronAssets/img/trayIcon/showWindow.png')
+					)
+					.resize({
+						width: 16,
+						height: 16,
+						quality: 'best',
+					}),
 			},
 			{
 				type: 'separator',
@@ -298,9 +299,9 @@ function createMainWindow() {
 		});
 
 		ipc.handle('SET_MESSAGE_HISTORY', (evt, messages) => {
-			fs.ensureDir(path.join(EXEPATH, '/data')).then(() => {
+			fs.ensureDir(path.join(EXEPATH, '/data/messages')).then(() => {
 				fs.writeFile(
-					path.join(EXEPATH, '/data/message_history_cache'),
+					path.join(EXEPATH, `/data/messages/${userEmail}.smm`),
 					JSON.stringify(messages),
 					'utf8',
 					(err) => {
@@ -315,20 +316,24 @@ function createMainWindow() {
 
 		ipc.handle('GET_MESSAGE_HISTORY', () => {
 			return new Promise((resolve) => {
-				fs.ensureFile(path.join(EXEPATH, '/data/message_history_cache')).then(() => {
-					fs.readFile(
-						path.join(EXEPATH, '/data/message_history_cache'),
-						'utf8',
-						(err, data) => {
-							if (err) {
-								console.log('read error');
-								console.log(err);
-							} else {
-								resolve(data || '{}');
+				fs.ensureDir(path.join(EXEPATH, '/data/messages'))
+					.then(() => {
+						return fs.ensureFile(path.join(EXEPATH, `/data/messages/${userEmail}.smm`));
+					})
+					.then(() => {
+						fs.readFile(
+							path.join(EXEPATH, `/data/messages/${userEmail}.smm`),
+							'utf8',
+							(err, data) => {
+								if (err) {
+									console.log('read error');
+									console.log(err);
+								} else {
+									resolve(data || '{}');
+								}
 							}
-						}
-					);
-				});
+						);
+					});
 			});
 		});
 

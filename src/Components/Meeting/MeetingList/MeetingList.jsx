@@ -5,7 +5,8 @@ import {
 	PlusOutlined,
 	UserOutlined,
 } from '@ant-design/icons';
-import { Button, Checkbox, Divider, Empty, Form, Input, message, Modal } from 'antd';
+import { Button, Checkbox, Divider, Empty, Form, Input, Modal } from 'antd';
+import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useEffect, useState } from 'react';
 import { CALL_STATUS_FREE, CALL_STATUS_OFFERING } from 'Utils/Constraints';
 import eventBus from 'Utils/EventBus/EventBus';
@@ -104,7 +105,7 @@ export default function MeetingList(props) {
 							values.autoOpenMicroPhone = autoOpenMicroPhone;
 							props.joinMeeting(values);
 						} else {
-							message.error('应用当前不处于空闲通话状态！');
+							globalMessage.error('应用当前不处于空闲通话状态！');
 						}
 					}}>
 					<Form.Item
@@ -195,7 +196,7 @@ export default function MeetingList(props) {
 							values.autoOpenMicroPhone = autoOpenMicroPhone;
 							props.joinMeeting(values);
 						} else {
-							message.error('应用当前不处于空闲通话状态！');
+							globalMessage.error('应用当前不处于空闲通话状态！');
 						}
 					}}>
 					<Form.Item

@@ -1,4 +1,4 @@
-import { message } from 'antd';
+import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import { EventEmitter } from 'events';
 import {
 	CHAT_PRIVATE_WEBRTC_ANSWER,
@@ -32,32 +32,32 @@ class ChatSocket extends EventEmitter {
 			const msg = JSON.parse(evt.data);
 			switch (msg.type) {
 				case 'REQUEST_SENDER_OK':
-					message.success({
+					globalMessage.success({
 						content: '已成功发送好友请求',
 						getPopupContainer: getMainContent,
 					});
 					break;
 				case 'HAVE_ALREADY_REQUESTED':
-					message.warn({
+					globalMessage.warn({
 						content: '已向该用户发送好友请求，请勿重复发送',
 						getPopupContainer: getMainContent,
 					});
 					break;
 				case 'IS_ALREADY_FRIEND':
-					message.warn({
+					globalMessage.warn({
 						content: '该用户已成为您的好友，无需重复添加',
 						getPopupContainer: getMainContent,
 					});
 					break;
 				case 'REPLY_SENDER_OK':
-					message.success({
+					globalMessage.success({
 						content: '已成功回复好友请求',
 						getPopupContainer: getMainContent,
 					});
 					break;
 				case 'REPLY_RECEIVER_OK':
 					playMessageAudio();
-					message.success({
+					globalMessage.success({
 						content: `用户 ${msg.data.username} 已成为您的好友`,
 						getPopupContainer: getMainContent,
 					});

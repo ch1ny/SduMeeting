@@ -7,7 +7,8 @@ import Icon, {
 	FullscreenOutlined,
 	LeftOutlined,
 } from '@ant-design/icons';
-import { Button, message, Modal } from 'antd';
+import { Button, Modal } from 'antd';
+import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useEffect, useRef, useState } from 'react';
 import eventBus from 'Utils/EventBus/EventBus';
 import { getDeviceStream } from 'Utils/Global';
@@ -286,7 +287,7 @@ export default function MeetingRoom(props) {
 					onClick={() => {
 						const clipBoard = navigator.clipboard;
 						clipBoard.writeText(props.meetingId).then(() => {
-							message.success('会议号复制成功');
+							globalMessage.success('会议号复制成功');
 						});
 					}}>
 					<CopyOutlined />

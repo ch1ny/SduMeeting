@@ -1,4 +1,4 @@
-import { message } from 'antd';
+import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import { EventEmitter } from 'events';
 import RTC from './RTC';
 
@@ -52,7 +52,7 @@ export default class SFU extends EventEmitter {
 					// console.log('heartPackage:::');
 					break;
 				case 'requestError':
-					message.error(`服务器错误: ${parseMessage.data}`);
+					globalMessage.error(`服务器错误: ${parseMessage.data}`);
 					break;
 				default:
 					console.error('未知消息', parseMessage);

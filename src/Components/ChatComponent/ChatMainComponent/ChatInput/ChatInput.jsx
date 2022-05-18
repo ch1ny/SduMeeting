@@ -5,8 +5,9 @@ import {
 	SmileOutlined,
 	WhatsAppOutlined,
 } from '@ant-design/icons';
-import { Button, message, Modal, Popover } from 'antd';
+import { Button, Modal, Popover } from 'antd';
 import { ChatRTCContext } from 'Components/Chats/Chats';
+import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useEffect, useRef, useState } from 'react';
 import { wsAjax } from 'Utils/Axios/Axios';
 import invokeSocket from 'Utils/ChatSocket/ChatSocket';
@@ -213,17 +214,17 @@ export default function ChatInput(props) {
 											[`${props.nowChattingId}`]: list.reverse(),
 										})
 									);
-									message.success({
+									globalMessage.success({
 										content: '聊天消息同步成功',
 									});
 								} else {
-									message.error({
+									globalMessage.error({
 										content: '聊天消息同步失败',
 									});
 								}
 							})
 							.catch((err) => {
-								message.error({
+								globalMessage.error({
 									content: '聊天消息同步失败',
 								});
 							});

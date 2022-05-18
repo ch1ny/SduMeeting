@@ -1,17 +1,15 @@
 import { LoadingOutlined, LockOutlined, UserOutlined } from '@ant-design/icons';
-import { Checkbox, Form, Input, message } from 'antd';
+import { Checkbox, Form, Input } from 'antd';
+import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import { LogoIcon, MinimizeIcon, RegisterIcon, ShutdownIcon } from 'Components/MyIcon/MyIcon';
 import RippleButton from 'Components/RippleButton/RippleButton';
 import { Victor } from 'Components/Victor/Victor';
 import React, { useEffect, useRef, useState } from 'react';
 import { ajax } from 'Utils/Axios/Axios';
+import { decodeJWT } from 'Utils/Global';
 import './App.scss';
 
 export default function App() {
-	message.config({
-		maxCount: 1,
-	});
-
 	const [form] = Form.useForm();
 
 	const lastUserId = localStorage.getItem('userId');
@@ -79,26 +77,26 @@ export default function App() {
 				const password = values.password;
 				const res = await ajax.post('/login_and_register/login', { text, password });
 				if (res.code === 200) {
-					message.success('登录成功');
+					globalMessage.success('登录成功');
 					localStorage.setItem('rememberPassword', rememberPassword);
 					localStorage.setItem('autoLogin', autoLogin);
 					window.ipc.send('SAFE_PASSWORD', rememberPassword, password);
 					localStorage.setItem('userId', text);
-					window.ipc.send('USER_LOGIN', res.data.token);
+					window.ipc.send('USER_LOGIN', res.data.token, decodeJWT(res.data.token).email);
 				} else {
-					message.error(res.message);
+					globalMessage.error(res.message);
 					setIsLogining(false);
 				}
 			})
 			.catch((err) => {
 				if (err.ajax) {
-					message.error('服务器错误，请稍后重试');
+					globalMessage.error('服务器错误，请稍后重试');
 				} else {
 					const { values } = err;
 					if (values.username === undefined) {
-						message.error('请输入用户名或邮箱！');
+						globalMessage.error('请输入用户名或邮箱！');
 					} else if (values.password === undefined) {
-						message.error('请输入密码！');
+						globalMessage.error('请输入密码！');
 					}
 				}
 				setIsLogining(false);

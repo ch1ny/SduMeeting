@@ -1,5 +1,5 @@
 import { SettingFilled } from '@ant-design/icons';
-import { Anchor, Divider, Modal } from 'antd';
+import { Anchor, Divider, Modal, Typography } from 'antd';
 import React, { useEffect } from 'react';
 import eventBus from 'Utils/EventBus/EventBus';
 import { getMainContent } from 'Utils/Global';
@@ -10,6 +10,7 @@ import MeetingStatus from './MeetingStatus/MeetingStatus';
 import './style.scss';
 
 const { Link } = Anchor;
+const { Title } = Typography;
 
 export default function Setting(props) {
 	useEffect(() => {
@@ -41,33 +42,39 @@ export default function Setting(props) {
 						</Anchor>
 					</div>
 					<div className='settings'>
-						<>
-							<div>
-								<h2 id='login'>登录</h2>
-								<AutoLogin />
-							</div>
-							<Divider>
-								<SettingFilled />
-							</Divider>
-							<div>
-								<h2 id='mediaDevices'>音视频设备</h2>
-								<MediaDevices />
-							</div>
-							<Divider>
-								<SettingFilled />
-							</Divider>
-							<div>
-								<h2 id='meetingStatus'>与会状态</h2>
-								<MeetingStatus />
-							</div>
-							<Divider>
-								<SettingFilled />
-							</Divider>
-							<div>
-								<h2 id='about'>关于</h2>
-								<About />
-							</div>
-						</>
+						<div>
+							<Title level={3} id='login'>
+								登录
+							</Title>
+							<AutoLogin />
+						</div>
+						<Divider>
+							<SettingFilled />
+						</Divider>
+						<div>
+							<Title level={3} id='mediaDevices'>
+								音视频设备
+							</Title>
+							<MediaDevices />
+						</div>
+						<Divider>
+							<SettingFilled />
+						</Divider>
+						<div>
+							<Title level={3} id='meetingStatus'>
+								与会状态
+							</Title>
+							<MeetingStatus />
+						</div>
+						<Divider>
+							<SettingFilled />
+						</Divider>
+						<div>
+							<Title level={3} id='about'>
+								关于
+							</Title>
+							<About />
+						</div>
 					</div>
 				</div>
 			</Modal>

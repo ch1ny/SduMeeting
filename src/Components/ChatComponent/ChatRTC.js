@@ -1,5 +1,6 @@
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
-import { message, Modal } from 'antd';
+import { Modal } from 'antd';
+import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import { EventEmitter } from 'events';
 import React from 'react';
 import {
@@ -87,7 +88,7 @@ export class ChatRTC extends EventEmitter {
 				if (accept) {
 					this.receiveAnswer(sdp);
 				} else {
-					message.error({
+					globalMessage.error({
 						content: '对方拒绝了您的通话邀请',
 						duration: 2,
 					});

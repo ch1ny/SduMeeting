@@ -1,5 +1,6 @@
-import { Button, message, Progress } from 'antd';
+import { Button, Image, Progress } from 'antd';
 import axios from 'axios';
+import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useEffect, useState } from 'react';
 
 function needUpdate(nowVersion, targetVersion) {
@@ -43,10 +44,10 @@ export default function About(props) {
 			.then((res) => {
 				const { latest } = res.data;
 				if (needUpdate(appVersion, latest)) setLatestVersion(latest);
-				else message.success({ content: '当前已是最新版本，无需更新' });
+				else globalMessage.success({ content: '当前已是最新版本，无需更新' });
 			})
 			.catch(() => {
-				message.error({
+				globalMessage.error({
 					content: '检查更新失败',
 				});
 			})
@@ -82,12 +83,18 @@ export default function About(props) {
 					});
 				};
 				fr.readAsBinaryString(res.data);
-				message.success({ content: '更新包下载完毕，即将重启应用...' });
+				globalMessage.success({ content: '更新包下载完毕，即将重启应用...' });
 			});
 	};
 
 	return (
 		<div style={{ textAlign: 'center', userSelect: 'none' }}>
+			<Image
+				src={'./electronAssets/favicon.ico'}
+				preview={false}
+				width={'75%'}
+				height={'75%'}
+			/>
 			<div style={{ margin: '0.5rem', fontSize: '1.5rem', color: '#3c3c3c' }}>
 				V {appVersion}
 			</div>

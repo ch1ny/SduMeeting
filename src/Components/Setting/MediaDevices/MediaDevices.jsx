@@ -1,5 +1,6 @@
 import { CustomerServiceOutlined } from '@ant-design/icons';
-import { Button, Checkbox, message, Progress, Select } from 'antd';
+import { Button, Checkbox, Progress, Select } from 'antd';
+import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useEffect, useRef, useState } from 'react';
 import eventBus from 'Utils/EventBus/EventBus';
 import { getDeviceStream } from 'Utils/Global';
@@ -10,7 +11,7 @@ import store from 'Utils/Store/store';
 const { Option } = Select;
 
 export default function MediaDevices() {
-	message.config({
+	globalMessage.config({
 		maxCount: 1,
 	});
 
@@ -47,7 +48,7 @@ export default function MediaDevices() {
 	useEffect(() => {
 		if (soundMeter) {
 			soundMeter.on('STREAM_CONNECTED', () => {
-				message.success('完成音频设备连接');
+				globalMessage.success('完成音频设备连接');
 				setIsSoundMeterConnecting(false);
 			});
 			soundMeter.on('COUNTED_VOLUME', (volume) => {
@@ -214,7 +215,7 @@ export default function MediaDevices() {
 				icon={<CustomerServiceOutlined />}
 				onClick={() => {
 					getUserMediaDevices().then(() => {
-						message.success('设备信息更新完毕', 0.5);
+						globalMessage.success('设备信息更新完毕', 0.5);
 					});
 				}}>
 				没找到合适的设备？点我重新获取设备

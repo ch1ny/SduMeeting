@@ -13,7 +13,6 @@ import {
 	Empty,
 	Input,
 	List,
-	message,
 	Modal,
 	Segmented,
 	Skeleton,
@@ -21,6 +20,7 @@ import {
 import { ChatMainComponent } from 'Components/ChatComponent/ChatMainComponent/ChatMainComponent';
 import { ChatRTC } from 'Components/ChatComponent/ChatRTC';
 import FriendBubble from 'Components/ChatComponent/FriendBubble';
+import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useEffect, useReducer, useState } from 'react';
 import { ajax, wsAjax } from 'Utils/Axios/Axios';
 import invokeSocket from 'Utils/ChatSocket/ChatSocket';
@@ -307,7 +307,7 @@ function AddFriendModal(props) {
 					const { users } = res.data;
 					setSearchResult(users);
 					if (users.length === 0) {
-						message.warn({
+						globalMessage.warn({
 							content: '没有查询到相关用户',
 							getPopupContainer: getMainContent,
 						});

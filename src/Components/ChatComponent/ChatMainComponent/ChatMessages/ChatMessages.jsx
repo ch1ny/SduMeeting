@@ -1,6 +1,7 @@
 import { HistoryOutlined } from '@ant-design/icons';
-import { Avatar, Button, message } from 'antd';
+import { Avatar, Button } from 'antd';
 import classNames from 'classnames';
+import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useEffect, useRef, useState } from 'react';
 import { wsAjax } from 'Utils/Axios/Axios';
 import {
@@ -99,7 +100,7 @@ export default function ChatMessages(props) {
 							if (res.code === 200) {
 								const { list } = res.data;
 								if (list.length === 0)
-									message.warn({
+									globalMessage.warn({
 										content: '没有更早的消息了',
 									});
 								else

@@ -1,21 +1,22 @@
-import React, { useState } from 'react';
-import { Avatar, Button, Image, message, Upload } from 'antd';
-import ImgCrop from 'antd-img-crop';
-import './style.scss';
 import { UserOutlined } from '@ant-design/icons';
+import { Avatar, Button, Image, Upload } from 'antd';
+import ImgCrop from 'antd-img-crop';
+import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
+import React, { useState } from 'react';
+import './style.scss';
 
 export default function UploadAvatar(props) {
 	const [loading, setLoading] = useState(false);
 	const beforeUpload = (file) => {
 		const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
 		if (!isJpgOrPng) {
-			message.error('请上传(JPG/PNG)图片!');
+			globalMessage.error('请上传(JPG/PNG)图片!');
 			return Upload.LIST_IGNORE;
 		}
 
 		const isLt4M = file.size / 1024 / 1024 < 4;
 		if (!isLt4M) {
-			message.error('请上传4M以内的图片!');
+			globalMessage.error('请上传4M以内的图片!');
 			return Upload.LIST_IGNORE;
 		}
 

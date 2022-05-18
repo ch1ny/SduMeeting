@@ -151,7 +151,7 @@ export default function App() {
 													}
 												});
 											})
-											.catch(() => { });
+											.catch(() => {});
 									}}>
 									{sendCaptchaTick > 0
 										? `${sendCaptchaTick}秒后可再次发送`

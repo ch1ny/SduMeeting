@@ -1,4 +1,4 @@
-import { message } from 'antd';
+import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useEffect, useState } from 'react';
 import { CALL_STATUS_CALLING, CALL_STATUS_FREE } from 'Utils/Constraints';
 import eventBus from 'Utils/EventBus/EventBus';
@@ -42,7 +42,7 @@ export default function Meeting() {
 				store.dispatch(setCallStatus(CALL_STATUS_CALLING));
 			});
 			sfu.on('error', () => {
-				message.error('房间连接失败！');
+				globalMessage.error('房间连接失败！');
 				console.warn('SFU 连接失败');
 				eventBus.emit('ATTEMPT_TO_JOIN');
 				setSfu(undefined);
