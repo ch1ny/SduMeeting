@@ -2,11 +2,10 @@ import {
 	CloudSyncOutlined,
 	DisconnectOutlined,
 	LoadingOutlined,
-	PictureOutlined,
 	SmileOutlined,
 	WhatsAppOutlined,
 } from '@ant-design/icons';
-import { Button, message, Modal, Popover, Upload } from 'antd';
+import { Button, message, Modal, Popover } from 'antd';
 import { ChatRTCContext } from 'Components/Chats/Chats';
 import React, { useEffect, useRef, useState } from 'react';
 import { wsAjax } from 'Utils/Axios/Axios';
@@ -145,30 +144,6 @@ export default function ChatInput(props) {
 						<SmileOutlined />
 					</div>
 				</Popover>
-				<Upload
-					accept={['.bmp', '.gif', '.jpeg', '.jpg', '.png']}
-					beforeUpload={(file) => {
-						const isImage =
-							file.type === 'image/jpeg' ||
-							file.type === 'image/png' ||
-							file.type === 'image/gif' ||
-							file.type === 'image/bmp';
-						if (!isImage) {
-							console.log(file);
-							message.error('请上传允许的图片文件');
-						}
-						return isImage;
-					}}
-					customRequest={({ file }) => {
-						// TODO: 这里需要完善图片上传函数
-						console.log(file);
-					}}
-					showUploadList={false}
-					maxCount={1}>
-					<div className='chatInputControlButtons' title='发送图片'>
-						<PictureOutlined />
-					</div>
-				</Upload>
 				<div
 					className='chatInputControlButtons'
 					title={props.onVideo ? '断开通话' : '发起通话'}

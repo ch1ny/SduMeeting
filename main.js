@@ -176,7 +176,6 @@ function createMainWindow() {
 				devTools: process.env.NODE_ENV === 'development',
 			},
 		});
-		mainWindow.setContentProtection(true);
 
 		if (process.env.NODE_ENV === 'development') {
 			mainWindow.loadURL('http://localhost:9000/main');
@@ -200,7 +199,7 @@ function createMainWindow() {
 						// loginWindow.setSkipTaskbar(true)
 						// loginWindow.minimize()
 					} else {
-						mainWindow.hide();
+						mainWindow.minimize();
 					}
 				},
 			},
