@@ -4,17 +4,13 @@ import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useEffect, useRef, useState } from 'react';
 import eventBus from 'Utils/EventBus/EventBus';
 import { getDeviceStream } from 'Utils/Global';
-import SoundMeter from 'Utils/SoundMeter/SoundMeter';
 import { DEVICE_TYPE, exchangeMediaDevice, updateAvailableDevices } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
+import VolumeMeter from 'Utils/VolumeMeter/VolumeMeter';
 
 const { Option } = Select;
 
 export default function MediaDevices() {
-	globalMessage.config({
-		maxCount: 1,
-	});
-
 	const [videoDevices, setVideoDevices] = useState(store.getState().availableVideoDevices);
 	const [audioDevices, setAudioDevices] = useState(store.getState().availableAudioDevices);
 	const [usingVideoDevice, setUsingVideoDevice] = useState(undefined);
@@ -35,37 +31,35 @@ export default function MediaDevices() {
 
 	const [isExamingMicroPhone, setIsExamingMicroPhone] = useState(false);
 	const [microPhoneVolume, setMicroPhoneVolume] = useState(0);
-	const [soundMeter, setSoundMeter] = useState(null);
 	const [isSoundMeterConnecting, setIsSoundMeterConnecting] = useState(false);
 	const examMicroPhoneRef = useRef();
+	const [volumeMeter] = useState(new VolumeMeter());
 	useEffect(() => {
-		setSoundMeter(new SoundMeter(new window.AudioContext()));
-		return () => {
-			if (soundMeter) soundMeter.stop();
-			setSoundMeter(null);
-		};
-	}, []);
-	useEffect(() => {
-		if (soundMeter) {
-			soundMeter.on('STREAM_CONNECTED', () => {
+		if (volumeMeter) {
+			volumeMeter.on('STREAM_CONNECTED', () => {
 				globalMessage.success('完成音频设备连接');
 				setIsSoundMeterConnecting(false);
 			});
-			soundMeter.on('COUNTED_VOLUME', (volume) => {
-				setMicroPhoneVolume(Number((volume * 100).toFixed(0)));
+			volumeMeter.on('COUNTED_VOLUME', (volume) => {
+				setMicroPhoneVolume(Number(volume.toFixed(0)));
 			});
 		}
-	}, [soundMeter]);
+	}, [volumeMeter]);
 	useEffect(() => {
 		if (isExamingMicroPhone) {
-			soundMeterConnect(examMicroPhoneRef, soundMeter);
+			getDeviceStream(DEVICE_TYPE.AUDIO_DEVICE).then((stream) => {
+				volumeMeter.connect(stream);
+				examMicroPhoneRef.current.srcObject = stream;
+				examMicroPhoneRef.current.play();
+			});
 		} else {
-			if (soundMeter) {
-				soundMeter.stop();
-				examMicroPhoneRef.current.pause();
-				examMicroPhoneRef.current.srcObject = null;
+			if (volumeMeter) {
+				volumeMeter.disconnect().then(() => {
+					examMicroPhoneRef.current.pause();
+					examMicroPhoneRef.current.srcObject = null;
+					setMicroPhoneVolume(0);
+				});
 			}
-			setMicroPhoneVolume(0);
 		}
 	}, [isExamingMicroPhone]);
 
@@ -109,8 +103,14 @@ export default function MediaDevices() {
 					setUsingAudioDevice(label);
 					store.dispatch(exchangeMediaDevice(DEVICE_TYPE.AUDIO_DEVICE, option));
 					if (isExamingMicroPhone) {
-						soundMeter.stop();
-						soundMeterConnect(examMicroPhoneRef, soundMeter);
+						volumeMeter.disconnect().then(() => {
+							getDeviceStream(DEVICE_TYPE.AUDIO_DEVICE).then((stream) => {
+								volumeMeter.connect(stream);
+								examMicroPhoneRef.current.pause();
+								examMicroPhoneRef.current.srcObject = stream;
+								examMicroPhoneRef.current.play();
+							});
+						});
 					}
 				}}
 				value={usingAudioDevice}>
@@ -207,7 +207,14 @@ export default function MediaDevices() {
 					display: 'flex',
 					justifyContent: 'center',
 				}}>
-				<video ref={examCameraRef} style={{ background: 'black', width: '95%' }} />
+				<video
+					ref={examCameraRef}
+					style={{
+						background: 'black',
+						width: '40vw',
+						height: 'calc(40vw / 1920 * 1080)',
+					}}
+				/>
 			</div>
 			<Button
 				type='link'
@@ -274,18 +281,6 @@ function getUserMediaDevices() {
 		} catch (error) {
 			console.warn('获取设备时发生错误');
 			reject(error);
-		}
-	});
-}
-
-async function soundMeterConnect(examMicroPhoneRef, soundMeter) {
-	const audioStream = await getDeviceStream(DEVICE_TYPE.AUDIO_DEVICE);
-	examMicroPhoneRef.current.srcObject = audioStream;
-	examMicroPhoneRef.current.play();
-	soundMeter.connectToSource(audioStream, (err) => {
-		if (err) {
-			console.log(err);
-			return;
 		}
 	});
 }

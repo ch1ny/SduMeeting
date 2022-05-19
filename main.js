@@ -158,7 +158,7 @@ function createMainWindow(userEmail) {
 		mainWindow = new BrowserWindow({
 			width: windowSize ? windowSize[0] : parseInt(screenWidth * 0.6),
 			height: windowSize ? windowSize[1] : parseInt(screenHeight * 0.8),
-			minWidth: 350,
+			minWidth: parseInt(screenWidth * 0.45),
 			frame: false,
 			transparent: true,
 			show: false,

@@ -28,6 +28,7 @@ export default function Setting(props) {
 				zIndex={1000}
 				getContainer={getMainContent}
 				footer={null}
+				width='65vw'
 				destroyOnClose={false}>
 				<div className='settingContainer'>
 					<div className='anchorContainer'>
