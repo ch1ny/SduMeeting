@@ -3,8 +3,9 @@ import { Button, Checkbox, Modal } from 'antd';
 import React, { useState } from 'react';
 import { getMainContent } from 'Utils/Global';
 
-export default function AutoLogin() {
+export default function General() {
 	const [autoLogin, setAutoLogin] = useState(localStorage.getItem('autoLogin') === 'true');
+	const [autoOpen, setAutoOpen] = useState(localStorage.getItem('autoOpen') === 'true');
 
 	return (
 		<>
@@ -16,6 +17,17 @@ export default function AutoLogin() {
 						localStorage.setItem('autoLogin', e.target.checked);
 					}}>
 					自动登录
+				</Checkbox>
+			</div>
+			<div>
+				<Checkbox
+					checked={autoOpen}
+					onChange={(e) => {
+						setAutoOpen(e.target.checked);
+						localStorage.setItem('autoOpen', e.target.checked);
+						window.ipc.send('EXCHANGE_OPEN_AFTER_START', e.target.checked);
+					}}>
+					开机时启动
 				</Checkbox>
 			</div>
 			<div style={{ marginTop: '5px' }}>

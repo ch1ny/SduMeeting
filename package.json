@@ -32,7 +32,7 @@
 		"start": "webpack serve --mode development --env development",
 		"elect": "set NODE_ENV=development&&electron .",
 		"assets": "assetsAfterBuild.bat",
-		"dist": "yarn build&&yarn assets&&electron-packager ./build SduMeeting --icon=./public/electronAssets/favicon.ico --platform=win32 --arch=x64 --out ./dist --asar --overwrite --win32metadata.requested-execution-level=requireAdministrator&&nodeModulesAfterDist.bat win32 x64"
+		"dist": "yarn build&&yarn assets&&electron-packager ./build SduMeeting --icon=./public/electronAssets/favicon.ico --platform=win32 --arch=x64 --out ./dist --asar --overwrite&&nodeModulesAfterDist.bat win32 x64"
 	},
 	"dependencies": {
 		"@ant-design/icons": "^4.7.0",

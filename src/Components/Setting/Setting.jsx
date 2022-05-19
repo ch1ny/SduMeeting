@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 import eventBus from 'Utils/EventBus/EventBus';
 import { getMainContent } from 'Utils/Global';
 import About from './About/About';
-import AutoLogin from './AutoLogin/AutoLogin';
+import General from './General/General';
 import MediaDevices from './MediaDevices/MediaDevices';
 import MeetingStatus from './MeetingStatus/MeetingStatus';
 import './style.scss';
@@ -36,7 +36,7 @@ export default function Setting(props) {
 							getContainer={() =>
 								document.querySelector('.settingContainer .settings')
 							}>
-							<Link href='#login' title='登录' />
+							<Link href='#general' title='常用' />
 							<Link href='#mediaDevices' title='音视频设备' />
 							<Link href='#meetingStatus' title='与会状态' />
 							<Link href='#about' title='关于' />
@@ -44,10 +44,10 @@ export default function Setting(props) {
 					</div>
 					<div className='settings'>
 						<div>
-							<Title level={3} id='login'>
-								登录
+							<Title level={3} id='general'>
+								常用
 							</Title>
-							<AutoLogin />
+							<General />
 						</div>
 						<Divider>
 							<SettingFilled />

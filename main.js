@@ -140,6 +140,14 @@ function createLoginWindow() {
 			loginWindow.hide();
 		});
 
+		ipc.on('EXCHANGE_OPEN_AFTER_START', (evt, openAtLogin) => {
+			// if (app.isPackaged) {
+			app.setLoginItemSettings({
+				openAtLogin,
+			});
+			// }
+		});
+
 		loginWindow.on('closed', () => {
 			loginWindow = null;
 		});
