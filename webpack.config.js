@@ -9,7 +9,7 @@ module.exports = {
 		port: 9000,
 	},
 	resolve: {
-		extensions: ['.js', '.jsx', '.json'],
+		extensions: ['.js', '.jsx', '.json', '.ts', '.tsx'],
 		alias: {
 			Components: path.join(__dirname, 'src/Components'),
 			Views: path.join(__dirname, 'src/Views'),
@@ -17,9 +17,9 @@ module.exports = {
 		},
 	},
 	entry: {
-		login: './src/Views/Login/index.jsx',
-		main: './src/Views/Main/index.jsx',
-		register: './src/Views/Register/index.jsx',
+		login: './src/Views/Login/index.tsx',
+		main: './src/Views/Main/index.tsx',
+		register: './src/Views/Register/index.tsx',
 	},
 	output: {
 		path: path.resolve(__dirname, './build'),
@@ -42,15 +42,13 @@ module.exports = {
 				],
 			},
 			{
-				test: /\.jsx?$/,
+				test: /\.tsx?$/,
 				exclude: /(node_modules|bower_components)/,
-				use: {
-					loader: 'babel-loader',
-					options: {
-						presets: ['@babel/preset-react', '@babel/preset-env'],
-						plugins: ['@babel/plugin-proposal-class-properties'],
+				use: [
+					{
+						loader: 'ts-loader',
 					},
-				},
+				],
 			},
 			{
 				test: /\.(png|jpg|gif|mp3)$/,

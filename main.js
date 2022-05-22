@@ -15,6 +15,7 @@ const url = require('url');
 const Store = require('electron-store');
 const store = new Store();
 const fs = require('fs-extra');
+const cp = require('child_process');
 
 let loginWindow, mainWindow;
 let tray;
@@ -138,14 +139,6 @@ function createLoginWindow() {
 
 		ipc.on('MINIMIZE_LOGIN_WINDOW', () => {
 			loginWindow.hide();
-		});
-
-		ipc.on('EXCHANGE_OPEN_AFTER_START', (evt, openAtLogin) => {
-			// if (app.isPackaged) {
-			app.setLoginItemSettings({
-				openAtLogin,
-			});
-			// }
 		});
 
 		loginWindow.on('closed', () => {
@@ -294,6 +287,52 @@ function createMainWindow(userEmail) {
 			}
 		});
 
+		ipc.on('EXCHANGE_OPEN_AFTER_START_STATUS', (evt, openAtLogin) => {
+			if (app.isPackaged) {
+				if (openAtLogin) {
+					cp.exec(
+						`REG ADD HKLM\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run /v SduMeeting /t REG_SZ /d "${process.execPath}" /f`,
+						(err) => {
+							console.log(err);
+						}
+					);
+					// cp.exec(
+					// 	`REG ADD "HKCU\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AppCompatFlags\\Layers" /v "${process.execPath}" /t REG_SZ /d "RunAsInvoker" /f`,
+					// 	(err) => {
+					// 		console.log(err);
+					// 	}
+					// );
+				} else {
+					cp.exec(
+						`REG DELETE HKLM\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run /v SduMeeting /f`,
+						(err) => {
+							console.log(err);
+						}
+					);
+					// cp.exec(
+					// 	`REG DELETE "HKCU\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AppCompatFlags\\Layers" /v "${process.execPath}" /f`,
+					// 	(err) => {
+					// 		console.log(err);
+					// 	}
+					// );
+				}
+			}
+		});
+
+		ipc.handle('GET_OPEN_AFTER_START_STATUS', () => {
+			return new Promise((resolve) => {
+				cp.exec(
+					`REG QUERY HKLM\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run /v SduMeeting`,
+					(err, stdout, stderr) => {
+						if (err) {
+							resolve(false);
+						}
+						resolve(stdout.indexOf('SduMeeting') >= 0);
+					}
+				);
+			});
+		});
+
 		const { desktopCapturer } = require('electron');
 		ipc.handle('DESKTOP_CAPTURE', () => {
 			return new Promise(async (resolve, reject) => {
@@ -365,6 +404,8 @@ function createMainWindow(userEmail) {
 			ipc.removeAllListeners('MINIMIZE_MAIN_WINDOW');
 			ipc.removeAllListeners('MAIN_WINDOW_RESTORE');
 			ipc.removeAllListeners('MAIN_WINDOW_FULL_SCREEN');
+			ipc.removeAllListeners('EXCHANGE_OPEN_AFTER_START_STATUS');
+			ipc.removeHandler('GET_OPEN_AFTER_START_STATUS');
 			ipc.removeHandler('DESKTOP_CAPTURE');
 			ipc.removeHandler('SET_MESSAGE_HISTORY');
 			ipc.removeHandler('GET_MESSAGE_HISTORY');
@@ -412,7 +453,7 @@ app.on('activate', () => {
 });
 
 function readyToUpdate() {
-	const { spawn } = require('child_process');
+	const { spawn } = cp;
 	const child = spawn(
 		path.join(EXEPATH, 'resources/ReadyUpdater.exe'),
 		['YES_I_WANNA_UPDATE_ASAR'],
