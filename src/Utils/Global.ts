@@ -71,6 +71,14 @@ function getDeviceStream(device: string) {
     }
 }
 
+function getDesktopStream() {
+    return new Promise((resolve) => {
+        (window as any).captureDesktop().then((videoDOM: HTMLVideoElement) => {
+            resolve(videoDOM.srcObject);
+        })
+    })
+}
+
 export const A_SECOND_TIME = 1000;
 export const A_MINUTE_TIME = 60 * A_SECOND_TIME;
 export const AN_HOUR_TIME = 60 * A_MINUTE_TIME;
@@ -119,5 +127,5 @@ export const translateDayNumberToDayChara = (day: any) => {
     }
 };
 
-export { decodeJWT, getMainContent, getDeviceStream };
+export { decodeJWT, getMainContent, getDeviceStream, getDesktopStream };
 

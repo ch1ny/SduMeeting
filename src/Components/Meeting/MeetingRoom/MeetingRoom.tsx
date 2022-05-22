@@ -239,7 +239,7 @@ export default function MeetingRoom(props: MeetingRoomProps) {
             props.sfu.on('addRemoteStream', (id, stream) => {
                 setMembers(new Map(members.set(id, { stream })));
             });
-            props.sfu.on('removeRemoteStream', (id, stream) => {
+            props.sfu.on('removeRemoteStream', (id) => {
                 members.delete(id);
                 setMembers(new Map(members));
             });

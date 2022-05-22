@@ -15,7 +15,7 @@ export interface RTCReceiver {
 
 export default class RTC extends EventEmitter {
     _sender!: RTCSender;
-    _receivers: Map<number, any>;
+    _receivers: Map<number, RTCReceiver>;
 
     constructor() {
         super();
@@ -59,21 +59,14 @@ export default class RTC extends EventEmitter {
 
             pc.ontrack = (e) => {
                 console.log(`ontrack`);
-                const receiver = this._receivers.get(pubId);
+                const receiver = this._receivers.get(pubId) as RTCReceiver;
                 if (!receiver.stream) {
                     receiver.stream = new MediaStream();
-                    console.log(`receiver.pc.onaddstream => ${receiver.stream.id}`);
-                    this.emit('addstream', pubId, receiver.stream);
+                    console.log(`receiver.pc.onaddtrack => ${receiver.stream.id}`);
+                    this.emit('addtrack', pubId, receiver.stream);
                 }
                 receiver.stream.addTrack(e.track);
             };
-
-            // TODO: 修复他人退出会议的操作
-            // pc.onremovestream = (e) => {
-            //     const stream = e.stream;
-            //     console.log(`receiver.pc.onremovestream => ${stream.id}`);
-            //     this.emit('removestream', pubId, stream);
-            // };
 
             let receiver = {
                 offerSent: false,

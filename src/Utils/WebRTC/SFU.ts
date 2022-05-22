@@ -85,12 +85,8 @@ export default class SFU extends EventEmitter {
             this.emit('addLocalStream', id, stream);
         });
 
-        this._rtc.on('addstream', (id, stream) => {
+        this._rtc.on('addtrack', (id, stream) => {
             this.emit('addRemoteStream', id, stream);
-        });
-
-        this._rtc.on('removestream', (id, stream) => {
-            this.emit('removeRemoteStream', id, stream);
         });
 
         this.emit('connect');
@@ -190,6 +186,7 @@ export default class SFU extends EventEmitter {
     onUnpublish(message: any) {
         console.log('退出用户:' + message['data']['leaverId']);
         this._rtc.closeReceiver(message['data']['leaverId']);
+        this.emit('removeRemoteStream', message['data']['leaverId']);
     }
 
     _onRtcCreateReceiver(pubId: number) {

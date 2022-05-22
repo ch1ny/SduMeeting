@@ -84,7 +84,7 @@ function getUserMediaDevices() {
 
 export default function App() {
 	useEffect(() => {
-		getUserMediaDevices()
+		getUserMediaDevices();
 	}, []);
 
 	(window as any).ipc.invoke('GET_USER_AUTH_TOKEN_AFTER_LOGIN').then((authToken: string) => {
