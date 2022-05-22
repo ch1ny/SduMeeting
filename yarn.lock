@@ -243,10 +243,10 @@
   resolved "https://registry.npmjs.org/@types/node/-/node-17.0.21.tgz"
   integrity sha512-DBZCJbhII3r90XbQxI8Y9IjjiiOGlZ0Hr32omXIZvwwZ7p4DMMXGrKXVyPfuoBOri9XNtL0UK69jYIBIsRX3QQ==
 
-"@types/node@^14.6.2":
-  version "14.18.12"
-  resolved "https://registry.npmmirror.com/@types/node/-/node-14.18.12.tgz#0d4557fd3b94497d793efd4e7d92df2f83b4ef24"
-  integrity sha512-q4jlIR71hUpWTnGhXWcakgkZeHa3CCjcQcnuzU8M891BAWA2jHiziiWEPEkdS5pFsz7H9HJiy8BrK7tBRNrY7A==
+"@types/node@^16.11.26":
+  version "16.11.36"
+  resolved "https://registry.npmmirror.com/@types/node/-/node-16.11.36.tgz#9ab9f8276987132ed2b225cace2218ba794fc751"
+  integrity sha512-FR5QJe+TaoZ2GsMHkjuwoNabr+UrJNRr2HNOo+r/7vhcuntM6Ee/pRPOnRhhL2XE9OOvX9VLEq+BcXl3VjNoWA==
 
 "@types/prop-types@*":
   version "15.7.5"
@@ -1471,13 +1471,13 @@ electron-to-chromium@^1.4.71:
   resolved "https://registry.npmjs.org/electron-to-chromium/-/electron-to-chromium-1.4.73.tgz"
   integrity sha512-RlCffXkE/LliqfA5m29+dVDPB2r72y2D2egMMfIy3Le8ODrxjuZNVo4NIC2yPL01N4xb4nZQLwzi6Z5tGIGLnA==
 
-electron@^17.1.0:
-  version "17.1.0"
-  resolved "https://registry.npmmirror.com/electron/-/electron-17.1.0.tgz#7539937d294413af8efba69dc370cf7d2b0cdc72"
-  integrity sha512-X/qdldmQ8lA15NmeraubWCTtMeTO8K9Ser0wtSCgOXVh53Sr1Ea0VQQ7Q9LuGgWRVz4qtr40cntuEdM8icdmTw==
+electron@^18.2.4:
+  version "18.2.4"
+  resolved "https://registry.npmmirror.com/electron/-/electron-18.2.4.tgz#3ea3392f008ea4bdf66b0e3b2e1769e04370323c"
+  integrity sha512-wSjU2N6kBGyGKb2GgBhujpfKtnmNr+gDaZZ6fMmlVMoPJ+GvuW0Zr1ImKPdb5zPXopPYmaURDSvHuAfSd4oHFA==
   dependencies:
     "@electron/get" "^1.13.0"
-    "@types/node" "^14.6.2"
+    "@types/node" "^16.11.26"
     extract-zip "^1.0.3"
 
 emojis-list@^3.0.0:

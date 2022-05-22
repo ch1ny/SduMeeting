@@ -5,7 +5,6 @@ const {
 	Menu,
 	screen,
 	nativeImage,
-	globalShortcut,
 	safeStorage,
 	dialog,
 	shell,
@@ -19,7 +18,7 @@ const cp = require('child_process');
 
 let loginWindow, mainWindow;
 let tray;
-let screenWidth, screenHeight;
+let screenWidth, screenHeight, screenScale;
 const ipc = require('electron').ipcMain;
 const DIRNAME = process.env.NODE_ENV === 'development' ? path.join(__dirname, 'public') : __dirname;
 /**
@@ -146,6 +145,8 @@ function createLoginWindow() {
 		});
 
 		loginWindow.on('ready-to-show', () => {
+			// NOTE: 根据用户电脑的缩放比自动调整页面缩放
+			loginWindow.webContents.setZoomFactor(1.25 / screenScale);
 			loginWindow.show();
 			resolve();
 		});
@@ -405,8 +406,10 @@ function createMainWindow(userEmail) {
 }
 
 app.on('ready', () => {
-	screenWidth = screen.getPrimaryDisplay().workAreaSize.width;
-	screenHeight = screen.getPrimaryDisplay().workAreaSize.height;
+	const screenPrimaryDisplay = screen.getPrimaryDisplay();
+	screenWidth = screenPrimaryDisplay.workAreaSize.width;
+	screenHeight = screenPrimaryDisplay.workAreaSize.height;
+	screenScale = screenPrimaryDisplay.scaleFactor;
 
 	createLoginWindow();
 

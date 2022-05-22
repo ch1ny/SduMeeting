@@ -22,8 +22,8 @@ export default function MediaDevices() {
             const storeState = store.getState();
             setVideoDevices(storeState.availableVideoDevices);
             setAudioDevices(storeState.availableAudioDevices);
-            setUsingVideoDevice(storeState.usingVideoDevice);
-            setUsingAudioDevice(storeState.usingAudioDevice);
+            setUsingVideoDevice(`${(storeState.usingVideoDevice as DeviceInfo).webLabel}`);
+            setUsingAudioDevice(`${(storeState.usingAudioDevice as DeviceInfo).webLabel}`);
         })
     );
 
@@ -103,9 +103,13 @@ export default function MediaDevices() {
             <Select
                 placeholder='请选择录音设备'
                 style={{ width: '100%' }}
-                onSelect={(label: string, option: DeviceInfo) => {
+                onSelect={(label: string, option: { key: string, value: string, children: string }) => {
                     setUsingAudioDevice(label);
-                    store.dispatch(exchangeMediaDevice(DEVICE_TYPE.AUDIO_DEVICE, option));
+                    store.dispatch(exchangeMediaDevice(DEVICE_TYPE.AUDIO_DEVICE, {
+                        deviceId: option.key,
+                        label: option.value,
+                        webLabel: option.children,
+                    }));
                     if (isExamingMicroPhone) {
                         volumeMeter.disconnect().then(() => {
                             getDeviceStream(DEVICE_TYPE.AUDIO_DEVICE).then((stream) => {
@@ -185,9 +189,13 @@ export default function MediaDevices() {
             <Select
                 placeholder='请选择录像设备'
                 style={{ width: '100%' }}
-                onSelect={(label: string, option: DeviceInfo) => {
+                onSelect={(label: string, option: { key: string, value: string, children: string }) => {
                     setUsingVideoDevice(label);
-                    store.dispatch(exchangeMediaDevice(DEVICE_TYPE.VIDEO_DEVICE, option));
+                    store.dispatch(exchangeMediaDevice(DEVICE_TYPE.VIDEO_DEVICE, {
+                        deviceId: option.key,
+                        label: option.value,
+                        webLabel: option.children,
+                    }));
                     if (isExamingCamera) {
                         videoConnect(examCameraRef);
                     }
