@@ -259,6 +259,12 @@ export default function ChatInput(props: ChatInputProps) {
 					const selection = getSelection() as Selection;
 					setLastEditRange(selection.getRangeAt(0));
 				}}
+				onPaste={(evt) => {
+					evt.stopPropagation();
+					evt.preventDefault();
+					const text = evt.clipboardData.getData('text/plain');
+					document.execCommand('insertText', false, text);
+				}}
 			/>
 		</>
 	);

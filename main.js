@@ -296,12 +296,6 @@ function createMainWindow(userEmail) {
 							console.log(err);
 						}
 					);
-					// cp.exec(
-					// 	`REG ADD "HKCU\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AppCompatFlags\\Layers" /v "${process.execPath}" /t REG_SZ /d "RunAsInvoker" /f`,
-					// 	(err) => {
-					// 		console.log(err);
-					// 	}
-					// );
 				} else {
 					cp.exec(
 						`REG DELETE HKLM\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run /v SduMeeting /f`,
@@ -309,12 +303,6 @@ function createMainWindow(userEmail) {
 							console.log(err);
 						}
 					);
-					// cp.exec(
-					// 	`REG DELETE "HKCU\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AppCompatFlags\\Layers" /v "${process.execPath}" /f`,
-					// 	(err) => {
-					// 		console.log(err);
-					// 	}
-					// );
 				}
 			}
 		});
@@ -421,10 +409,6 @@ app.on('ready', () => {
 	screenHeight = screen.getPrimaryDisplay().workAreaSize.height;
 
 	createLoginWindow();
-
-	ipc.on('BEEP', () => {
-		shell.beep();
-	});
 
 	ipc.once('QUIT', () => {
 		if (process.platform !== 'darwin') {

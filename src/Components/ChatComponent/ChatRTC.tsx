@@ -56,6 +56,9 @@ export class ChatRTC extends EventEmitter {
         this.peer = this.buildPeer();
 
         this.socket.on('ON_PRIVATE_WEBRTC_OFFER', (msg) => {
+            this.sender = msg.sender;
+            this.receiver = this.myId;
+
             const rejectOffer = () => {
                 this.socket.send({
                     type: ChatWebSocketType.CHAT_PRIVATE_WEBRTC_ANSWER,
@@ -63,10 +66,7 @@ export class ChatRTC extends EventEmitter {
                     sender: msg.sender,
                     receiver: msg.receiver,
                 });
-                this.answerModal = null;
             };
-
-            console.log(store.getState().callStatus === CALL_STATUS_FREE);
 
             if (store.getState().callStatus === CALL_STATUS_FREE) {
                 this.answerAudioPrompt[0]();
@@ -89,7 +89,12 @@ export class ChatRTC extends EventEmitter {
                     onOk: () => {
                         this.createAnswer(msg.sender, msg.sdp);
                     },
-                    onCancel: rejectOffer,
+                    onCancel: () => {
+                        rejectOffer()
+                        this.answerModal = null;
+                        this.sender = undefined;
+                        this.receiver = undefined;
+                    },
                     afterClose: this.answerAudioPrompt[1],
                     centered: true,
                     getContainer: getMainContent,
@@ -159,8 +164,7 @@ export class ChatRTC extends EventEmitter {
     async createAnswer(sender: number, remoteSdp: any) {
         store.dispatch(setCallStatus(CALL_STATUS_ANSWERING));
         store.dispatch(setNowWebrtcFriendId(sender));
-        this.sender = sender;
-        this.receiver = this.myId;
+
         this.peer.setRemoteDescription(
             new RTCSessionDescription({
                 sdp: remoteSdp,
