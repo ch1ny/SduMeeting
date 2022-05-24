@@ -1,6 +1,6 @@
 import { SettingFilled } from '@ant-design/icons';
 import { Anchor, Divider, Modal, Typography } from 'antd';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import eventBus from 'Utils/EventBus/EventBus';
 import { getMainContent } from 'Utils/Global';
 import About from './About/About';
@@ -18,9 +18,13 @@ interface SettingProps {
 }
 
 export default function Setting(props: SettingProps) {
+    const [visible, setVisible] = useState(props.visible)
     useEffect(() => {
-        if (!props.visible) eventBus.emit('CLOSE_SETTING_MODAL');
+        setVisible(props.visible)
     }, [props.visible]);
+    useEffect(() => {
+        if (!visible) eventBus.emit('CLOSE_SETTING_MODAL');
+    }, [visible])
 
     return (
         <>
@@ -65,7 +69,7 @@ export default function Setting(props: SettingProps) {
                             <Title level={3} id='mediaDevices'>
                                 音视频设备
                             </Title>
-                            <MediaDevices />
+                            <MediaDevices visible={visible} />
                         </div>
                         <Divider>
                             <SettingFilled />

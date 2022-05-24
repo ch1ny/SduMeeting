@@ -32,7 +32,7 @@ export default function App() {
         if (rotating) {
             const mainBody = mainBodyRef.current as HTMLDivElement;
             mainBody.style.animationName = 'rotateOut';
-            let timeout = setTimeout(() => {
+            const timeout = setTimeout(() => {
                 mainBody.style.animationName = 'rotateIn';
                 setShowRegister(!showRegister);
                 clearTimeout(timeout);
@@ -47,7 +47,7 @@ export default function App() {
 
     const [showRegister, setShowRegister] = useState(false);
     useEffect(() => {
-        let timeout = setTimeout(() => {
+        const timeout = setTimeout(() => {
             setRotating(false);
             clearTimeout(timeout)
         }, 250);

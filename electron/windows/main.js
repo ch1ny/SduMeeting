@@ -25,14 +25,11 @@ function createMainWindow(userEmail, screenWidth, screenHeight) {
 			fullscreenable: false,
 			webPreferences: {
 				preload: path.join(DIRNAME, 'electronAssets/preload.js'),
-				devTools: process.env.NODE_ENV === 'development',
+				devTools: !app.isPackaged,
 			},
 		});
 
-		if (process.env.NODE_ENV === 'development') {
-			mainWindow.loadURL('http://localhost:9000/main');
-			mainWindow.webContents.openDevTools();
-		} else {
+		if (app.isPackaged) {
 			mainWindow.loadURL(
 				url.format({
 					pathname: path.join(DIRNAME, 'main/index.html'),
@@ -40,6 +37,9 @@ function createMainWindow(userEmail, screenWidth, screenHeight) {
 					slashes: true,
 				})
 			);
+		} else {
+			mainWindow.loadURL('http://localhost:9000/main');
+			mainWindow.webContents.openDevTools();
 		}
 
 		createMainTray();

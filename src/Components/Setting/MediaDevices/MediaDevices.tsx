@@ -12,7 +12,11 @@ import VolumeMeter from 'Utils/VolumeMeter/VolumeMeter';
 
 const { Option } = Select;
 
-export default function MediaDevices() {
+interface MediaDevicesProps {
+    visible: boolean
+}
+
+export default function MediaDevices(props: MediaDevicesProps) {
     const [videoDevices, setVideoDevices] = useState(store.getState().availableVideoDevices);
     const [audioDevices, setAudioDevices] = useState(store.getState().availableAudioDevices);
     const [usingVideoDevice, setUsingVideoDevice] = useState('');
@@ -31,6 +35,10 @@ export default function MediaDevices() {
         getUserMediaDevices();
     }, []);
 
+    useEffect(() => {
+        if (!props.visible) { setMicroPhoneVolume(0) }
+    }, [props.visible])
+
     const [isExamingMicroPhone, setIsExamingMicroPhone] = useState(false);
     const [microPhoneVolume, setMicroPhoneVolume] = useState(0);
     const [isSoundMeterConnecting, setIsSoundMeterConnecting] = useState(false);
@@ -48,6 +56,7 @@ export default function MediaDevices() {
         }
     }, [volumeMeter]);
     useEffect(() => {
+        let timeout: NodeJS.Timeout;
         const examMicroPhoneDOM = examMicroPhoneRef.current as HTMLAudioElement
         if (isExamingMicroPhone) {
             getDeviceStream(DEVICE_TYPE.AUDIO_DEVICE).then((stream) => {
@@ -60,9 +69,14 @@ export default function MediaDevices() {
                 volumeMeter.disconnect().then(() => {
                     examMicroPhoneDOM.pause();
                     examMicroPhoneDOM.srcObject = null;
-                    setMicroPhoneVolume(0);
+                    timeout = setTimeout(() => {
+                        setMicroPhoneVolume(0);
+                    })
                 });
             }
+        }
+        return () => {
+            if (timeout) clearTimeout(timeout);
         }
     }, [isExamingMicroPhone]);
 
