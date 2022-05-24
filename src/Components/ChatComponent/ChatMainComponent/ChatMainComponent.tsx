@@ -1,6 +1,7 @@
 import { Dropdown, Menu } from 'antd';
 import classNames from 'classnames';
 import { ChatRTCContext } from 'Components/Chats/Chats';
+import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useEffect, useState } from 'react';
 import { CALL_STATUS_CALLING } from 'Utils/Constraints';
 import { decodeJWT } from 'Utils/Global';
@@ -14,11 +15,10 @@ interface ChatMainComponentProps {
 	id: number;
 	username: string;
 	profile: string | false;
-
 }
 
 export function ChatMainComponent(props: ChatMainComponentProps) {
-	const [myId, setMyId] = useState(undefined);
+	const [myId, setMyId] = useState(0);
 	useEffect(() => {
 		setMyId(decodeJWT(store.getState().authToken).id);
 	}, []);
@@ -57,6 +57,12 @@ export function ChatMainComponent(props: ChatMainComponentProps) {
 		});
 		(chatRtc as ChatRTC).on('REMOTE_STREAM_READY', (stream: MediaStream) => {
 			(remoteRef.current as HTMLVideoElement).srcObject = stream;
+			const videoTrack = stream.getVideoTracks()[0];
+			videoTrack.onmute = () => {
+				if ((chatRtc as ChatRTC).receiver !== undefined && (chatRtc as ChatRTC).sender !== undefined)
+					globalMessage.warn('检测到对方可能已断开连接')
+				videoTrack.onmute = null
+			}
 		});
 	}, []);
 

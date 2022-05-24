@@ -13,8 +13,8 @@ interface AsiderProps {
 }
 
 export default function Asider(props: AsiderProps) {
-    const [userName, setUserName] = useState(undefined);
-    const [profile, setProfile] = useState(undefined);
+    const [userName, setUserName] = useState('');
+    const [profile, setProfile] = useState<string | false>(false);
     useEffect(() => {
         (window as any).ipc.invoke('GET_USER_AUTH_TOKEN_AFTER_LOGIN').then((authToken: string) => {
             store.dispatch(setAuthToken(authToken));

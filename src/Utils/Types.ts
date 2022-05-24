@@ -22,7 +22,7 @@ export interface UserInfo {
     iat: number,
     id: number,
     iss: string,
-    profile: string,
+    profile: string | false,
     role: [
         {
             authority: string,

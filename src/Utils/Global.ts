@@ -5,7 +5,7 @@
 import jwtDecode from 'jwt-decode';
 import { DEVICE_TYPE } from './Constraints';
 import store from './Store/store';
-import { DeviceInfo } from './Types';
+import { DeviceInfo, UserInfo } from './Types';
 
 /**
  * 用来返回 mainContent 模态屏遮罩层挂载DOM
@@ -25,12 +25,27 @@ function getMainContent() {
  * @param {string} token
  * @returns 解析后的 token
  */
-function decodeJWT(token: string): any {
+function decodeJWT(token: string): UserInfo {
     try {
         return jwtDecode(token);
     } catch (error: any) {
-        if (error.message === 'Invalid token specified') return undefined;
         console.log(error);
+        return {
+            email: '',
+            exp: 0,
+            iat: 0,
+            id: 0,
+            iss: '',
+            profile: false,
+            role: [
+                {
+                    authority: '',
+                    id: 0
+                }
+            ],
+            sub: '',
+            username: ''
+        }
     }
 }
 
@@ -39,7 +54,7 @@ function decodeJWT(token: string): any {
  * @param {string} device 设备类型 DEVICE_TYPE
  * @returns
  */
-function getDeviceStream(device: string) {
+function getDeviceStream(device: string): Promise<MediaStream> {
     switch (device) {
         case DEVICE_TYPE.AUDIO_DEVICE:
             const audioDevice = store.getState().usingAudioDevice as DeviceInfo;
@@ -71,10 +86,10 @@ function getDeviceStream(device: string) {
     }
 }
 
-function getDesktopStream() {
+function getDesktopStream(): Promise<MediaStream> {
     return new Promise((resolve) => {
         (window as any).captureDesktop().then((videoDOM: HTMLVideoElement) => {
-            resolve(videoDOM.srcObject);
+            resolve(videoDOM.srcObject as MediaStream);
         })
     })
 }

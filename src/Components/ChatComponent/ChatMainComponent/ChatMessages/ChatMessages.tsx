@@ -32,9 +32,9 @@ export default function ChatMessages(props: ChatMessagesProps) {
 		});
 	}, [props.id]);
 
-	const [myId, setMyId] = useState(undefined);
-	const [myName, setMyName] = useState(undefined);
-	const [myProfile, setMyProfile] = useState(undefined);
+	const [myId, setMyId] = useState(0);
+	const [myName, setMyName] = useState('');
+	const [myProfile, setMyProfile] = useState<string | false>(false);
 	useEffect(() => {
 		const { id, username, profile } = decodeJWT(store.getState().authToken);
 		setMyId(id);

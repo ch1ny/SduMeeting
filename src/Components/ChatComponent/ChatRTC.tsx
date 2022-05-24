@@ -136,10 +136,10 @@ export class ChatRTC extends EventEmitter {
         this.receiver = targetId;
         this.localStream = new MediaStream();
         this.localStream.addTrack(
-            (await getDeviceStream(DEVICE_TYPE.AUDIO_DEVICE)).getAudioTracks()[0]
+            (await getDeviceStream(DEVICE_TYPE.VIDEO_DEVICE)).getVideoTracks()[0]
         );
         this.localStream.addTrack(
-            (await getDeviceStream(DEVICE_TYPE.VIDEO_DEVICE)).getVideoTracks()[0]
+            (await getDeviceStream(DEVICE_TYPE.AUDIO_DEVICE)).getAudioTracks()[0]
         );
         for (const track of this.localStream.getTracks()) {
             this.peer.addTrack(track, this.localStream);
@@ -175,16 +175,14 @@ export class ChatRTC extends EventEmitter {
             this.peer.addIceCandidate(this.candidateQueue.shift());
         }
         this.localStream = new MediaStream();
-        this.localStream.addTrack(
-            (await getDeviceStream(DEVICE_TYPE.AUDIO_DEVICE)).getAudioTracks()[0]
-        );
-        this.localStream.addTrack(
-            (await getDeviceStream(DEVICE_TYPE.VIDEO_DEVICE)).getVideoTracks()[0]
-        );
+        const videoTrack = (await getDeviceStream(DEVICE_TYPE.VIDEO_DEVICE)).getVideoTracks()[0];
+        const audioTrack = (await getDeviceStream(DEVICE_TYPE.AUDIO_DEVICE)).getAudioTracks()[0]
+        this.localStream.addTrack(videoTrack);
+        this.localStream.addTrack(audioTrack);
         this.emit('LOCAL_STREAM_READY', this.localStream);
-        for (const track of this.localStream.getTracks()) {
-            this.peer.addTrack(track, this.localStream);
-        }
+        // NOTE: 为了实现客户端检测断线可能，必须先传递 Video Track
+        this.peer.addTrack(videoTrack, this.localStream);
+        this.peer.addTrack(audioTrack, this.localStream)
         this.peer
             .createAnswer({
                 mandatory: {
@@ -250,6 +248,7 @@ export class ChatRTC extends EventEmitter {
     onHangUp(data: { sender: number, receiver: number }) {
         const { sender, receiver } = data
         if (sender === this.sender && receiver === this.receiver) {
+            this.sender = undefined;
             this.receiver = undefined;
             store.dispatch(setNowWebrtcFriendId(null));
             if (this.answerModal) {
@@ -288,11 +287,10 @@ export class ChatRTC extends EventEmitter {
             }
         };
         peer.ontrack = (evt) => {
-            if (this.remoteStream === null) {
-                this.remoteStream = new MediaStream();
-                this.emit('REMOTE_STREAM_READY', this.remoteStream);
-            }
+            this.remoteStream = this.remoteStream || new MediaStream();
             this.remoteStream.addTrack(evt.track);
+            if (this.remoteStream.getTracks().length === 2)
+                this.emit('REMOTE_STREAM_READY', this.remoteStream);
         };
         return peer;
     }

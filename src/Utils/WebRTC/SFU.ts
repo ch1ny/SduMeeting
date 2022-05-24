@@ -118,7 +118,7 @@ export default class SFU extends EventEmitter {
         }
     }
 
-    send(data: object) {
+    send(data: any) {
         this.socket.send(JSON.stringify(data));
     }
 

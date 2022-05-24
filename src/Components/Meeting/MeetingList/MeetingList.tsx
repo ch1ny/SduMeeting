@@ -35,7 +35,7 @@ export default function MeetingList(props: MeetingListProps) {
 
     const [isJoining, setIsJoining] = useState(false);
 
-    const [username, setUsername] = useState(undefined);
+    const [username, setUsername] = useState('');
     useEffect(() => {
         return store.subscribe(() => {
             const authToken = store.getState().authToken;
