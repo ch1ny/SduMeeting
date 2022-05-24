@@ -41,7 +41,7 @@ export class ChatRTC extends EventEmitter {
     offerModal!: null | {
         destroy: () => void;
     };
-    candidateQueue: any;
+    candidateQueue!: Array<any>;
 
     constructor(props: ChatRtcProps) {
         super();
