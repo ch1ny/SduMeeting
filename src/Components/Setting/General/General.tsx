@@ -2,12 +2,15 @@ import { LogoutOutlined } from '@ant-design/icons';
 import { Button, Checkbox, Modal } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { getMainContent } from 'Utils/Global';
+import { ElectronWindow } from 'Utils/Types';
+
+declare const window: ElectronWindow & typeof globalThis
 
 export default function General() {
     const [autoLogin, setAutoLogin] = useState(localStorage.getItem('autoLogin') === 'true');
     const [autoOpen, setAutoOpen] = useState(false);
     useEffect(() => {
-        (window as any).ipc.invoke('GET_OPEN_AFTER_START_STATUS').then((status: boolean) => {
+        window.ipc.invoke('GET_OPEN_AFTER_START_STATUS').then((status: boolean) => {
             setAutoOpen(status);
         });
     }, []);
@@ -29,7 +32,7 @@ export default function General() {
                     checked={autoOpen}
                     onChange={(e) => {
                         setAutoOpen(e.target.checked);
-                        (window as any).ipc.send('EXCHANGE_OPEN_AFTER_START_STATUS', e.target.checked);
+                        window.ipc.send('EXCHANGE_OPEN_AFTER_START_STATUS', e.target.checked);
                     }}>
                     开机时启动
                 </Checkbox>
@@ -50,7 +53,7 @@ export default function General() {
                                 danger: true,
                             },
                             onOk: () => {
-                                (window as any).ipc.send('LOG_OUT');
+                                window.ipc.send('LOG_OUT');
                             },
                             getContainer: getMainContent,
                         });

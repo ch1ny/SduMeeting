@@ -33,3 +33,15 @@ export interface UserInfo {
     username: string
 }
 
+export interface ElectronWindow extends Window {
+    captureDesktop: () => Promise<HTMLVideoElement>,
+    ipc: {
+        on: (channel: string, cb: Function) => void,
+        once: (channel: string, cb: Function) => void,
+        invoke: (channel: string, ...args: any) => Promise<any>,
+        removeListener: (channel: string, cb: Function) => void,
+        send: (channel: string, ...args: any) => void;
+    }
+}
+
+// declare const window: Window & typeof globalThis & ElectronWindow

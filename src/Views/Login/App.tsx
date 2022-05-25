@@ -7,7 +7,10 @@ import { Victor } from 'Components/Victor/Victor';
 import React, { useEffect, useRef, useState } from 'react';
 import { ajax } from 'Utils/Axios/Axios';
 import { decodeJWT } from 'Utils/Global';
+import { ElectronWindow } from 'Utils/Types';
 import './App.scss';
+
+declare const window: ElectronWindow & typeof globalThis
 
 export default function App() {
     const [form] = Form.useForm();
@@ -21,7 +24,7 @@ export default function App() {
     );
     useEffect(() => {
         if (rememberPassword) {
-            (window as any).ipc.invoke('GET_LAST_PASSWORD').then((psw: string) => {
+            window.ipc.invoke('GET_LAST_PASSWORD').then((psw: string) => {
                 form.setFieldsValue({ password: psw });
             });
         }
@@ -80,9 +83,9 @@ export default function App() {
                     globalMessage.success('登录成功');
                     localStorage.setItem('rememberPassword', `${rememberPassword}`);
                     localStorage.setItem('autoLogin', `${autoLogin}`);
-                    (window as any).ipc.send('SAFE_PASSWORD', rememberPassword, password);
+                    window.ipc.send('SAFE_PASSWORD', rememberPassword, password);
                     localStorage.setItem('userId', text);
-                    (window as any).ipc.send('USER_LOGIN', res.data.token, decodeJWT(res.data.token).email);
+                    window.ipc.send('USER_LOGIN', res.data.token, decodeJWT(res.data.token).email);
                 } else {
                     globalMessage.error(res.message);
                     setIsLogining(false);
@@ -132,7 +135,7 @@ export default function App() {
                             id='shutdown'
                             title='退出'
                             onClick={() => {
-                                (window as any).ipc.send('QUIT');
+                                window.ipc.send('QUIT');
                             }}>
                             <ShutdownIcon />
                         </button>
@@ -141,7 +144,7 @@ export default function App() {
                             id='minimize'
                             title='最小化'
                             onClick={() => {
-                                (window as any).ipc.send('MINIMIZE_LOGIN_WINDOW');
+                                window.ipc.send('MINIMIZE_LOGIN_WINDOW');
                             }}>
                             <MinimizeIcon />
                         </button>

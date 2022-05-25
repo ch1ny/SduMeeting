@@ -197,7 +197,7 @@ export default function MeetingList(props: MeetingListProps) {
                                 setShowRandomModal(false);
                             });
                             // TODO: 这里是快速生成的随机会议号
-                            values.meetingId = `${Math.floor(Math.random() * 1e9)}`;
+                            values.meetingId = `${1e8 + Math.floor(Math.random() * 9e8)}`;
                             values.autoOpenCamera = autoOpenCamera;
                             values.autoOpenMicroPhone = autoOpenMicroPhone;
                             props.joinMeeting(values);

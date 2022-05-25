@@ -7,11 +7,10 @@ const { ipc } = require('../ipcMain');
 const { DIRNAME, store, EXEPATH } = require('../main');
 const { createMainTray } = require('../tray');
 const { readyToUpdate } = require('../utils/updater');
-const { createLoginWindow } = require('./login');
 
 let mainWindow;
 
-function createMainWindow(userEmail, screenWidth, screenHeight) {
+function createMainWindow(userEmail, createLoginWindow, screenWidth, screenHeight, screenScale) {
 	return new Promise((resolve) => {
 		const windowSize = store.get('mainWindowSize');
 
@@ -200,7 +199,7 @@ function createMainWindow(userEmail, screenWidth, screenHeight) {
 		});
 
 		ipc.once('LOG_OUT', () => {
-			createLoginWindow().then(() => {
+			createLoginWindow(screenWidth, screenHeight, screenScale).then(() => {
 				mainWindow.close();
 			});
 		});
@@ -218,6 +217,7 @@ function createMainWindow(userEmail, screenWidth, screenHeight) {
 			ipc.removeHandler('GET_MESSAGE_HISTORY');
 			ipc.removeHandler('DOWNLOADED_UPDATE_ZIP');
 			ipc.removeAllListeners('READY_TO_UPDATE');
+			ipc.removeAllListeners('LOG_OUT');
 			mainWindow = null;
 		});
 	});

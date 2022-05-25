@@ -1,13 +1,13 @@
 import React, { useEffect, useRef } from 'react';
 import './style.scss';
 
-interface MeetingMemberProps {
+interface MemberProps {
     stream: MediaStream;
     muted: boolean;
     member: string;
 }
 
-export default function MeetingMember(props: MeetingMemberProps) {
+export default function Member(props: MemberProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
     useEffect(() => {
         (videoRef.current as HTMLVideoElement).srcObject = props.stream;

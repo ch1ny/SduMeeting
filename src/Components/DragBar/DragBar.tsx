@@ -8,7 +8,10 @@ import {
 import Setting from 'Components/Setting/Setting';
 import React, { useEffect, useState } from 'react';
 import eventBus from 'Utils/EventBus/EventBus';
+import { ElectronWindow } from 'Utils/Types';
 import './style.scss';
+
+declare const window: ElectronWindow & typeof globalThis
 
 export default function DragBar() {
     const [isMaximized, setIsMaximized] = useState(false);
@@ -18,9 +21,9 @@ export default function DragBar() {
             setIsMaximized(!isMax);
             isMax = !isMax;
         };
-        (window as any).ipc.on('EXCHANGE_MAIN_WINDOW_MAXIMIZED_STATUS', windowMaximizedChangeListener);
+        window.ipc.on('EXCHANGE_MAIN_WINDOW_MAXIMIZED_STATUS', windowMaximizedChangeListener);
         return () => {
-            (window as any).ipc.removeListener(
+            window.ipc.removeListener(
                 'EXCHANGE_MAIN_WINDOW_MAXIMIZED_STATUS',
                 windowMaximizedChangeListener
             );
@@ -37,7 +40,7 @@ export default function DragBar() {
                     id='shutdown'
                     title='退出'
                     onClick={() => {
-                        (window as any).ipc.send('QUIT');
+                        window.ipc.send('QUIT');
                     }}>
                     <CloseOutlined />
                 </button>
@@ -46,7 +49,7 @@ export default function DragBar() {
                     id='maximize'
                     title={isMaximized ? '还原' : '最大化'}
                     onClick={() => {
-                        (window as any).ipc.send('EXCHANGE_MAIN_WINDOW_MAXIMIZED_STATUS');
+                        window.ipc.send('EXCHANGE_MAIN_WINDOW_MAXIMIZED_STATUS');
                     }}>
                     {isMaximized ? <SwitcherOutlined /> : <BorderOutlined />}
                 </button>
@@ -55,7 +58,7 @@ export default function DragBar() {
                     id='minimize'
                     title='最小化'
                     onClick={() => {
-                        (window as any).ipc.send('MINIMIZE_MAIN_WINDOW');
+                        window.ipc.send('MINIMIZE_MAIN_WINDOW');
                         eventBus.emit('MAIN_WINDOW_MINIMIZE');
                     }}>
                     <MinusOutlined />

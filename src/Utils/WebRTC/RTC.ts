@@ -50,7 +50,7 @@ export default class RTC extends EventEmitter {
         try {
             const pc = new RTCPeerConnection({ iceServers: [{ urls: ices }] });
             pc.onicecandidate = (e) => {
-                console.log(`receiver.pc.onicecandidate => ${e.candidate}`);
+                // console.log(`receiver.pc.onicecandidate => ${e.candidate}`);
             };
 
             // 添加收发器
@@ -58,11 +58,11 @@ export default class RTC extends EventEmitter {
             pc.addTransceiver('video', { direction: 'recvonly' });
 
             pc.ontrack = (e) => {
-                console.log(`ontrack`);
+                // console.log(`ontrack`);
                 const receiver = this._receivers.get(pubId) as RTCReceiver;
                 if (!receiver.stream) {
                     receiver.stream = new MediaStream();
-                    console.log(`receiver.pc.onaddtrack => ${receiver.stream.id}`);
+                    // console.log(`receiver.pc.onaddtrack => ${receiver.stream.id}`);
                     this.emit('addtrack', pubId, receiver.stream);
                 }
                 receiver.stream.addTrack(e.track);
@@ -75,11 +75,11 @@ export default class RTC extends EventEmitter {
                 stream: undefined,
             };
 
-            console.log(`createReceiver::id => ${pubId}`);
+            // console.log(`createReceiver::id => ${pubId}`);
             this._receivers.set(pubId, receiver);
             return receiver;
         } catch (e) {
-            console.log(e);
+            // console.log(e);
             throw e;
         }
     }

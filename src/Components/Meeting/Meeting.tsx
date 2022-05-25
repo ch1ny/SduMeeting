@@ -42,7 +42,7 @@ export default function Meeting() {
     useEffect(() => {
         if (sfu) {
             sfu.on('connect', () => {
-                console.log('SFU 连接成功');
+                // console.log('SFU 连接成功');
                 eventBus.emit('ATTEMPT_TO_JOIN');
                 sfu.join();
                 setJoined(true);

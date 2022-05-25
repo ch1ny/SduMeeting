@@ -5,7 +5,10 @@ import React, { useEffect, useState } from 'react';
 import { decodeJWT } from 'Utils/Global';
 import { setAuthToken } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
+import { ElectronWindow } from 'Utils/Types';
 import './style.scss';
+
+declare const window: ElectronWindow & typeof globalThis
 
 interface AsiderProps {
     tabOnClick: React.Dispatch<React.SetStateAction<number>>;
@@ -16,7 +19,7 @@ export default function Asider(props: AsiderProps) {
     const [userName, setUserName] = useState('');
     const [profile, setProfile] = useState<string | false>(false);
     useEffect(() => {
-        (window as any).ipc.invoke('GET_USER_AUTH_TOKEN_AFTER_LOGIN').then((authToken: string) => {
+        window.ipc.invoke('GET_USER_AUTH_TOKEN_AFTER_LOGIN').then((authToken: string) => {
             store.dispatch(setAuthToken(authToken));
             const { username, id, profile } = decodeJWT(authToken);
             setUserName(username);

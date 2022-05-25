@@ -1,24 +1,24 @@
 import Icon, {
-    CaretDownOutlined,
-    CaretUpOutlined,
-    CopyOutlined,
-    DisconnectOutlined,
     FullscreenExitOutlined,
-    FullscreenOutlined,
-    LeftOutlined
+    FullscreenOutlined
 } from '@ant-design/icons';
-import { Button, Modal } from 'antd';
 import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
-import React, { ReactNode, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { DEVICE_TYPE } from 'Utils/Constraints';
-import eventBus from 'Utils/EventBus/EventBus';
 import { getDeviceStream } from 'Utils/Global';
 import { usePrevious } from 'Utils/MyHooks/MyHooks';
 import store from 'Utils/Store/store';
+import { ElectronWindow } from 'Utils/Types';
 import { RTCSender } from 'Utils/WebRTC/RTC';
 import SFU from 'Utils/WebRTC/SFU';
-import MeetingMember from './MeetingMember/MeetingMember';
+import MainVideo from './MainVideo/MainVideo';
+import MeetingMembers from './MeetingMembers/MeetingMembers';
 import './style.scss';
+import ToolBar from './ToolBar/ToolBar';
+import ToolButton from './ToolBar/ToolButton/ToolButton';
+import Topbar from './Topbar/Topbar';
+
+declare const window: ElectronWindow & typeof globalThis
 
 interface MeetingRoomProps {
     autoOpenCamera: boolean;
@@ -30,15 +30,10 @@ interface MeetingRoomProps {
     userId: number;
 }
 
+const _stream = new MediaStream()
+
 export default function MeetingRoom(props: MeetingRoomProps) {
-    const [allMembers, setAllMembers] = useState(new Map());
-    useEffect(() => {
-        setAllMembers(new Map(allMembers.set(props.userId, props.joinName)));
-    }, []);
-    useEffect(() => {
-        console.log('++新状态++');
-        console.log(allMembers);
-    }, [allMembers]);
+    const [allMembers, setAllMembers] = useState(new Map<number, string>([[props.userId, props.joinName]]));
 
     const [usingVideoDevice, setUsingVideoDevice] = useState(store.getState().usingVideoDevice);
     const [usingAudioDevice, setUsingAudioDevice] = useState(store.getState().usingAudioDevice);
@@ -112,10 +107,6 @@ export default function MeetingRoom(props: MeetingRoomProps) {
             {...props}
         />
     );
-
-    const videoRef = useRef<HTMLVideoElement>(null);
-    const [localStream, setLocalStream] = useState(new MediaStream());
-    const [localPlayedStream, setLocalPlayedStream] = useState<MediaStream | undefined>(undefined);
     useEffect(() => {
         localStorage.setItem('autoOpenCamera', `${isUsingCamera}`);
         if (localStream) {
@@ -127,32 +118,29 @@ export default function MeetingRoom(props: MeetingRoomProps) {
             setTrackEnableStatus(props.sfu.sender, 'video', isUsingCamera);
         }
     }, [isUsingCamera]);
-    useEffect(() => {
-        /**
-         * INFO: 进入画中画模式
-         */
-        const videoDOM = videoRef.current as HTMLVideoElement
-        const _requestPictureInPicture = () => {
-            videoDOM.requestPictureInPicture();
-        };
-        eventBus.on('MAIN_WINDOW_MINIMIZE', _requestPictureInPicture);
-        /**
-         * INFO: 退出画中画模式
-         */
-        const _exitPictureInPicture = () => {
-            document.exitPictureInPicture();
-        };
-        videoDOM.addEventListener('enterpictureinpicture', function () {
-            (window as any).ipc.once('MAIN_WINDOW_RESTORE', _exitPictureInPicture);
-        });
-        videoDOM.addEventListener('leavepictureinpicture', function () {
-            (window as any).ipc.send('MAIN_WINDOW_RESTORE');
-            (window as any).ipc.removeListener('MAIN_WINDOW_RESTORE', _exitPictureInPicture);
-        });
-        return () => {
-            eventBus.off('MAIN_WINDOW_MINIMIZE', _requestPictureInPicture);
-        };
-    }, []);
+
+    const [isSharingScreen, setIsSharingScreen] = useState(0)
+    const ShareScreenIcon = (_props: any) => (
+        <Icon
+            component={() => (
+                <svg viewBox="0 0 1024 1024" width="1em" height="1em">
+                    <path
+                        d="M952 705.06666666l-0.42666667-0.10666666-0.42666666 0.10666666H538.24c-14.61333333 0-26.34666667-11.84-26.34666667-26.34666666 0-14.61333333 11.84-26.34666667 26.34666667-26.34666667h388.26666667V223.14666666H253.54666667V378.66666666c0 6.82666667-2.66666667 13.44-7.57333334 18.34666667-4.8 4.90666667-11.41333333 7.57333333-18.24 7.57333333h-0.96c-6.82666667 0-13.44-2.77333333-18.34666666-7.57333333-4.90666667-4.90666667-7.57333333-11.41333333-7.57333334-18.34666667V194.34666666c0-14.29333333 11.62666667-25.81333333 25.92-25.81333333h723.84l0.74666667 0.10666667 0.74666667-0.10666667c13.97333333 0 25.38666667 11.41333333 25.38666666 25.38666667v485.65333333c-0.10666667 14.08-11.41333333 25.49333333-25.49333333 25.49333333zM434.56 459.09333333h0.53333333c14.29333333 0 25.81333333 11.62666667 25.81333334 25.81333333v248.85333334c0 14.29333333-11.52 25.81333333-25.81333334 25.81333333H73.06666667l-0.74666667-0.10666667-0.74666667 0.10666667c-6.72 0-13.22666667-2.66666667-18.02666666-7.46666667-4.8-4.8-7.46666667-11.2-7.46666667-18.02666666v-249.6c0-14.08 11.41333333-25.38666667 25.38666667-25.38666667l0.42666666 0.10666667 0.42666667-0.10666667h362.24z m-26.34666667 52.69333333H97.17333333V705.06666666h311.04V511.78666666zM202.24 812.37333333h100.90666667c14.82666667 0 26.88 12.05333333 26.88 26.88v0.85333333c0 14.82666667-12.05333333 26.88-26.88 26.88h-100.90666667c-7.14666667 0-13.97333333-2.88-18.98666667-7.89333333-5.01333333-5.01333333-7.89333333-11.84-7.78666666-18.98666667v-0.85333333c-0.10666667-14.82666667 11.84-26.88 26.77333333-26.88z m336-52.8h154.56c14.61333333 0 26.34666667 11.84 26.34666667 26.34666667s-11.84 26.34666667-26.34666667 26.34666666H538.24c-14.61333333 0-26.34666667-11.84-26.34666667-26.34666666s11.73333333-26.34666667 26.34666667-26.34666667z m0 0"
+                        fill='currentColor'
+                    />
+                    {isSharingScreen !== (-props.userId) && (
+                        <path d='M 0 0 l 1024 1024' stroke='red' strokeWidth='3em' fill='none' />
+                    )}
+                </svg>
+            )}
+            {..._props}
+        />
+    )
+
+    const [mainVideo, setMainVideo] = useState(_stream);
+
+    const localStream = useMemo(() => (new MediaStream()), []);
+    const [localPlayedStream, setLocalPlayedStream] = useState<MediaStream | undefined>(undefined);
 
     const [videoTrack, setVideoTrack] = useState<MediaStreamTrack | undefined>(undefined);
     const prevVideoTrack = usePrevious(videoTrack);
@@ -184,9 +172,8 @@ export default function MeetingRoom(props: MeetingRoomProps) {
     }, [audioTrack]);
 
     useEffect(() => {
-        (async () => {
-            if (!usingVideoDevice) return;
-            const stream = await getDeviceStream(DEVICE_TYPE.VIDEO_DEVICE);
+        if (!usingVideoDevice) return;
+        getDeviceStream(DEVICE_TYPE.VIDEO_DEVICE).then((stream) => {
             const track = stream.getVideoTracks()[0];
             track.enabled = isUsingCamera;
             setVideoTrack(track);
@@ -197,58 +184,43 @@ export default function MeetingRoom(props: MeetingRoomProps) {
             const clonedStream = new MediaStream();
             clonedStream.addTrack(track);
             setLocalPlayedStream(clonedStream);
-            (videoRef.current as HTMLVideoElement).srcObject = clonedStream;
+            setMainVideo(clonedStream);
             setMembers(new Map(members.set(props.userId, { stream: clonedStream })));
-        })();
+        })
     }, [usingVideoDevice]);
 
     useEffect(() => {
-        (async () => {
-            if (!usingAudioDevice) return;
-            const stream = await getDeviceStream(DEVICE_TYPE.AUDIO_DEVICE);
+        if (!usingAudioDevice) return;
+        getDeviceStream(DEVICE_TYPE.AUDIO_DEVICE).then((stream) => {
             const track = stream.getAudioTracks()[0];
             track.enabled = isUsingMicroPhone;
             setAudioTrack(track);
-        })();
+        })
     }, [usingAudioDevice]);
-
-    // INFO: 用来判断用户列表是否超出高度
-    const [memberHeight, setMemberHeight] = useState(0);
-    const [memberScrollHeight, setMemberScrollHeight] = useState(0);
-    const [memberScrollTop, setMemberScrollTop] = useState(0);
-    const scrollMembersRef = useRef<HTMLDivElement>(null);
-    useEffect(() => {
-        const scrollDOM = scrollMembersRef.current as HTMLDivElement;
-        setMemberHeight(scrollDOM.clientHeight);
-        setMemberScrollHeight(scrollDOM.scrollHeight);
-    }, []);
 
     /**
      * NOTE: WebRTC 控制部分
      */
-    const [members, setMembers] = useState(new Map());
-    useEffect(() => {
-        const scrollDOM = scrollMembersRef.current as HTMLDivElement;
-        setMemberHeight(scrollDOM.clientHeight);
-        setMemberScrollHeight(scrollDOM.scrollHeight);
-        setMemberScrollTop(scrollDOM.scrollTop);
-    }, [members]);
+    const [members, setMembers] = useState(new Map<number, { stream: MediaStream }>());
     const [localStreamStatus, setLocalStreamStatus] = useState(0);
     useEffect(() => {
         if (props.sfu) {
-            props.sfu.on('addRemoteStream', (id, stream) => {
+            props.sfu.on('addRemoteStream', (id: number, stream: MediaStream) => {
                 setMembers(new Map(members.set(id, { stream })));
             });
-            props.sfu.on('removeRemoteStream', (id) => {
+            props.sfu.on('removeRemoteStream', (id: number) => {
                 members.delete(id);
+                if (mainVideo === _stream) {
+                    setMainVideo(members.entries().next().value[1].stream);
+                }
                 setMembers(new Map(members));
             });
-            props.sfu.on('onNewMemberJoin', (newMember) => {
-                console.log('===onNewMemberJoin===');
+            props.sfu.on('onNewMemberJoin', (newMember: { id: number, name: string }) => {
+                // console.log('===onNewMemberJoin===');
                 setAllMembers(new Map(allMembers.set(newMember.id, newMember.name)));
             });
             props.sfu.on('onJoinSuccess', (nowAllMembers) => {
-                console.log('===onJoinSuccess===');
+                // console.log('===onJoinSuccess===');
                 const ids = Object.keys(nowAllMembers);
                 for (const id of ids) {
                     allMembers.set(Number(id), nowAllMembers[`${id}`].name);
@@ -270,162 +242,89 @@ export default function MeetingRoom(props: MeetingRoomProps) {
         (fullScreenRef.current as HTMLDivElement).addEventListener('fullscreenchange', () => {
             const isFullScreen = document.fullscreenElement !== null;
             setIsFullScreen(isFullScreen);
-            (window as any).ipc.send('MAIN_WINDOW_FULL_SCREEN', isFullScreen);
+            window.ipc.send('MAIN_WINDOW_FULL_SCREEN', isFullScreen);
         });
     }, []);
-
-    const meetingIdRef = useRef<HTMLSpanElement>(null);
-    const { confirm } = Modal;
     return (
         <>
-            <div className='topbar'>
-                <Button
-                    type='text'
-                    className='btn'
-                    onClick={() => {
-                        confirm({
-                            title: '退出会议',
-                            icon: <DisconnectOutlined />,
-                            content: '您确认要退出会议吗？',
-                            onOk: () => {
-                                props.leaveMeeting();
-                            },
-                        });
-                    }}>
-                    <LeftOutlined />
-                    退出会议
-                </Button>
-                <span ref={meetingIdRef}>{props.meetingId}</span>
-                <Button
-                    type='text'
-                    id='copyBtn'
-                    title='复制会议号'
-                    onClick={() => {
-                        const clipBoard = navigator.clipboard;
-                        clipBoard.writeText(props.meetingId).then(() => {
-                            globalMessage.success('会议号复制成功');
-                        });
-                    }}>
-                    <CopyOutlined />
-                </Button>
-            </div>
+            <Topbar
+                leaveMeeting={props.leaveMeeting}
+                meetingId={props.meetingId}
+            />
             <div id={`videoContainer${isFullScreen ? 'FullScreen' : ''}`} ref={fullScreenRef}>
                 <div id='mainBox'>
-                    <div id='mainVideo'>
-                        <video
-                            id='video'
-                            width='100%'
-                            height='100%'
-                            autoPlay={true}
-                            ref={videoRef}
-                            // TODO: 这里未来改为有人分享屏幕时解除静音
-                            // muted={localStream === videoRef.current?.srcObject}
-                            muted={true}
-                        />
-                    </div>
-                    <div id='members'>
-                        {memberScrollHeight > memberHeight && memberScrollTop > 0 && (
-                            <div
-                                className='scrollButton'
-                                onClick={() => {
-                                    (scrollMembersRef.current as HTMLDivElement).scrollTop -= 50;
-                                }}>
-                                <CaretUpOutlined />
-                            </div>
-                        )}
-                        <div
-                            id='membersList'
-                            onScroll={() => {
-                                const scrollDOM = scrollMembersRef.current as HTMLDivElement;
-                                setMemberHeight(scrollDOM.clientHeight);
-                                setMemberScrollHeight(scrollDOM.scrollHeight);
-                                setMemberScrollTop(scrollDOM.scrollTop);
-                                console.log(
-                                    memberHeight.toFixed(1),
-                                    memberScrollHeight.toFixed(1),
-                                    memberScrollTop.toFixed(1)
-                                );
-                            }}
-                            onDoubleClick={(e) => {
-                                if ((e.target as HTMLElement).className === 'meetingMemberVideo') {
-                                    (videoRef.current as HTMLVideoElement).srcObject = (e.target as HTMLVideoElement).srcObject;
-                                }
-                            }}
-                            ref={scrollMembersRef}>
-                            {(function () {
-                                const membersArr = [];
-                                for (const [key, value] of members) {
-                                    membersArr.push(
-                                        <MeetingMember
-                                            key={key}
-                                            stream={value.stream}
-                                            member={allMembers.get(key)}
-                                            muted={localPlayedStream === value.stream}
-                                        />
-                                    );
-                                }
-                                return membersArr;
-                            })()}
-                        </div>
-                        {memberScrollHeight > memberHeight &&
-                            memberHeight + memberScrollTop < memberScrollHeight && (
-                                <div
-                                    className='scrollButton'
-                                    onClick={() => {
-                                        (scrollMembersRef.current as HTMLDivElement).scrollTop += 50;
-                                    }}>
-                                    <CaretDownOutlined />
-                                </div>
-                            )}
-                    </div>
-                </div>
-                <div id='toolbar'>
-                    <ToolButton
-                        icon={<MicroPhoneIcon />}
-                        text={isUsingMicroPhone ? '静音' : '解除静音'}
-                        title={isUsingMicroPhone ? '静音' : '解除静音'}
-                        onClick={() => {
-                            setIsUsingMicroPhone(!isUsingMicroPhone);
-                        }}
+                    <MainVideo
+                        stream={mainVideo}
+                        muted={isSharingScreen === 0 || isSharingScreen === -props.userId}
                     />
-                    <ToolButton
-                        icon={<CameraIcon />}
-                        text={isUsingCamera ? '停止视频' : '开启视频'}
-                        title={isUsingCamera ? '停止视频' : '开启视频'}
-                        onClick={() => {
-                            setIsUsingCamera(!isUsingCamera);
-                        }}
-                    />
-                    <ToolButton
-                        icon={isFullScreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />}
-                        text={isFullScreen ? '退出全屏' : '全屏模式'}
-                        title={isFullScreen ? '退出全屏' : '全屏模式'}
-                        onClick={() => {
-                            if (isFullScreen) {
-                                document.exitFullscreen();
-                            } else {
-                                (fullScreenRef.current as HTMLDivElement).requestFullscreen();
+                    <MeetingMembers
+                        allMembers={allMembers}
+                        members={members}
+                        onChoose={(evt) => {
+                            if (isSharingScreen === 0 && (evt.target as HTMLElement).className === 'meetingMemberVideo') {
+                                setMainVideo((evt.target as HTMLVideoElement).srcObject as MediaStream)
                             }
                         }}
+                        userId={props.userId}
                     />
                 </div>
-            </div>
-        </>
-    );
-}
-
-interface ToolButtonProps {
-    onClick: React.MouseEventHandler<HTMLDivElement>;
-    title: string;
-    icon: ReactNode;
-    text: string;
-}
-function ToolButton(props: ToolButtonProps) {
-    return (
-        <>
-            <div className='mettingRoom_toolButton' onClick={props.onClick} title={props.title}>
-                <div className='mettingRoom_toolButton_icon'>{props.icon}</div>
-                <div className='mettingRoom_toolButton_text'>{props.text}</div>
+                <ToolBar
+                    toolButtons={[
+                        <ToolButton
+                            icon={<MicroPhoneIcon />}
+                            text={isUsingMicroPhone ? '静音' : '解除静音'}
+                            title={isUsingMicroPhone ? '静音' : '解除静音'}
+                            onClick={() => {
+                                setIsUsingMicroPhone(!isUsingMicroPhone);
+                            }}
+                        />,
+                        <ToolButton
+                            icon={<CameraIcon />}
+                            text={isUsingCamera ? '停止视频' : '开启视频'}
+                            title={isUsingCamera ? '停止视频' : '开启视频'}
+                            onClick={() => {
+                                setIsUsingCamera(!isUsingCamera);
+                            }}
+                        />,
+                        <ToolButton
+                            icon={isFullScreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />}
+                            text={isFullScreen ? '退出全屏' : '全屏模式'}
+                            title={isFullScreen ? '退出全屏' : '全屏模式'}
+                            onClick={() => {
+                                if (isFullScreen) {
+                                    document.exitFullscreen();
+                                } else {
+                                    (fullScreenRef.current as HTMLDivElement).requestFullscreen();
+                                }
+                            }}
+                        />,
+                        <ToolButton
+                            icon={<ShareScreenIcon />}
+                            text={isSharingScreen === -props.userId ? '停止共享' : '屏幕共享'}
+                            title={isSharingScreen === -props.userId ? '停止共享' : '屏幕共享'}
+                            onClick={() => {
+                                if (isSharingScreen === 0) {
+                                    // TODO: 完善屏幕共享逻辑
+                                    // TODO: 通过 http 请求获取是否允许推流
+                                    window.captureDesktop().then(({ srcObject }) => {
+                                        setMainVideo(srcObject as MediaStream)
+                                        setIsSharingScreen(-props.userId);
+                                    })
+                                } else if (isSharingScreen === -props.userId) {
+                                    const stream = members.get(props.userId)?.stream;
+                                    setMainVideo(stream as MediaStream);
+                                    setIsSharingScreen(0)
+                                } else {
+                                    // NOTE: 其他人正在分享屏幕
+                                    // const stream = members.get(-isSharingScreen)?.stream;
+                                    // (videoRef.current as HTMLVideoElement).srcObject = stream as MediaStream;
+                                    // setIsSharingScreen(0)
+                                    globalMessage.error('请等待他人结束屏幕分享！')
+                                }
+                            }}
+                        />
+                    ]}
+                />
             </div>
         </>
     );

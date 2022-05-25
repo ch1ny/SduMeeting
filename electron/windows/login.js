@@ -56,7 +56,13 @@ function createLoginWindow(screenWidth, screenHeight, screenScale) {
 			ipc.removeAllListeners('MINIMIZE_LOGIN_WINDOW');
 			ipc.removeAllListeners('SAFE_PASSWORD');
 			ipc.removeHandler('GET_LAST_PASSWORD');
-			createMainWindow(userEmail, screenWidth, screenHeight).then(() => {
+			createMainWindow(
+				userEmail,
+				createLoginWindow,
+				screenWidth,
+				screenHeight,
+				screenScale
+			).then(() => {
 				loginWindow.close();
 			});
 			ipc.removeAllListeners('USER_LOGIN');

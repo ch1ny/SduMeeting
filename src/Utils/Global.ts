@@ -5,7 +5,9 @@
 import jwtDecode from 'jwt-decode';
 import { DEVICE_TYPE } from './Constraints';
 import store from './Store/store';
-import { DeviceInfo, UserInfo } from './Types';
+import { DeviceInfo, ElectronWindow, UserInfo } from './Types';
+
+declare const window: ElectronWindow & typeof globalThis
 
 /**
  * 用来返回 mainContent 模态屏遮罩层挂载DOM
@@ -88,7 +90,7 @@ function getDeviceStream(device: string): Promise<MediaStream> {
 
 function getDesktopStream(): Promise<MediaStream> {
     return new Promise((resolve) => {
-        (window as any).captureDesktop().then((videoDOM: HTMLVideoElement) => {
+        window.captureDesktop().then((videoDOM: HTMLVideoElement) => {
             resolve(videoDOM.srcObject as MediaStream);
         })
     })

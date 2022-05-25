@@ -39,7 +39,10 @@ import {
 	setUnreadMessages
 } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
+import { ElectronWindow } from 'Utils/Types';
 import './style.scss';
+
+declare const window: ElectronWindow & typeof globalThis
 
 export const ChatRTCContext = React.createContext<ChatRTC | undefined>(undefined);
 
@@ -134,7 +137,7 @@ export default function Chats() {
 	);
 	const [chatRtc, setChatRtc] = useState<ChatRTC | undefined>(undefined);
 	useEffect(() => {
-		(window as any).ipc.invoke('GET_USER_AUTH_TOKEN_AFTER_LOGIN').then((token: string) => {
+		window.ipc.invoke('GET_USER_AUTH_TOKEN_AFTER_LOGIN').then((token: string) => {
 			const _chatSocket = invokeSocket(token);
 			const myId = decodeJWT(store.getState().authToken).id;
 			_chatSocket.on('onopen', () => {

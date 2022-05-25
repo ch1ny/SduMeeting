@@ -2,6 +2,9 @@ import { Button, Image, Progress } from 'antd';
 import axios from 'axios';
 import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useEffect, useMemo, useState } from 'react';
+import { ElectronWindow } from 'Utils/Types';
+
+declare const window: ElectronWindow & typeof globalThis
 
 function needUpdate(nowVersion: string, targetVersion: string) {
     const nowArr = nowVersion.split('.').map((i) => Number(i));
@@ -21,7 +24,7 @@ function needUpdate(nowVersion: string, targetVersion: string) {
 export default function About() {
     const [appVersion, setAppVersion] = useState<string | undefined>(undefined);
     useEffect(() => {
-        (window as any).ipc.invoke('APP_VERSION').then((version: string) => {
+        window.ipc.invoke('APP_VERSION').then((version: string) => {
             setAppVersion(version)
         })
     }, []);
@@ -73,9 +76,9 @@ export default function About() {
             .then((res) => {
                 const fr = new FileReader();
                 fr.onload = () => {
-                    (window as any).ipc.invoke('DOWNLOADED_UPDATE_ZIP', fr.result).then(() => {
+                    window.ipc.invoke('DOWNLOADED_UPDATE_ZIP', fr.result).then(() => {
                         setTimeout(() => {
-                            (window as any).ipc.send('READY_TO_UPDATE');
+                            window.ipc.send('READY_TO_UPDATE');
                         }, 500);
                     });
                 };
