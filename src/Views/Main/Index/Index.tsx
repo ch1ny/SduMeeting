@@ -3,11 +3,20 @@ import Chats from 'Components/Chats/Chats';
 import DragBar from 'Components/DragBar/DragBar';
 import Meeting from 'Components/Meeting/Meeting';
 import User from 'Components/User/User';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import eventBus from 'Utils/EventBus/EventBus';
 import './style.scss';
 
 export default function Index() {
 	const [selectedTab, setSelectedTab] = useState(0);
+	useEffect(() => {
+		eventBus.on('GET_PRIVATE_CALLED', () => {
+			setSelectedTab(0)
+		})
+		return () => {
+			eventBus.offAll('GET_PRIVATE_CALLED')
+		}
+	}, [])
 
 	return (
 		<>

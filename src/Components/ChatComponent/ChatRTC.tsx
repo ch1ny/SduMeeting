@@ -11,6 +11,7 @@ import {
     CALL_STATUS_OFFERING, ChatWebSocketType,
     DEVICE_TYPE
 } from 'Utils/Constraints';
+import eventBus from 'Utils/EventBus/EventBus';
 import { getDeviceStream, getMainContent } from 'Utils/Global';
 import { AUDIO_TYPE, buildPropmt } from 'Utils/Prompt/Prompt';
 import {
@@ -19,6 +20,7 @@ import {
     setNowWebrtcFriendId
 } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
+import { setupReceiverTransform, setupSenderTransform } from './ChatRtcEncrypt';
 
 interface ChatRtcProps {
     socket: ChatSocket;
@@ -69,6 +71,7 @@ export class ChatRTC extends EventEmitter {
             };
 
             if (store.getState().callStatus === CALL_STATUS_FREE) {
+                eventBus.emit('GET_PRIVATE_CALLED');
                 this.answerAudioPrompt[0]();
                 store.dispatch(setNowChattingId(msg.sender));
                 this.answerModal = Modal.confirm({
@@ -116,7 +119,7 @@ export class ChatRTC extends EventEmitter {
                         content: '对方拒绝了您的通话邀请',
                         duration: 2,
                     });
-                    store.dispatch(setCallStatus(CALL_STATUS_FREE));
+                    this.onEnded()
                 }
             }
         });
@@ -144,7 +147,8 @@ export class ChatRTC extends EventEmitter {
         for (const track of this.localStream.getTracks()) {
             this.peer.addTrack(track, this.localStream);
         }
-
+        // NOTE: 加密
+        this.peer.getSenders().forEach(setupSenderTransform)
         this.peer.createOffer({
             offerToReceiveAudio: true,
             offerToReceiveVideo: true
@@ -175,14 +179,14 @@ export class ChatRTC extends EventEmitter {
             this.peer.addIceCandidate(this.candidateQueue.shift());
         }
         this.localStream = new MediaStream();
-        const videoTrack = (await getDeviceStream(DEVICE_TYPE.VIDEO_DEVICE)).getVideoTracks()[0];
-        const audioTrack = (await getDeviceStream(DEVICE_TYPE.AUDIO_DEVICE)).getAudioTracks()[0]
-        this.localStream.addTrack(videoTrack);
-        this.localStream.addTrack(audioTrack);
+        this.localStream.addTrack((await getDeviceStream(DEVICE_TYPE.VIDEO_DEVICE)).getVideoTracks()[0]);
+        this.localStream.addTrack((await getDeviceStream(DEVICE_TYPE.AUDIO_DEVICE)).getAudioTracks()[0]);
         this.emit('LOCAL_STREAM_READY', this.localStream);
-        // NOTE: 为了实现客户端检测断线可能，必须先传递 Video Track
-        this.peer.addTrack(videoTrack, this.localStream);
-        this.peer.addTrack(audioTrack, this.localStream)
+        for (const track of this.localStream.getTracks()) {
+            this.peer.addTrack(track, this.localStream);
+        }
+        // NOTE: 加密
+        this.peer.getSenders().forEach(setupSenderTransform)
         this.peer
             .createAnswer({
                 mandatory: {
@@ -234,44 +238,35 @@ export class ChatRTC extends EventEmitter {
             receiver: this.receiver,
             target: store.getState().nowWebrtcFriendId,
         });
-        this.sender = undefined;
-        this.receiver = undefined;
-        store.dispatch(setNowWebrtcFriendId(null));
         this.offerModal = null;
-        this.localStream = null;
-        this.remoteStream = null;
-        this.peer.close();
-        this.peer = this.buildPeer();
-        store.dispatch(setCallStatus(CALL_STATUS_FREE));
+        this.onEnded()
     }
 
     onHangUp(data: { sender: number, receiver: number }) {
         const { sender, receiver } = data
         if (sender === this.sender && receiver === this.receiver) {
-            this.sender = undefined;
-            this.receiver = undefined;
-            store.dispatch(setNowWebrtcFriendId(null));
             if (this.answerModal) {
                 this.answerAudioPrompt[1]();
                 this.answerModal.destroy();
             }
             this.answerModal = null;
-            this.localStream = null;
-            this.remoteStream = null;
-            this.peer.close();
-            this.peer = this.buildPeer();
-            store.dispatch(setCallStatus(CALL_STATUS_FREE));
+            this.onEnded()
         }
     }
 
+    /**
+     * 创建 RTCPeer 连接
+     * @returns 创建后的 RTCPeer 连接
+     */
     private buildPeer(): RTCPeerConnection {
-        const peer = new RTCPeerConnection({
+        const peer = (new (RTCPeerConnection as any)({
             iceServers: [
                 {
                     urls: 'stun:stun.stunprotocol.org:3478',
                 },
             ],
-        });
+            encodedInsertableStreams: true,
+        }) as RTCPeerConnection);
         peer.onicecandidate = (evt) => {
             if (evt.candidate) {
                 const message = {
@@ -287,11 +282,27 @@ export class ChatRTC extends EventEmitter {
             }
         };
         peer.ontrack = (evt) => {
+            // NOTE: 解密
+            setupReceiverTransform(evt.receiver);
             this.remoteStream = this.remoteStream || new MediaStream();
             this.remoteStream.addTrack(evt.track);
             if (this.remoteStream.getTracks().length === 2)
                 this.emit('REMOTE_STREAM_READY', this.remoteStream);
         };
         return peer;
+    }
+
+    /**
+     * 结束通话后清空数据
+     */
+    private onEnded() {
+        this.sender = undefined;
+        this.receiver = undefined;
+        store.dispatch(setNowWebrtcFriendId(null));
+        this.localStream = null;
+        this.remoteStream = null;
+        this.peer.close();
+        this.peer = this.buildPeer();
+        store.dispatch(setCallStatus(CALL_STATUS_FREE));
     }
 }
