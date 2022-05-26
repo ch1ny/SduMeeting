@@ -10,9 +10,9 @@ export default class SFU extends EventEmitter {
     socket: WebSocket;
     sender!: RTCSender;
 
-    constructor(userId: number, userName: string, roomId: string) {
+    constructor(userId: number, userName: string, roomId: string, joinPassword?: string) {
         super();
-        this._rtc = new RTC();
+        this._rtc = new RTC(joinPassword);
         this.userId = userId;
         this.userName = userName;
         this.roomId = Number(roomId);

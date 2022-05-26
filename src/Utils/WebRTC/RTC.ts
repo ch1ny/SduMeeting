@@ -17,10 +17,12 @@ export interface RTCReceiver {
 export default class RTC extends EventEmitter {
     _sender!: RTCSender;
     _receivers: Map<number, RTCReceiver>;
+    psw?: string;
 
-    constructor() {
+    constructor(psw?: string) {
         super();
         this._receivers = new Map();
+        this.psw = psw;
     }
 
     getSender() {
@@ -36,13 +38,16 @@ export default class RTC extends EventEmitter {
             offerSent: false,
             pc: (new (RTCPeerConnection as any)({
                 iceServers: [{ urls: ices }],
-                encodedInsertableStreams: true,
+                encodedInsertableStreams: Boolean(this.psw),
             }) as RTCPeerConnection)
         };
         for (const track of stream.getTracks()) {
             sender.pc.addTrack(track)
         }
-        sender.pc.getSenders().forEach(setupSenderTransform)
+        if (Boolean(this.psw))
+            sender.pc.getSenders().forEach(sender => {
+                setupSenderTransform(sender, this.psw)
+            })
         this.emit('localstream', pubId, stream);
         this._sender = sender;
         return sender;
@@ -55,7 +60,7 @@ export default class RTC extends EventEmitter {
         try {
             const pc = (new (RTCPeerConnection as any)({
                 iceServers: [{ urls: ices }],
-                encodedInsertableStreams: true,
+                encodedInsertableStreams: Boolean(this.psw),
             }) as RTCPeerConnection);
 
             pc.onicecandidate = (e) => {
@@ -67,7 +72,8 @@ export default class RTC extends EventEmitter {
             pc.addTransceiver('video', { direction: 'recvonly' });
 
             pc.ontrack = (e) => {
-                setupReceiverTransform(e.receiver);
+                if (Boolean(this.psw))
+                    setupReceiverTransform(e.receiver, this.psw);
                 // console.log(`ontrack`);
                 const receiver = this._receivers.get(pubId) as RTCReceiver;
                 if (!receiver.stream) {

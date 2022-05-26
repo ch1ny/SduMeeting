@@ -1,7 +1,8 @@
 import {
-    ClockCircleOutlined,
     CommentOutlined,
     ForwardOutlined,
+    KeyOutlined,
+    LockOutlined,
     PlusOutlined,
     UserOutlined
 } from '@ant-design/icons';
@@ -25,6 +26,7 @@ export default function MeetingList(props: MeetingListProps) {
     const [meetings, setMeetings] = useState([]);
     const [showJoinModal, setShowJoinModal] = useState(false);
     const [showRandomModal, setShowRandomModal] = useState(false);
+    const [showSecretModal, setShowSecretModal] = useState(false);
 
     const [autoOpenMicroPhone, setAutoOpenMicroPhone] = useState(
         localStorage.getItem('autoOpenMicroPhone') === 'true'
@@ -64,7 +66,14 @@ export default function MeetingList(props: MeetingListProps) {
                             }}>
                             快速会议
                         </MeetingButton>
-                        <MeetingButton icon={<ClockCircleOutlined />}>预定会议</MeetingButton>
+                        <MeetingButton
+                            icon={<LockOutlined />}
+                            onClick={() => {
+                                setShowSecretModal(true)
+                            }}
+                        >
+                            加密会议
+                        </MeetingButton>
                     </div>
                     <Divider style={{ margin: '1rem' }} />
                 </div>
@@ -100,6 +109,8 @@ export default function MeetingList(props: MeetingListProps) {
                         remember: true,
                     }}
                     onFinish={(values) => {
+                        console.log(values);
+
                         if (store.getState().callStatus === CALL_STATUS_FREE) {
                             store.dispatch(setCallStatus(CALL_STATUS_OFFERING));
                             setIsJoining(true);
@@ -145,6 +156,15 @@ export default function MeetingList(props: MeetingListProps) {
                             placeholder='您的名称'
                         />
                     </Form.Item>
+                    <Form.Item
+                        name='joinPassword'
+                    >
+                        <Input.Password
+                            spellCheck={false}
+                            prefix={<KeyOutlined style={{ color: 'rgba(0, 0, 0, 0.25)' }} />}
+                            placeholder='与会密码，如果没有可以不填'
+                        />
+                    </Form.Item>
                     <Form.Item>
                         <Checkbox
                             checked={autoOpenMicroPhone}
@@ -172,6 +192,7 @@ export default function MeetingList(props: MeetingListProps) {
                     </Form.Item>
                 </Form>
             </Modal>
+
             <Modal
                 title={'快速会议'}
                 visible={showRandomModal}
@@ -205,6 +226,95 @@ export default function MeetingList(props: MeetingListProps) {
                             globalMessage.error('应用当前不处于空闲通话状态！');
                         }
                     }}>
+                    <Form.Item
+                        name='joinName'
+                        initialValue={username}
+                        rules={[
+                            {
+                                required: true,
+                                message: '请输入与会名称',
+                            },
+                        ]}>
+                        <Input
+                            prefix={<UserOutlined style={{ color: 'rgba(0, 0, 0, 0.25)' }} />}
+                            placeholder='您的名称'
+                        />
+                    </Form.Item>
+                    <Form.Item>
+                        <Checkbox
+                            checked={autoOpenMicroPhone}
+                            onChange={(e) => {
+                                setAutoOpenMicroPhone(e.target.checked);
+                                localStorage.setItem('autoOpenMicroPhone', `${e.target.checked}`);
+                            }}>
+                            与会时打开麦克风
+                        </Checkbox>
+                    </Form.Item>
+                    <Form.Item>
+                        <Checkbox
+                            checked={autoOpenCamera}
+                            onChange={(e) => {
+                                setAutoOpenCamera(e.target.checked);
+                                localStorage.setItem('autoOpenCamera', `${e.target.checked}`);
+                            }}>
+                            与会时打开摄像头
+                        </Checkbox>
+                    </Form.Item>
+                    <Form.Item>
+                        <Button type='primary' htmlType='submit' loading={isJoining}>
+                            加入会议
+                        </Button>
+                    </Form.Item>
+                </Form>
+            </Modal>
+
+            <Modal
+                title={'加密会议'}
+                visible={showSecretModal}
+                footer={null}
+                onCancel={() => {
+                    setShowSecretModal(false);
+                }}
+                getContainer={getMainContent}
+                closable={false}
+                maskClosable={!isJoining}
+                destroyOnClose={false}>
+                <Form
+                    className='join-form'
+                    initialValues={{
+                        remember: true,
+                    }}
+                    onFinish={(values) => {
+                        if (store.getState().callStatus === CALL_STATUS_FREE) {
+                            store.dispatch(setCallStatus(CALL_STATUS_OFFERING));
+                            setIsJoining(true);
+                            eventBus.once('ATTEMPT_TO_JOIN', () => {
+                                setIsJoining(false);
+                                setShowRandomModal(false);
+                            });
+                            // TODO: 这里是快速生成的随机会议号
+                            values.meetingId = `${1e8 + Math.floor(Math.random() * 9e8)}`;
+                            values.autoOpenCamera = autoOpenCamera;
+                            values.autoOpenMicroPhone = autoOpenMicroPhone;
+                            props.joinMeeting(values);
+                        } else {
+                            globalMessage.error('应用当前不处于空闲通话状态！');
+                        }
+                    }}>
+                    <Form.Item
+                        name='joinPassword'
+                        rules={[
+                            {
+                                required: true,
+                                message: '请输入与会密码',
+                            },
+                        ]}>
+                        <Input.Password
+                            spellCheck={false}
+                            prefix={<LockOutlined style={{ color: 'rgba(0, 0, 0, 0.25)' }} />}
+                            placeholder='请输入与会密码'
+                        />
+                    </Form.Item>
                     <Form.Item
                         name='joinName'
                         initialValue={username}

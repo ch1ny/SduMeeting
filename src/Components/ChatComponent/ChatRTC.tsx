@@ -148,7 +148,9 @@ export class ChatRTC extends EventEmitter {
             this.peer.addTrack(track, this.localStream);
         }
         // NOTE: 加密
-        this.peer.getSenders().forEach(setupSenderTransform)
+        this.peer.getSenders().forEach(sender => {
+            setupSenderTransform(sender)
+        })
         this.peer.createOffer({
             offerToReceiveAudio: true,
             offerToReceiveVideo: true
@@ -186,7 +188,9 @@ export class ChatRTC extends EventEmitter {
             this.peer.addTrack(track, this.localStream);
         }
         // NOTE: 加密
-        this.peer.getSenders().forEach(setupSenderTransform)
+        this.peer.getSenders().forEach(sender => {
+            setupSenderTransform(sender)
+        })
         this.peer
             .createAnswer({
                 mandatory: {

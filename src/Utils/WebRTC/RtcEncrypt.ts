@@ -1,5 +1,5 @@
 //'use strict';
-let currentCryptoKey = '123456';
+const defaultCryptoKey = '123456';
 let currentKeyIdentifier = 0;
 
 // If using crypto offset (controlled by a checkbox):
@@ -46,44 +46,43 @@ function dump(encodedFrame: any, max = 16) {
 }
 
 let scount = 0;
-function encodeFunction(encodedFrame: any, controller: any) {
+function encodeFunction(encodedFrame: any, controller: any, cryptoKey?: string) {
     if (scount++ < 30) {
         // dump the first 30 packets.//转储前30个数据包。
         dump(encodedFrame);
     }
-    if (currentCryptoKey) {
-        // console.log(currentCryptoKey);
-        const view = new DataView(encodedFrame.data);
-        // Any length that is needed can be used for the new buffer.
-        // 任何需要的长度都可以用于新的缓冲区。
-        const newData = new ArrayBuffer(encodedFrame.data.byteLength + 5);
-        const newView = new DataView(newData);
+    const currentCryptoKey = cryptoKey || defaultCryptoKey;
+    // console.log(currentCryptoKey);
+    const view = new DataView(encodedFrame.data);
+    // Any length that is needed can be used for the new buffer.
+    // 任何需要的长度都可以用于新的缓冲区。
+    const newData = new ArrayBuffer(encodedFrame.data.byteLength + 5);
+    const newView = new DataView(newData);
 
-        const cryptoOffset = frameTypeToCryptoOffset[encodedFrame.type as keyof typeof frameTypeToCryptoOffset];
-        for (let i = 0; i < cryptoOffset && i < encodedFrame.data.byteLength; ++i) {
-            newView.setInt8(i, view.getInt8(i));
-        }
-        // This is a bitwise xor of the key with the payload. This is not strong encryption, just a demo.
-        // 这是对密钥和有效载荷进行的位数交换。这不是强加密，只是一个演示。
-        for (let i = cryptoOffset; i < encodedFrame.data.byteLength; ++i) {
-            const keyByte = currentCryptoKey.charCodeAt(i % currentCryptoKey.length);
-            newView.setInt8(i, view.getInt8(i) ^ keyByte);
-        }
-        // Append keyIdentifier.
-        // 添加keyIdentifier。
-        newView.setUint8(encodedFrame.data.byteLength, currentKeyIdentifier % 0xff);
-        // Append checksum
-        // 添加校验和
-        newView.setUint32(encodedFrame.data.byteLength + 1, 0xdeadbeef);
-
-        encodedFrame.data = newData;
+    const cryptoOffset = frameTypeToCryptoOffset[encodedFrame.type as keyof typeof frameTypeToCryptoOffset];
+    for (let i = 0; i < cryptoOffset && i < encodedFrame.data.byteLength; ++i) {
+        newView.setInt8(i, view.getInt8(i));
     }
+    // This is a bitwise xor of the key with the payload. This is not strong encryption, just a demo.
+    // 这是对密钥和有效载荷进行的位数交换。这不是强加密，只是一个演示。
+    for (let i = cryptoOffset; i < encodedFrame.data.byteLength; ++i) {
+        const keyByte = currentCryptoKey.charCodeAt(i % currentCryptoKey.length);
+        newView.setInt8(i, view.getInt8(i) ^ keyByte);
+    }
+    // Append keyIdentifier.
+    // 添加keyIdentifier。
+    newView.setUint8(encodedFrame.data.byteLength, currentKeyIdentifier % 0xff);
+    // Append checksum
+    // 添加校验和
+    newView.setUint32(encodedFrame.data.byteLength + 1, 0xdeadbeef);
+
+    encodedFrame.data = newData;
     //console.log("encode");
     controller.enqueue(encodedFrame);
 }
 
 let rcount = 0;
-function decodeFunction(encodedFrame: any, controller: any) {
+function decodeFunction(encodedFrame: any, controller: any, cryptoKey?: string) {
     if (rcount++ < 30) {
         // dump the first 30 packets//转储前30个数据包。
         dump(encodedFrame);
@@ -91,6 +90,7 @@ function decodeFunction(encodedFrame: any, controller: any) {
     const view = new DataView(encodedFrame.data);
     const checksum =
         encodedFrame.data.byteLength > 4 ? view.getUint32(encodedFrame.data.byteLength - 4) : false;
+    const currentCryptoKey = cryptoKey || defaultCryptoKey;
     if (currentCryptoKey) {
         if (checksum !== 0xdeadbeef) {
             // console.log('Corrupted frame received, checksum ' + checksum.toString(16));
@@ -124,18 +124,22 @@ function decodeFunction(encodedFrame: any, controller: any) {
     controller.enqueue(encodedFrame);
 }
 
-export function setupSenderTransform(sender: RTCRtpSender) {
+export function setupSenderTransform(sender: RTCRtpSender, cryptoKey?: string) {
     const senderStreams = (sender as any).createEncodedStreams();
     const transformStream = new TransformStream({
-        transform: encodeFunction,
+        transform: (frame, controller) => {
+            encodeFunction(frame, controller, cryptoKey)
+        },
     });
     senderStreams.readable.pipeThrough(transformStream).pipeTo(senderStreams.writable);
 }
 
-export function setupReceiverTransform(receiver: RTCRtpReceiver) {
+export function setupReceiverTransform(receiver: RTCRtpReceiver, cryptoKey?: string) {
     const receiverStreams = (receiver as any).createEncodedStreams();
     const transformStream = new TransformStream({
-        transform: decodeFunction,
+        transform: (frame, controller) => {
+            decodeFunction(frame, controller, cryptoKey)
+        },
     });
     receiverStreams.readable.pipeThrough(transformStream).pipeTo(receiverStreams.writable);
 }

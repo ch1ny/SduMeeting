@@ -13,6 +13,7 @@ import './style.scss';
 export interface MeetingInfo {
     joinName: string;
     meetingId: string;
+    joinPassword?: string;
     autoOpenCamera: boolean;
     autoOpenMicroPhone: boolean;
 }
@@ -32,7 +33,7 @@ export default function Meeting() {
 
     useEffect(() => {
         if (meetingInfo) {
-            setSfu(new SFU(userId, (meetingInfo as MeetingInfo).joinName, (meetingInfo as MeetingInfo).meetingId));
+            setSfu(new SFU(userId, (meetingInfo as MeetingInfo).joinName, (meetingInfo as MeetingInfo).meetingId, (meetingInfo as MeetingInfo).joinPassword));
         } else if (sfu) {
             sfu.socket.close();
             setSfu(undefined);
