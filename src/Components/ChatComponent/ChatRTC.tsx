@@ -20,7 +20,7 @@ import {
     setNowWebrtcFriendId
 } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
-import { setupReceiverTransform, setupSenderTransform } from './ChatRtcEncrypt';
+import { setupReceiverTransform, setupSenderTransform } from 'Utils/WebRTC/RtcEncrypt';
 
 interface ChatRtcProps {
     socket: ChatSocket;

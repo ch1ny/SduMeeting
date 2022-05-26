@@ -131,15 +131,21 @@
 	#toolbar {
 		position: absolute;
 		left: 0%;
-		bottom: 0%;
-		height: 4rem;
+		bottom: calc(-4rem);
+		height: calc(4rem + 1px);
 		width: 100%;
-		background-color: rgba($color: #000000, $alpha: 0.2);
+		background-color: rgba($color: #000000, $alpha: 0.5);
 		color: white;
 		display: flex;
 		overflow: hidden;
 		justify-content: center;
 		align-items: center;
+		transition-duration: 1s;
+
+		&:hover {
+			transform: translateY(-4rem);
+			transition-duration: 100ms;
+		}
 
 		.mettingRoom_toolButton {
 			width: 3rem;

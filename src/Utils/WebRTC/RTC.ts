@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events';
+import { setupReceiverTransform, setupSenderTransform } from './RtcEncrypt';
 
 const ices = 'stun:stun.stunprotocol.org:3478'; // INFO: 一个免费的 STUN 服务器
 
@@ -33,11 +34,15 @@ export default class RTC extends EventEmitter {
     createSender(pubId: number, stream: MediaStream): RTCSender {
         let sender = {
             offerSent: false,
-            pc: new RTCPeerConnection({ iceServers: [{ urls: ices }] })
+            pc: (new (RTCPeerConnection as any)({
+                iceServers: [{ urls: ices }],
+                encodedInsertableStreams: true,
+            }) as RTCPeerConnection)
         };
         for (const track of stream.getTracks()) {
             sender.pc.addTrack(track)
         }
+        sender.pc.getSenders().forEach(setupSenderTransform)
         this.emit('localstream', pubId, stream);
         this._sender = sender;
         return sender;
@@ -48,7 +53,11 @@ export default class RTC extends EventEmitter {
         // INFO: 阻止重复建立接收器
         if (_receiver) return _receiver;
         try {
-            const pc = new RTCPeerConnection({ iceServers: [{ urls: ices }] });
+            const pc = (new (RTCPeerConnection as any)({
+                iceServers: [{ urls: ices }],
+                encodedInsertableStreams: true,
+            }) as RTCPeerConnection);
+
             pc.onicecandidate = (e) => {
                 // console.log(`receiver.pc.onicecandidate => ${e.candidate}`);
             };
@@ -58,6 +67,7 @@ export default class RTC extends EventEmitter {
             pc.addTransceiver('video', { direction: 'recvonly' });
 
             pc.ontrack = (e) => {
+                setupReceiverTransform(e.receiver);
                 // console.log(`ontrack`);
                 const receiver = this._receivers.get(pubId) as RTCReceiver;
                 if (!receiver.stream) {
