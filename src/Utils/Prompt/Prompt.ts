@@ -9,6 +9,10 @@ export const buildPropmt = function (audioType: string, loop = false) {
     let source = audioContext.createBufferSource();
     const audio = require(`./audios/${audioType}.mp3`);
     const startAudioPropmt = () => {
+        if (source.buffer) {
+            source.stop();
+            source = audioContext.createBufferSource();
+        }
         fetch(audio.default)
             .then((res) => {
                 return res.arrayBuffer();

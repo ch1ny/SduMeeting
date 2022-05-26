@@ -1,5 +1,5 @@
 //'use strict';
-const defaultCryptoKey = '123456';
+const defaultCryptoKey = 'SDU_MEETING';
 let currentKeyIdentifier = 0;
 
 // If using crypto offset (controlled by a checkbox):

@@ -117,8 +117,6 @@ export default function App() {
 	return (
 		<div className='App'>
 			<Index />
-			DEBUG: 测试视频加密
-			{/* <Test /> */}
 		</div>
 	);
 }

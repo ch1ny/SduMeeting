@@ -132,6 +132,7 @@ export default function Chats() {
 					}
 				}
 				setUnreadNumber(unreadNum);
+				// console.log(unreadNumber);
 			}),
 		[]
 	);
@@ -161,7 +162,7 @@ export default function Chats() {
 									: 1
 							})
 						}
-						setUnreadNumber(Object.assign({}, unreadNumber, unreadNum));
+						// setUnreadNumber(Object.assign({}, unreadNumber, unreadNum));
 						// 初始化好友请求
 						setRequests(requests);
 					})
