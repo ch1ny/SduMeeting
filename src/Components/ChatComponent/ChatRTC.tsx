@@ -359,13 +359,25 @@ export class ChatRTC extends EventEmitter {
 			if (this.remoteStream.getTracks().length === 2)
 				this.emit('REMOTE_STREAM_READY', this.remoteStream);
 		};
+
+		// DEBUG: 检测断连
+		peer.oniceconnectionstatechange = () => {
+			if (peer.iceConnectionState === 'disconnected') {
+				this.emit('ICE_DISCONNECT');
+			}
+		};
+		peer.onconnectionstatechange = () => {
+			if (peer.connectionState === 'failed') {
+				this.emit('RTC_CONNECTION_FAILED');
+			}
+		};
 		return peer;
 	}
 
 	/**
 	 * 结束通话后清空数据
 	 */
-	private onEnded() {
+	onEnded() {
 		this.sender = undefined;
 		this.receiver = undefined;
 		this.useSecurity = false;

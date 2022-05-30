@@ -53,24 +53,26 @@ export function ChatMainComponent(props: ChatMainComponentProps) {
 	const remoteRef = React.useRef<HTMLVideoElement>(null);
 	const localRef = React.useRef<HTMLVideoElement>(null);
 	const [showLocal, setShowLocal] = useState(true);
-	const chatRtc = React.useContext(ChatRTCContext);
+	const chatRtc = React.useContext(ChatRTCContext) as ChatRTC;
 	useEffect(() => {
-		(chatRtc as ChatRTC).on('LOCAL_STREAM_READY', (stream: MediaStream) => {
+		chatRtc.on('LOCAL_STREAM_READY', (stream: MediaStream) => {
 			(localRef.current as HTMLVideoElement).srcObject = stream;
 		});
-		(chatRtc as ChatRTC).on('REMOTE_STREAM_READY', (stream: MediaStream) => {
+		chatRtc.on('REMOTE_STREAM_READY', (stream: MediaStream) => {
 			(remoteRef.current as HTMLVideoElement).srcObject = stream;
-			const videoTrack = stream.getVideoTracks()[0];
-			videoTrack.onmute = () => {
-				if (
-					(chatRtc as ChatRTC).receiver !== undefined &&
-					(chatRtc as ChatRTC).sender !== undefined
-				) {
-					globalMessage.warn('检测到对方可能已断开连接');
-					console.log('检测到对方可能已断开连接');
-				}
-				videoTrack.onmute = null;
-			};
+		});
+		chatRtc.on('ICE_DISCONNECT', () => {
+			if (chatRtc.sender !== undefined && chatRtc.receiver !== undefined) {
+				globalMessage.warn('检测到对方可能已断开连接');
+				console.log('检测到对方可能已断开连接');
+			}
+		});
+		chatRtc.on('RTC_CONNECTION_FAILED', () => {
+			if (chatRtc.sender !== undefined && chatRtc.receiver !== undefined) {
+				globalMessage.warn('本次连接已断开');
+				console.log('本次连接已断开');
+				chatRtc.onEnded();
+			}
 		});
 	}, []);
 
