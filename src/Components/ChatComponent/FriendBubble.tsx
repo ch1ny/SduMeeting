@@ -90,13 +90,13 @@ function dateToTime(date: string | number | Date) {
 				return `${translateDayNumberToDayChara(messageDate.getDay())}`;
 			default:
 				if (isSameYear(date, now)) {
-					const messageMonth = messageDate.getMonth();
-					const messageDay = messageDate.getDay();
+					const messageMonth = messageDate.getMonth() + 1;
+					const messageDay = messageDate.getDate();
 					return `${messageMonth}-${messageDay}`;
 				} else {
 					const messageYear = messageDate.getFullYear();
-					const messageMonth = messageDate.getMonth();
-					const messageDay = messageDate.getDay();
+					const messageMonth = messageDate.getMonth() + 1;
+					const messageDay = messageDate.getDate();
 					return `${messageYear}-${messageMonth}-${messageDay}`;
 				}
 		}
