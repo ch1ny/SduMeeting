@@ -9,7 +9,7 @@ module.exports = {
 		port: 9000,
 	},
 	resolve: {
-		extensions: ['.js', '.jsx', '.json', '.ts', '.tsx'],
+		extensions: ['.js', '.json', '.ts', '.tsx'],
 		alias: {
 			Components: path.join(__dirname, 'src/Components'),
 			Views: path.join(__dirname, 'src/Views'),
