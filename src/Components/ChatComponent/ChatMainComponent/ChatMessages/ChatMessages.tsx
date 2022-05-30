@@ -10,7 +10,7 @@ import {
 	isSameDay,
 	isSameWeek,
 	isSameYear,
-	translateDayNumberToDayChara
+	translateDayNumberToDayChara,
 } from 'Utils/Global';
 import { GET_MORE_MESSAGE_HISTORY, setMessageHistory } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
@@ -129,10 +129,10 @@ export default function ChatMessages(props: ChatMessagesProps) {
 				<React.Fragment key={message.id}>
 					{(index === 0 ||
 						message.date - messages[index - 1].date > A_MINUTE_TIME * 3) && (
-							<div className='dateDiv'>
-								<span>{dateToTime(message.date)}</span>
-							</div>
-						)}
+						<div className='dateDiv'>
+							<span>{dateToTime(message.date)}</span>
+						</div>
+					)}
 					{message.fromId === myId ? (
 						<ChatMessage
 							message={message.message}
@@ -190,8 +190,10 @@ function messageFormatter(message: string) {
 
 function dateToTime(date: string | number | Date) {
 	const messageDate = new Date(date);
+
 	const now = Date.now();
 	const messageTime = messageDate.toLocaleTimeString();
+
 	if (isSameDay(date, now)) {
 		return messageTime;
 	} else {
@@ -209,13 +211,13 @@ function dateToTime(date: string | number | Date) {
 				return `${translateDayNumberToDayChara(messageDate.getDay())} ${messageTime}`;
 			default:
 				if (isSameYear(date, now)) {
-					const messageMonth = messageDate.getMonth();
-					const messageDay = messageDate.getDay();
+					const messageMonth = messageDate.getMonth() + 1;
+					const messageDay = messageDate.getDate();
 					return `${messageMonth}月${messageDay}日 ${messageTime}`;
 				} else {
 					const messageYear = messageDate.getFullYear();
-					const messageMonth = messageDate.getMonth();
-					const messageDay = messageDate.getDay();
+					const messageMonth = messageDate.getMonth() + 1;
+					const messageDay = messageDate.getDate();
 					return `${messageYear}年${messageMonth}月${messageDay}日 ${messageTime}`;
 				}
 		}
