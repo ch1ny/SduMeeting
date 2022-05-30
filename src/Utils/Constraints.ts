@@ -53,12 +53,16 @@ const senderCodecs = RTCRtpSender.getCapabilities('video')?.codecs;
 const receiverCodecs = RTCRtpReceiver.getCapabilities('video')?.codecs;
 (() => {
 	const senderH264Index = senderCodecs?.findIndex((c) => c.mimeType === 'video/H264');
-	const senderH264 = (senderCodecs as Array<any>)[senderH264Index ? senderH264Index : 0];
+	const senderH264 = (senderCodecs as Array<RTCRtpCodecCapability>)[
+		senderH264Index ? senderH264Index : 0
+	];
 	senderCodecs?.splice(senderH264Index ? senderH264Index : 0, 1);
 	senderCodecs?.unshift(senderH264);
 
 	const receiverH264Index = receiverCodecs?.findIndex((c) => c.mimeType === 'video/H264');
-	const receiverH264 = (receiverCodecs as Array<any>)[receiverH264Index ? receiverH264Index : 0];
+	const receiverH264 = (receiverCodecs as Array<RTCRtpCodecCapability>)[
+		receiverH264Index ? receiverH264Index : 0
+	];
 	receiverCodecs?.splice(receiverH264Index ? receiverH264Index : 0, 1);
 	receiverCodecs?.unshift(receiverH264);
 })();
