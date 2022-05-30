@@ -5,14 +5,14 @@ import {
 	INIT_MESSAGE_HISTORY,
 	setAuthToken,
 	setMessageHistory,
-	updateAvailableDevices
+	updateAvailableDevices,
 } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
 import { ChatMessage, DeviceInfo, ElectronWindow } from 'Utils/Types';
 import './App.scss';
 import Index from './Index/Index';
 
-declare const window: ElectronWindow & typeof globalThis
+declare const window: ElectronWindow & typeof globalThis;
 
 /**
  * 获取用户多媒体设备
@@ -38,9 +38,7 @@ function getUserMediaDevices() {
 						return { label: label, webLabel: label };
 				}
 			})(
-				formerIndex === latterIndex
-					? device.label
-					: device.label.substring(0, latterIndex),
+				formerIndex === latterIndex ? device.label : device.label.substring(0, latterIndex),
 				device.deviceId
 			);
 			return { label, webLabel, deviceId: device.deviceId };
@@ -63,9 +61,7 @@ function getUserMediaDevices() {
 			store.dispatch(exchangeMediaDevice(DEVICE_TYPE.VIDEO_DEVICE, videoDevices[0]));
 			for (const device of videoDevices) {
 				if (device.deviceId === lastVideoDevice) {
-					store.dispatch(
-						exchangeMediaDevice(DEVICE_TYPE.VIDEO_DEVICE, device)
-					);
+					store.dispatch(exchangeMediaDevice(DEVICE_TYPE.VIDEO_DEVICE, device));
 					return;
 				}
 			}
@@ -74,9 +70,7 @@ function getUserMediaDevices() {
 			store.dispatch(exchangeMediaDevice(DEVICE_TYPE.AUDIO_DEVICE, audioDevices[0]));
 			for (const device of audioDevices) {
 				if (device.deviceId === lastAudioDevice) {
-					store.dispatch(
-						exchangeMediaDevice(DEVICE_TYPE.AUDIO_DEVICE, device)
-					);
+					store.dispatch(exchangeMediaDevice(DEVICE_TYPE.AUDIO_DEVICE, device));
 					return;
 				}
 			}
@@ -99,15 +93,18 @@ export default function App() {
 				for (const id in messageHistory) {
 					if (Object.hasOwnProperty.call(messageHistory, id)) {
 						if (unreadMessages[`${id}`]) {
-							alreadyReadMessages[`${id}` as keyof typeof alreadyReadMessages] = messageHistory[`${id}`]
-								.filter(
-									(message: ChatMessage) =>
-										!unreadMessages[`${id}`].some(
-											(unreadMessage) => message.id === unreadMessage.id
-										)
-								)
-								.slice(0, 5);
-						} else alreadyReadMessages[`${id}` as keyof typeof alreadyReadMessages] = messageHistory[`${id}`].slice(-5);
+							alreadyReadMessages[`${id}` as keyof typeof alreadyReadMessages] =
+								messageHistory[`${id}`]
+									.filter(
+										(message: ChatMessage) =>
+											!unreadMessages[`${id}`].some(
+												(unreadMessage) => message.id === unreadMessage.id
+											)
+									)
+									.slice(0, 5);
+						} else
+							alreadyReadMessages[`${id}` as keyof typeof alreadyReadMessages] =
+								messageHistory[`${id}`].slice(-5);
 					}
 				}
 				window.ipc.invoke('SET_MESSAGE_HISTORY', alreadyReadMessages);

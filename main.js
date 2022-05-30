@@ -167,14 +167,11 @@ function createMainWindow(userEmail) {
 			fullscreenable: false,
 			webPreferences: {
 				preload: path.join(DIRNAME, 'electronAssets/preload.js'),
-				devTools: process.env.NODE_ENV === 'development',
+				devTools: !app.isPackaged,
 			},
 		});
 
-		if (process.env.NODE_ENV === 'development') {
-			mainWindow.loadURL('http://localhost:9000/main');
-			mainWindow.webContents.openDevTools();
-		} else {
+		if (app.isPackaged) {
 			mainWindow.loadURL(
 				url.format({
 					pathname: path.join(DIRNAME, 'main/index.html'),
@@ -182,6 +179,9 @@ function createMainWindow(userEmail) {
 					slashes: true,
 				})
 			);
+		} else {
+			mainWindow.loadURL('http://localhost:9000/main');
+			// mainWindow.webContents.openDevTools();
 		}
 
 		const contextMenu = Menu.buildFromTemplate([
@@ -341,10 +341,9 @@ function createMainWindow(userEmail) {
 
 		ipc.handle('SET_MESSAGE_HISTORY', (evt, messages) => {
 			fs.ensureDir(path.join(EXEPATH, '/data/messages')).then(() => {
-				fs.writeFile(
+				fs.outputFile(
 					path.join(EXEPATH, `/data/messages/${userEmail}.smm`),
-					JSON.stringify(messages),
-					'utf8',
+					safeStorage.encryptString(JSON.stringify(messages)),
 					(err) => {
 						if (err) {
 							console.log('write error');
@@ -364,13 +363,17 @@ function createMainWindow(userEmail) {
 					.then(() => {
 						fs.readFile(
 							path.join(EXEPATH, `/data/messages/${userEmail}.smm`),
-							'utf8',
 							(err, data) => {
 								if (err) {
 									console.log('read error');
 									console.log(err);
 								} else {
-									resolve(data || '{}');
+									let messages;
+									if (data) {
+										messages = safeStorage.decryptString(data);
+									}
+									messages = messages || '{}';
+									resolve(messages);
 								}
 							}
 						);
