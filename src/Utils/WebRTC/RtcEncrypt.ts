@@ -27,30 +27,7 @@ const frameTypeToCryptoOffset = {
     undefined: 1,
 };
 
-function dump(encodedFrame: any, max = 16) {
-    const data = new Uint8Array(encodedFrame.data);
-    let bytes = '';
-    for (let j = 0; j < data.length && j < max; j++) {
-        bytes += (data[j] < 16 ? '0' : '') + data[j].toString(16) + ' ';
-    }
-    // console.log(
-    //     performance.now().toFixed(2),
-    //     direction,
-    //     bytes.trim(),
-    //     'len=' + encodedFrame.data.byteLength,
-    //     'type=' + (encodedFrame.type || 'audio'),
-    //     'ts=' + encodedFrame.timestamp,
-    //     'ssrc=' + encodedFrame.getMetadata().synchronizationSource,
-    //     'pt=' + (encodedFrame.getMetadata().payloadType || '(unknown)')
-    // );
-}
-
-let scount = 0;
 function encodeFunction(encodedFrame: any, controller: any, cryptoKey?: string) {
-    if (scount++ < 30) {
-        // dump the first 30 packets.//转储前30个数据包。
-        dump(encodedFrame);
-    }
     const currentCryptoKey = cryptoKey || defaultCryptoKey;
     // console.log(currentCryptoKey);
     const view = new DataView(encodedFrame.data);
@@ -81,46 +58,36 @@ function encodeFunction(encodedFrame: any, controller: any, cryptoKey?: string) 
     controller.enqueue(encodedFrame);
 }
 
-let rcount = 0;
 function decodeFunction(encodedFrame: any, controller: any, cryptoKey?: string) {
-    if (rcount++ < 30) {
-        // dump the first 30 packets//转储前30个数据包。
-        dump(encodedFrame);
-    }
     const view = new DataView(encodedFrame.data);
     const checksum =
         encodedFrame.data.byteLength > 4 ? view.getUint32(encodedFrame.data.byteLength - 4) : false;
     const currentCryptoKey = cryptoKey || defaultCryptoKey;
-    if (currentCryptoKey) {
-        if (checksum !== 0xdeadbeef) {
-            // console.log('Corrupted frame received, checksum ' + checksum.toString(16));
-            return; // This can happen when the key is set and there is an unencrypted frame in-flight.
-            // 这种情况可能发生在设置了密钥并且有一个未加密的帧在飞行的情况下。
-        }
-        const keyIdentifier = view.getUint8(encodedFrame.data.byteLength - 5);
-        if (keyIdentifier !== currentKeyIdentifier) {
-            // console.log(
-            //     `Key identifier mismatch, got ${keyIdentifier} expected ${currentKeyIdentifier}.`
-            // );
-            return;
-        }
-
-        const newData = new ArrayBuffer(encodedFrame.data.byteLength - 5);
-        const newView = new DataView(newData);
-        const cryptoOffset = frameTypeToCryptoOffset[encodedFrame.type as keyof typeof frameTypeToCryptoOffset];
-
-        for (let i = 0; i < cryptoOffset; ++i) {
-            newView.setInt8(i, view.getInt8(i));
-        }
-        for (let i = cryptoOffset; i < encodedFrame.data.byteLength - 5; ++i) {
-            const keyByte = currentCryptoKey.charCodeAt(i % currentCryptoKey.length);
-            newView.setInt8(i, view.getInt8(i) ^ keyByte);
-        }
-        encodedFrame.data = newData;
-    } else if (checksum === 0xdeadbeef) {
-        return; // encrypted in-flight frame but we already forgot about the key.
-        // 加密的飞行框架，但我们已经忘记了密钥。
+    if (checksum !== 0xdeadbeef) {
+        // console.log('Corrupted frame received, checksum ' + checksum.toString(16));
+        return; // This can happen when the key is set and there is an unencrypted frame in-flight.
+        // 这种情况可能发生在设置了密钥并且有一个未加密的帧在飞行的情况下。
     }
+    const keyIdentifier = view.getUint8(encodedFrame.data.byteLength - 5);
+    if (keyIdentifier !== currentKeyIdentifier) {
+        // console.log(
+        //     `Key identifier mismatch, got ${keyIdentifier} expected ${currentKeyIdentifier}.`
+        // );
+        return;
+    }
+
+    const newData = new ArrayBuffer(encodedFrame.data.byteLength - 5);
+    const newView = new DataView(newData);
+    const cryptoOffset = frameTypeToCryptoOffset[encodedFrame.type as keyof typeof frameTypeToCryptoOffset];
+
+    for (let i = 0; i < cryptoOffset; ++i) {
+        newView.setInt8(i, view.getInt8(i));
+    }
+    for (let i = cryptoOffset; i < encodedFrame.data.byteLength - 5; ++i) {
+        const keyByte = currentCryptoKey.charCodeAt(i % currentCryptoKey.length);
+        newView.setInt8(i, view.getInt8(i) ^ keyByte);
+    }
+    encodedFrame.data = newData;
     controller.enqueue(encodedFrame);
 }
 

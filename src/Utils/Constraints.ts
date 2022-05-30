@@ -3,8 +3,8 @@
  */
 // 音视频设备
 export const DEVICE_TYPE = {
-    VIDEO_DEVICE: 'video',
-    AUDIO_DEVICE: 'audio',
+	VIDEO_DEVICE: 'video',
+	AUDIO_DEVICE: 'audio',
 };
 
 /**
@@ -27,13 +27,23 @@ export const NO_OPERATION_FRIEND_REQUEST = -1;
  * 聊天系统 WebSocket type 参数
  */
 export enum ChatWebSocketType {
-    UNDEFINED_0, // 未定义 0 占位
-    CHAT_SEND_PRIVATE_MESSAGE, // 发送私聊消息
-    CHAT_READ_MESSAGE, // 签收私聊消息
-    CHAT_SEND_FRIEND_REQUEST, // 发送好友请求
-    CHAT_ANSWER_FRIEND_REQUEST, // 响应好友请求
-    CHAT_PRIVATE_WEBRTC_OFFER, // 发送视频聊天请求 OFFER
-    CHAT_PRIVATE_WEBRTC_ANSWER, // 响应视频聊天请求 ANSWER
-    CHAT_PRIVATE_WEBRTC_CANDIDATE, // 视频聊天 ICE 候选者
-    CHAT_PRIVATE_WEBRTC_DISCONNECT, // 断开视频聊天
+	UNDEFINED_0, // 未定义 0 占位
+	CHAT_SEND_PRIVATE_MESSAGE, // 发送私聊消息
+	CHAT_READ_MESSAGE, // 签收私聊消息
+	CHAT_SEND_FRIEND_REQUEST, // 发送好友请求
+	CHAT_ANSWER_FRIEND_REQUEST, // 响应好友请求
+	CHAT_PRIVATE_WEBRTC_OFFER, // 发送视频聊天请求 OFFER
+	CHAT_PRIVATE_WEBRTC_ANSWER, // 响应视频聊天请求 ANSWER
+	CHAT_PRIVATE_WEBRTC_CANDIDATE, // 视频聊天 ICE 候选者
+	CHAT_PRIVATE_WEBRTC_DISCONNECT, // 断开视频聊天
 }
+
+/**
+ * 私人聊天响应常量
+ */
+export const PRIVATE_WEBRTC_ANSWER_TYPE = {
+	NO_USER: -2, // 不存在的用户
+	REJECT: -1, // 拒绝请求
+	BUSY: 0, // 占线中
+	ACCEPT: 1, // 接受请求
+};
