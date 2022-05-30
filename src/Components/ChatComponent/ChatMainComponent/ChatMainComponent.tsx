@@ -12,7 +12,7 @@ import ChatInput from './ChatInput/ChatInput';
 import ChatMessages from './ChatMessages/ChatMessages';
 import './style.scss';
 
-declare const window: ElectronWindow & typeof globalThis
+declare const window: ElectronWindow & typeof globalThis;
 
 interface ChatMainComponentProps {
 	id: number;
@@ -62,10 +62,15 @@ export function ChatMainComponent(props: ChatMainComponentProps) {
 			(remoteRef.current as HTMLVideoElement).srcObject = stream;
 			const videoTrack = stream.getVideoTracks()[0];
 			videoTrack.onmute = () => {
-				if ((chatRtc as ChatRTC).receiver !== undefined && (chatRtc as ChatRTC).sender !== undefined)
-					globalMessage.warn('检测到对方可能已断开连接')
-				videoTrack.onmute = null
-			}
+				if (
+					(chatRtc as ChatRTC).receiver !== undefined &&
+					(chatRtc as ChatRTC).sender !== undefined
+				) {
+					globalMessage.warn('检测到对方可能已断开连接');
+					console.log('检测到对方可能已断开连接');
+				}
+				videoTrack.onmute = null;
+			};
 		});
 	}, []);
 
@@ -89,7 +94,9 @@ export function ChatMainComponent(props: ChatMainComponentProps) {
 											if (isFullScreen) {
 												document.exitFullscreen();
 											} else {
-												(videosRef.current as HTMLDivElement).requestFullscreen();
+												(
+													videosRef.current as HTMLDivElement
+												).requestFullscreen();
 											}
 										},
 									},

@@ -17,6 +17,8 @@ import {
 	ChatWebSocketType,
 	DEVICE_TYPE,
 	PRIVATE_WEBRTC_ANSWER_TYPE,
+	receiverCodecs,
+	senderCodecs,
 } from 'Utils/Constraints';
 import eventBus from 'Utils/EventBus/EventBus';
 import { getDeviceStream, getMainContent } from 'Utils/Global';
@@ -182,11 +184,18 @@ export class ChatRTC extends EventEmitter {
 		for (const track of this.localStream.getTracks()) {
 			this.peer.addTrack(track, this.localStream);
 		}
+
 		// NOTE: 加密
 		if (this.useSecurity)
 			this.peer.getSenders().forEach((sender) => {
 				setupSenderTransform(sender);
 			});
+		else if (senderCodecs)
+			this.peer
+				.getTransceivers()
+				.find((t) => t.sender.track?.kind === 'video')
+				?.setCodecPreferences(senderCodecs);
+
 		this.peer
 			.createOffer({
 				offerToReceiveAudio: true,
@@ -231,11 +240,18 @@ export class ChatRTC extends EventEmitter {
 		for (const track of this.localStream.getTracks()) {
 			this.peer.addTrack(track, this.localStream);
 		}
+
 		// NOTE: 加密
 		if (this.useSecurity)
 			this.peer.getSenders().forEach((sender) => {
 				setupSenderTransform(sender);
 			});
+		else if (senderCodecs)
+			this.peer
+				.getTransceivers()
+				.find((t) => t.sender.track?.kind === 'video')
+				?.setCodecPreferences(senderCodecs);
+
 		this.peer
 			.createAnswer({
 				mandatory: {
@@ -333,6 +349,11 @@ export class ChatRTC extends EventEmitter {
 		peer.ontrack = (evt) => {
 			// NOTE: 解密
 			if (this.useSecurity) setupReceiverTransform(evt.receiver);
+			else if (receiverCodecs)
+				peer.getTransceivers()
+					.find((t) => t.receiver.track.kind === 'video')
+					?.setCodecPreferences(receiverCodecs);
+
 			this.remoteStream = this.remoteStream || new MediaStream();
 			this.remoteStream.addTrack(evt.track);
 			if (this.remoteStream.getTracks().length === 2)
@@ -351,7 +372,7 @@ export class ChatRTC extends EventEmitter {
 		store.dispatch(setNowWebrtcFriendId(null));
 		this.localStream = null;
 		this.remoteStream = null;
-		this.peer.close();
+		if (this.peer) this.peer.close();
 		// this.peer = undefined;
 		store.dispatch(setCallStatus(CALL_STATUS_FREE));
 	}

@@ -47,3 +47,19 @@ export const PRIVATE_WEBRTC_ANSWER_TYPE = {
 	BUSY: 0, // 占线中
 	ACCEPT: 1, // 接受请求
 };
+
+// NOTE: 支持的编码器
+const senderCodecs = RTCRtpSender.getCapabilities('video')?.codecs;
+const receiverCodecs = RTCRtpReceiver.getCapabilities('video')?.codecs;
+(() => {
+	const senderH264Index = senderCodecs?.findIndex((c) => c.mimeType === 'video/H264');
+	const senderH264 = (senderCodecs as Array<any>)[senderH264Index ? senderH264Index : 0];
+	senderCodecs?.splice(senderH264Index ? senderH264Index : 0, 1);
+	senderCodecs?.unshift(senderH264);
+
+	const receiverH264Index = receiverCodecs?.findIndex((c) => c.mimeType === 'video/H264');
+	const receiverH264 = (receiverCodecs as Array<any>)[receiverH264Index ? receiverH264Index : 0];
+	receiverCodecs?.splice(receiverH264Index ? receiverH264Index : 0, 1);
+	receiverCodecs?.unshift(receiverH264);
+})();
+export { senderCodecs, receiverCodecs };
