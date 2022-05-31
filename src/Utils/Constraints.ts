@@ -54,14 +54,24 @@ export const PRIVATE_WEBRTC_ANSWER_TYPE = {
 const senderCodecs = RTCRtpSender.getCapabilities('video')?.codecs;
 const receiverCodecs = RTCRtpReceiver.getCapabilities('video')?.codecs;
 (() => {
-	const senderH264Index = senderCodecs?.findIndex((c) => c.mimeType === 'video/H264');
+	const senderH264Index = senderCodecs?.findIndex(
+		(c) =>
+			c.mimeType === 'video/H264' &&
+			c.sdpFmtpLine ===
+				'level-asymmetry-allowed=1;packetization-mode=0;profile-level-id=42001f'
+	);
 	const senderH264 = (senderCodecs as Array<RTCRtpCodecCapability>)[
 		senderH264Index ? senderH264Index : 0
 	];
 	senderCodecs?.splice(senderH264Index ? senderH264Index : 0, 1);
 	senderCodecs?.unshift(senderH264);
 
-	const receiverH264Index = receiverCodecs?.findIndex((c) => c.mimeType === 'video/H264');
+	const receiverH264Index = receiverCodecs?.findIndex(
+		(c) =>
+			c.mimeType === 'video/H264' &&
+			c.sdpFmtpLine ===
+				'level-asymmetry-allowed=1;packetization-mode=0;profile-level-id=42001f'
+	);
 	const receiverH264 = (receiverCodecs as Array<RTCRtpCodecCapability>)[
 		receiverH264Index ? receiverH264Index : 0
 	];
