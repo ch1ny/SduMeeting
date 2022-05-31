@@ -36,6 +36,8 @@ export enum ChatWebSocketType {
 	CHAT_PRIVATE_WEBRTC_ANSWER, // 响应视频聊天请求 ANSWER
 	CHAT_PRIVATE_WEBRTC_CANDIDATE, // 视频聊天 ICE 候选者
 	CHAT_PRIVATE_WEBRTC_DISCONNECT, // 断开视频聊天
+	CHAT_PRIVATE_WEBRTC_REQUEST, // 发送视频通话请求
+	CHAT_PRIVATE_WEBRTC_RESPONSE, // 响应视频通话请求
 }
 
 /**
