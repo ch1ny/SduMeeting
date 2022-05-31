@@ -15,6 +15,7 @@ const Store = require('electron-store');
 const store = new Store();
 const fs = require('fs-extra');
 const cp = require('child_process');
+const crypto = require('crypto');
 
 let loginWindow, mainWindow;
 let tray;
@@ -399,6 +400,17 @@ function createMainWindow(userEmail) {
 			return mainWindow.isMinimized();
 		});
 
+		ipc.handle('DIFFIE_HELLMAN', (evt, ...args) => {
+			switch (args.length) {
+				case 1:
+					return diffieHellman.final(args[0]);
+				case 3:
+					return diffieHellman.answer(args[0], args[1], args[2]);
+				default:
+					return diffieHellman.offer();
+			}
+		});
+
 		mainWindow.on('closed', () => {
 			ipc.removeHandler('GET_USER_AUTH_TOKEN_AFTER_LOGIN');
 			ipc.removeAllListeners('EXCHANGE_MAIN_WINDOW_MAXIMIZED_STATUS');
@@ -412,6 +424,7 @@ function createMainWindow(userEmail) {
 			ipc.removeHandler('GET_MESSAGE_HISTORY');
 			ipc.removeHandler('DOWNLOADED_UPDATE_ZIP');
 			ipc.removeAllListeners('READY_TO_UPDATE');
+			ipc.removeHandler('DIFFIE_HELLMAN');
 			mainWindow = null;
 		});
 	});
@@ -487,3 +500,30 @@ function requestInstanceLock() {
 		});
 	}
 }
+
+const diffieHellmanClient = crypto.createDiffieHellman(256, 5);
+const diffieHellman = {
+	offer() {
+		diffieHellmanClient.generateKeys();
+		const clientPublicKey = diffieHellmanClient.getPublicKey();
+		const global_p = diffieHellmanClient.getPrime().toString('hex');
+		const global_g = diffieHellmanClient.getGenerator().toString('hex');
+		return new Array(global_p, global_g, clientPublicKey.toString('hex'));
+	},
+	answer(global_p, global_g, clientPublicKey) {
+		console.log(global_p, global_g, clientPublicKey);
+		const global_p_buffer = Buffer.from(global_p, 'hex');
+		const global_g_buffer = Buffer.from(global_g, 'hex');
+		const clienPublicKeyBuffer = Buffer.from(clientPublicKey, 'hex');
+		const server = crypto.createDiffieHellman(global_p_buffer, global_g_buffer);
+		server.generateKeys();
+		const serverPublicKey = server.getPublicKey();
+		const serverSecret = server.computeSecret(clienPublicKeyBuffer);
+		return new Array(serverSecret.toString('hex'), serverPublicKey.toString('hex'));
+	},
+	final(serverPublicKey) {
+		const serverPublicKey_buffer = Buffer.from(serverPublicKey, 'hex');
+		const clientSecret = diffieHellmanClient.computeSecret(serverPublicKey_buffer);
+		return clientSecret.toString('hex');
+	},
+};

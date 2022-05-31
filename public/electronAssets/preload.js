@@ -1,4 +1,5 @@
 const { contextBridge, ipcRenderer } = require('electron');
+const crypto = require('crypto');
 
 const _ipcRenderer = Object.assign(
 	{

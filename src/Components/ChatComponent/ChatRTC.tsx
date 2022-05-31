@@ -25,6 +25,7 @@ import { getDeviceStream, getMainContent } from 'Utils/Global';
 import { AUDIO_TYPE, buildPropmt } from 'Utils/Prompt/Prompt';
 import { setCallStatus, setNowChattingId, setNowWebrtcFriendId } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
+import { eWindow } from 'Utils/Types';
 import { setupReceiverTransform, setupSenderTransform } from 'Utils/WebRTC/RtcEncrypt';
 
 interface ChatRtcProps {
@@ -50,6 +51,7 @@ export class ChatRTC extends EventEmitter {
 	};
 	candidateQueue!: Array<any>;
 	useSecurity: boolean;
+	security: string;
 
 	constructor(props: ChatRtcProps) {
 		super();
@@ -61,6 +63,7 @@ export class ChatRTC extends EventEmitter {
 		this.localStream = null;
 		this.remoteStream = null;
 		this.useSecurity = false;
+		this.security = '';
 
 		this.socket.on('ON_PRIVATE_WEBRTC_OFFER', (msg) => {
 			this.sender = msg.sender;
@@ -79,13 +82,14 @@ export class ChatRTC extends EventEmitter {
 				eventBus.emit('GET_PRIVATE_CALLED');
 				this.answerAudioPrompt[0]();
 				store.dispatch(setNowChattingId(msg.sender));
+				const pgArr = JSON.parse(msg.security);
 				this.answerModal = Modal.confirm({
 					icon: msg.security ? <AlertOutlined /> : <ExclamationCircleOutlined />,
 					title: '视频通话邀请',
 					content: (
 						<span>
 							用户 {msg.senderName}(id: {msg.sender})向您发出视频通话请求，是否接受？
-							{msg.security ? (
+							{pgArr.length === 3 ? (
 								<span>
 									<br />
 									注意：对方启用了私聊视频会话加密功能，接受此会话可能会导致您的CPU占用被大幅度提高，请与对方确认后选择是否接受此会话
@@ -108,8 +112,11 @@ export class ChatRTC extends EventEmitter {
 						</>
 					),
 					onOk: () => {
-						this.useSecurity = msg.security;
-						this.createAnswer(msg.sender, msg.sdp);
+						this.useSecurity = pgArr.length === 3;
+						console.log(pgArr);
+
+						if (this.useSecurity) this.createAnswer(msg.sender, msg.sdp, pgArr);
+						else this.createAnswer(msg.sender, msg.sdp);
 					},
 					onCancel: () => {
 						rejectOffer(PRIVATE_WEBRTC_ANSWER_TYPE.REJECT);
@@ -124,40 +131,43 @@ export class ChatRTC extends EventEmitter {
 			} else rejectOffer(PRIVATE_WEBRTC_ANSWER_TYPE.BUSY);
 		});
 
-		this.socket.on('ON_PRIVATE_WEBRTC_ANSWER', ({ accept, sdp, sender, receiver }) => {
-			if (sender === this.sender && receiver === this.receiver) {
-				this.callAudioPrompt[1]();
-				if (this.offerModal) {
-					this.offerModal.destroy();
-					this.offerModal = null;
-				}
-				if (accept === PRIVATE_WEBRTC_ANSWER_TYPE.ACCEPT) {
-					this.receiveAnswer(sdp);
-				} else {
-					switch (accept) {
-						case PRIVATE_WEBRTC_ANSWER_TYPE.BUSY:
-							globalMessage.error({
-								content: '对方正在通话中',
-								duration: 1.5,
-							});
-							break;
-						case PRIVATE_WEBRTC_ANSWER_TYPE.NO_USER:
-							globalMessage.error({
-								content: '呼叫的用户不存在',
-								duration: 1.5,
-							});
-							break;
-						case PRIVATE_WEBRTC_ANSWER_TYPE.REJECT:
-							globalMessage.error({
-								content: '对方拒绝了您的通话邀请',
-								duration: 1.5,
-							});
-							break;
+		this.socket.on(
+			'ON_PRIVATE_WEBRTC_ANSWER',
+			({ accept, sdp, sender, receiver, security }) => {
+				if (sender === this.sender && receiver === this.receiver) {
+					this.callAudioPrompt[1]();
+					if (this.offerModal) {
+						this.offerModal.destroy();
+						this.offerModal = null;
 					}
-					this.onEnded();
+					if (accept === PRIVATE_WEBRTC_ANSWER_TYPE.ACCEPT) {
+						this.receiveAnswer(sdp, security);
+					} else {
+						switch (accept) {
+							case PRIVATE_WEBRTC_ANSWER_TYPE.BUSY:
+								globalMessage.error({
+									content: '对方正在通话中',
+									duration: 1.5,
+								});
+								break;
+							case PRIVATE_WEBRTC_ANSWER_TYPE.NO_USER:
+								globalMessage.error({
+									content: '呼叫的用户不存在',
+									duration: 1.5,
+								});
+								break;
+							case PRIVATE_WEBRTC_ANSWER_TYPE.REJECT:
+								globalMessage.error({
+									content: '对方拒绝了您的通话邀请',
+									duration: 1.5,
+								});
+								break;
+						}
+						this.onEnded();
+					}
 				}
 			}
-		});
+		);
 
 		this.socket.on('ON_PRIVATE_WEBRTC_CANDIDATE', this.handleCandidate.bind(this));
 
@@ -185,16 +195,15 @@ export class ChatRTC extends EventEmitter {
 			this.peer.addTrack(track, this.localStream);
 		}
 
-		// NOTE: 加密
-		if (this.useSecurity)
-			this.peer.getSenders().forEach((sender) => {
-				setupSenderTransform(sender);
-			});
-		else if (senderCodecs)
+		let pgArr: Array<string> = [];
+		if (this.useSecurity) {
+			pgArr = await eWindow.ipc.invoke('DIFFIE_HELLMAN');
+		} else if (senderCodecs) {
 			this.peer
 				.getTransceivers()
 				.find((t) => t.sender.track?.kind === 'video')
 				?.setCodecPreferences(senderCodecs);
+		}
 
 		this.peer
 			.createOffer({
@@ -209,13 +218,13 @@ export class ChatRTC extends EventEmitter {
 					sender: this.myId,
 					senderName: myName,
 					receiver: targetId,
-					security: this.useSecurity,
+					security: JSON.stringify(pgArr),
 				});
 			});
 		this.offerModal = offerModal;
 	}
 
-	async createAnswer(sender: number, remoteSdp: any) {
+	async createAnswer(sender: number, remoteSdp: any, pgArr?: Array<string>) {
 		this.peer = this.buildPeer();
 		store.dispatch(setCallStatus(CALL_STATUS_ANSWERING));
 		store.dispatch(setNowWebrtcFriendId(sender));
@@ -242,15 +251,40 @@ export class ChatRTC extends EventEmitter {
 		}
 
 		// NOTE: 加密
-		if (this.useSecurity)
+		let privateKey: string, publicKey: string;
+		if (pgArr) {
+			const serverArr = await eWindow.ipc.invoke(
+				'DIFFIE_HELLMAN',
+				pgArr[0],
+				pgArr[1],
+				pgArr[2]
+			);
+			privateKey = serverArr[0];
+			publicKey = serverArr[1];
+			this.security = privateKey;
 			this.peer.getSenders().forEach((sender) => {
-				setupSenderTransform(sender);
+				setupSenderTransform(sender, privateKey);
 			});
-		else if (senderCodecs)
+
+			this.remoteStream = new MediaStream();
+			// NOTE: 解密
+			if (this.useSecurity) {
+				this.peer.getReceivers().forEach((receiver) => {
+					setupReceiverTransform(receiver, privateKey);
+					this.remoteStream?.addTrack(receiver.track);
+				});
+			} else if (receiverCodecs)
+				this.peer
+					.getTransceivers()
+					.find((t) => t.receiver.track.kind === 'video')
+					?.setCodecPreferences(receiverCodecs);
+			this.emit('REMOTE_STREAM_READY', this.remoteStream);
+		} else if (senderCodecs) {
 			this.peer
 				.getTransceivers()
 				.find((t) => t.sender.track?.kind === 'video')
 				?.setCodecPreferences(senderCodecs);
+		}
 
 		this.peer
 			.createAnswer({
@@ -267,12 +301,22 @@ export class ChatRTC extends EventEmitter {
 					sdp: sdp.sdp,
 					sender: this.sender,
 					receiver: this.receiver,
+					security: this.useSecurity ? publicKey : '',
 				});
 				store.dispatch(setCallStatus(CALL_STATUS_CALLING));
 			});
 	}
 
-	receiveAnswer(remoteSdp: any) {
+	async receiveAnswer(remoteSdp: any, publicKey: string) {
+		// NOTE: 加密
+		if (this.useSecurity) {
+			const privateKey = await eWindow.ipc.invoke('DIFFIE_HELLMAN', publicKey);
+			this.security = privateKey;
+			this.peer.getSenders().forEach((sender) => {
+				setupSenderTransform(sender, privateKey);
+			});
+		}
+
 		this.peer.setRemoteDescription(
 			new RTCSessionDescription({
 				sdp: remoteSdp,
@@ -347,17 +391,19 @@ export class ChatRTC extends EventEmitter {
 			}
 		};
 		peer.ontrack = (evt) => {
-			// NOTE: 解密
-			if (this.useSecurity) setupReceiverTransform(evt.receiver);
-			else if (receiverCodecs)
-				peer.getTransceivers()
-					.find((t) => t.receiver.track.kind === 'video')
-					?.setCodecPreferences(receiverCodecs);
+			if (this.myId === this.sender) {
+				// NOTE: 解密
+				if (this.useSecurity) setupReceiverTransform(evt.receiver, this.security);
+				else if (receiverCodecs)
+					peer.getTransceivers()
+						.find((t) => t.receiver.track.kind === 'video')
+						?.setCodecPreferences(receiverCodecs);
 
-			this.remoteStream = this.remoteStream || new MediaStream();
-			this.remoteStream.addTrack(evt.track);
-			if (this.remoteStream.getTracks().length === 2)
-				this.emit('REMOTE_STREAM_READY', this.remoteStream);
+				this.remoteStream = this.remoteStream || new MediaStream();
+				this.remoteStream.addTrack(evt.track);
+				if (this.remoteStream.getTracks().length === 2)
+					this.emit('REMOTE_STREAM_READY', this.remoteStream);
+			}
 		};
 
 		// NOTE: 断连检测
@@ -381,6 +427,7 @@ export class ChatRTC extends EventEmitter {
 		this.sender = undefined;
 		this.receiver = undefined;
 		this.useSecurity = false;
+		this.security = '';
 		store.dispatch(setNowWebrtcFriendId(null));
 		this.localStream = null;
 		this.remoteStream = null;
