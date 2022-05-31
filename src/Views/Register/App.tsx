@@ -3,11 +3,11 @@ import {
 	LockFilled,
 	LockOutlined,
 	MailOutlined,
-	UserOutlined
+	UserOutlined,
 } from '@ant-design/icons';
 import { Button, Form, Input, notification, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { ajax } from 'Utils/Axios/Axios';
+import ajax from 'Utils/Axios/Axios';
 import './App.scss';
 
 export default function App() {
@@ -31,7 +31,9 @@ export default function App() {
 	const { Option } = Select;
 
 	return (
-		<div className='register' style={{ backgroundImage: `url(${require('./bg.jpg').default})` }}>
+		<div
+			className='register'
+			style={{ backgroundImage: `url(${require('./bg.jpg').default})` }}>
 			<div className='container'>
 				<div className='title'>山大会议 注册账号</div>
 				<div className='inputs'>
@@ -150,7 +152,7 @@ export default function App() {
 													}
 												});
 											})
-											.catch(() => { });
+											.catch(() => {});
 									}}>
 									{sendCaptchaTick > 0
 										? `${sendCaptchaTick}秒后可再次发送`
@@ -168,7 +170,11 @@ export default function App() {
 	);
 }
 
-async function submitForm(values: { username: any; password: any; captcha: any; email: any; }, chosenEmail: string, setIsRegistering: { (value: React.SetStateAction<boolean>): void; (arg0: boolean): void; }) {
+async function submitForm(
+	values: { username: any; password: any; captcha: any; email: any },
+	chosenEmail: string,
+	setIsRegistering: { (value: React.SetStateAction<boolean>): void; (arg0: boolean): void }
+) {
 	setIsRegistering(true);
 	const { username, password, captcha, email } = values;
 	const res = await ajax.post('/login_and_register/register', {
@@ -185,7 +191,13 @@ async function submitForm(values: { username: any; password: any; captcha: any; 
 	setIsRegistering(false);
 }
 
-function sendCaptcha(setSendCaptchaTick: { (value: React.SetStateAction<number>): void; (arg0: number): void; }, setSendCaptchaInterval: { (value: React.SetStateAction<NodeJS.Timeout | null>): void; (arg0: NodeJS.Timer | null): void; }) {
+function sendCaptcha(
+	setSendCaptchaTick: { (value: React.SetStateAction<number>): void; (arg0: number): void },
+	setSendCaptchaInterval: {
+		(value: React.SetStateAction<NodeJS.Timeout | null>): void;
+		(arg0: NodeJS.Timer | null): void;
+	}
+) {
 	let sendCaptchaTick = 60;
 	setSendCaptchaTick(sendCaptchaTick);
 	const interval = setInterval(() => {

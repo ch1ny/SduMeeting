@@ -6,13 +6,11 @@ import React, { useEffect, useState } from 'react';
 import { CALL_STATUS_CALLING } from 'Utils/Constraints';
 import { decodeJWT } from 'Utils/Global';
 import store from 'Utils/Store/store';
-import { ElectronWindow } from 'Utils/Types';
+import { eWindow } from 'Utils/Types';
 import { ChatRTC } from '../ChatRTC';
 import ChatInput from './ChatInput/ChatInput';
 import ChatMessages from './ChatMessages/ChatMessages';
 import './style.scss';
-
-declare const window: ElectronWindow & typeof globalThis;
 
 interface ChatMainComponentProps {
 	id: number;
@@ -47,7 +45,7 @@ export function ChatMainComponent(props: ChatMainComponentProps) {
 		(videosRef.current as HTMLDivElement).addEventListener('fullscreenchange', () => {
 			const isFullScreen = document.fullscreenElement !== null;
 			setIsFullScreen(isFullScreen);
-			window.ipc.send('MAIN_WINDOW_FULL_SCREEN', isFullScreen);
+			eWindow.ipc.send('MAIN_WINDOW_FULL_SCREEN', isFullScreen);
 		});
 	}, []);
 	const remoteRef = React.useRef<HTMLVideoElement>(null);

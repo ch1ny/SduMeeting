@@ -2,9 +2,7 @@ import { AlertOutlined, LogoutOutlined, QuestionCircleFilled } from '@ant-design
 import { Button, Checkbox, Modal, Tooltip } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { getMainContent } from 'Utils/Global';
-import { ElectronWindow } from 'Utils/Types';
-
-declare const window: ElectronWindow & typeof globalThis;
+import { eWindow } from 'Utils/Types';
 
 export default function General() {
 	const [autoLogin, setAutoLogin] = useState(localStorage.getItem('autoLogin') === 'true');
@@ -13,7 +11,7 @@ export default function General() {
 		localStorage.getItem('securityPrivateWebrtc') === 'true'
 	);
 	useEffect(() => {
-		window.ipc.invoke('GET_OPEN_AFTER_START_STATUS').then((status: boolean) => {
+		eWindow.ipc.invoke('GET_OPEN_AFTER_START_STATUS').then((status: boolean) => {
 			setAutoOpen(status);
 		});
 	}, []);
@@ -35,7 +33,7 @@ export default function General() {
 					checked={autoOpen}
 					onChange={(e) => {
 						setAutoOpen(e.target.checked);
-						window.ipc.send('EXCHANGE_OPEN_AFTER_START_STATUS', e.target.checked);
+						eWindow.ipc.send('EXCHANGE_OPEN_AFTER_START_STATUS', e.target.checked);
 					}}>
 					开机时启动
 				</Checkbox>
@@ -84,7 +82,7 @@ export default function General() {
 								danger: true,
 							},
 							onOk: () => {
-								window.ipc.send('LOG_OUT');
+								eWindow.ipc.send('LOG_OUT');
 							},
 							getContainer: getMainContent,
 						});

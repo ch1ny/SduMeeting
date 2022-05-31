@@ -3,7 +3,7 @@ import { Avatar, Button } from 'antd';
 import classNames from 'classnames';
 import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useEffect, useRef, useState } from 'react';
-import { wsAjax } from 'Utils/Axios/Axios';
+import ajax from 'Utils/Axios/Axios';
 import {
 	A_MINUTE_TIME,
 	decodeJWT,
@@ -98,11 +98,10 @@ export default function ChatMessages(props: ChatMessagesProps) {
 				onClick={() => {
 					// NOTE: 查询历史消息
 					setGettingHistoryMessage(true);
-					wsAjax
-						.get('/getHistoryMessage', {
-							toId: props.id,
-							messageId: messages && messages[0] ? messages[0].id : undefined,
-						})
+					ajax.get('/chat/getHistoryMessage', {
+						toId: props.id,
+						messageId: messages && messages[0] ? messages[0].id : undefined,
+					})
 						.then((res) => {
 							if (res.code === 200) {
 								const { list } = res.data;

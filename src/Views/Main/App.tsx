@@ -8,11 +8,9 @@ import {
 	updateAvailableDevices,
 } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
-import { ChatMessage, DeviceInfo, ElectronWindow } from 'Utils/Types';
+import { ChatMessage, DeviceInfo, eWindow } from 'Utils/Types';
 import './App.scss';
 import Index from './Index/Index';
-
-declare const window: ElectronWindow & typeof globalThis;
 
 /**
  * 获取用户多媒体设备
@@ -83,9 +81,9 @@ export default function App() {
 		getUserMediaDevices();
 	}, []);
 
-	window.ipc.invoke('GET_USER_AUTH_TOKEN_AFTER_LOGIN').then((authToken: string) => {
+	eWindow.ipc.invoke('GET_USER_AUTH_TOKEN_AFTER_LOGIN').then((authToken: string) => {
 		store.dispatch(setAuthToken(authToken));
-		window.ipc.invoke('GET_MESSAGE_HISTORY').then((history: string) => {
+		eWindow.ipc.invoke('GET_MESSAGE_HISTORY').then((history: string) => {
 			store.dispatch(setMessageHistory(INIT_MESSAGE_HISTORY, JSON.parse(history)));
 			store.subscribe(() => {
 				const { unreadMessages, messageHistory } = store.getState();
@@ -107,7 +105,7 @@ export default function App() {
 								messageHistory[`${id}`].slice(-5);
 					}
 				}
-				window.ipc.invoke('SET_MESSAGE_HISTORY', alreadyReadMessages);
+				eWindow.ipc.invoke('SET_MESSAGE_HISTORY', alreadyReadMessages);
 			});
 		});
 	});

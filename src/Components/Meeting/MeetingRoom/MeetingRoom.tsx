@@ -2,10 +2,10 @@ import Icon, { FullscreenExitOutlined, FullscreenOutlined } from '@ant-design/ic
 import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { DEVICE_TYPE } from 'Utils/Constraints';
-import { getDeviceStream } from 'Utils/Global';
+import { getDesktopStream, getDeviceStream } from 'Utils/Global';
 import { usePrevious } from 'Utils/MyHooks/MyHooks';
 import store from 'Utils/Store/store';
-import { ElectronWindow } from 'Utils/Types';
+import { eWindow } from 'Utils/Types';
 import { RTCSender } from 'Utils/WebRTC/RTC';
 import SFU from 'Utils/WebRTC/SFU';
 import MainVideo from './MainVideo/MainVideo';
@@ -14,8 +14,6 @@ import './style.scss';
 import ToolBar from './ToolBar/ToolBar';
 import ToolButton from './ToolBar/ToolButton/ToolButton';
 import Topbar from './Topbar/Topbar';
-
-declare const window: ElectronWindow & typeof globalThis;
 
 interface MeetingRoomProps {
 	autoOpenCamera: boolean;
@@ -241,7 +239,7 @@ export default function MeetingRoom(props: MeetingRoomProps) {
 		(fullScreenRef.current as HTMLDivElement).addEventListener('fullscreenchange', () => {
 			const isFullScreen = document.fullscreenElement !== null;
 			setIsFullScreen(isFullScreen);
-			window.ipc.send('MAIN_WINDOW_FULL_SCREEN', isFullScreen);
+			eWindow.ipc.send('MAIN_WINDOW_FULL_SCREEN', isFullScreen);
 		});
 	}, []);
 	return (
@@ -309,8 +307,8 @@ export default function MeetingRoom(props: MeetingRoomProps) {
 								if (isSharingScreen === 0) {
 									// TODO: 完善屏幕共享逻辑
 									// TODO: 通过 http 请求获取是否允许推流
-									window.captureDesktop().then(({ srcObject }) => {
-										setMainVideo(srcObject as MediaStream);
+									getDesktopStream().then((stream) => {
+										setMainVideo(stream);
 										setIsSharingScreen(-props.userId);
 									});
 								} else if (isSharingScreen === -props.userId) {

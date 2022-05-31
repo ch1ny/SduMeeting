@@ -22,7 +22,7 @@ import { ChatRTC } from 'Components/ChatComponent/ChatRTC';
 import FriendBubble from 'Components/ChatComponent/FriendBubble';
 import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useEffect, useReducer, useState } from 'react';
-import { ajax, wsAjax } from 'Utils/Axios/Axios';
+import ajax from 'Utils/Axios/Axios';
 import invokeSocket, { ChatSocket } from 'Utils/ChatSocket/ChatSocket';
 import {
 	ACCEPT_FRIEND_REQUEST,
@@ -40,10 +40,8 @@ import {
 	setUnreadMessages,
 } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
-import { ElectronWindow } from 'Utils/Types';
+import { eWindow } from 'Utils/Types';
 import './style.scss';
-
-declare const window: ElectronWindow & typeof globalThis;
 
 export const ChatRTCContext = React.createContext<ChatRTC | undefined>(undefined);
 
@@ -148,13 +146,12 @@ export default function Chats() {
 	);
 	const [chatRtc, setChatRtc] = useState<ChatRTC | undefined>(undefined);
 	useEffect(() => {
-		window.ipc.invoke('GET_USER_AUTH_TOKEN_AFTER_LOGIN').then((token: string) => {
+		eWindow.ipc.invoke('GET_USER_AUTH_TOKEN_AFTER_LOGIN').then((token: string) => {
 			const _chatSocket = invokeSocket(token);
 			const myId = decodeJWT(store.getState().authToken).id;
 			_chatSocket.on('onopen', () => {
 				console.log('chatsocket连接成功');
-				wsAjax
-					.get('/getFriendsAndMessages')
+				ajax.get('/chat/getFriendsAndMessages')
 					.then((res) => {
 						const { friends, messages, requests } = res.data;
 						// 初始化好友列表

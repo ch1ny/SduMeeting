@@ -3,14 +3,14 @@ import {
 	DisconnectOutlined,
 	LoadingOutlined,
 	SmileOutlined,
-	WhatsAppOutlined
+	WhatsAppOutlined,
 } from '@ant-design/icons';
 import { Button, Modal, Popover } from 'antd';
 import { ChatRTC } from 'Components/ChatComponent/ChatRTC';
 import { ChatRTCContext } from 'Components/Chats/Chats';
 import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useEffect, useRef, useState } from 'react';
-import { wsAjax } from 'Utils/Axios/Axios';
+import ajax from 'Utils/Axios/Axios';
 import invokeSocket from 'Utils/ChatSocket/ChatSocket';
 import { CALL_STATUS_FREE, ChatWebSocketType } from 'Utils/Constraints';
 import { decodeJWT, getMainContent } from 'Utils/Global';
@@ -40,9 +40,7 @@ export default function ChatInput(props: ChatInputProps) {
 		htmlStr = htmlStr.replace(emojiRegExp, `<img class="emoji" src="./emoji/$2.png">&zwj;`);
 
 		inputDOM.innerHTML = htmlStr;
-		setLastEditRange(
-			setCaretPosition(inputDOM, caretOffset + htmlStr.length - rawHtml.length)
-		);
+		setLastEditRange(setCaretPosition(inputDOM, caretOffset + htmlStr.length - rawHtml.length));
 		inputDOM.focus();
 	}, [rawHtml]);
 
@@ -80,16 +78,14 @@ export default function ChatInput(props: ChatInputProps) {
 								if (lastEditRange) {
 									selection.removeAllRanges();
 									selection.addRange(lastEditRange); // 判断选定对象范围是编辑框还是文本节点
-									if ((selection.anchorNode as Node).nodeType !== Node.TEXT_NODE) {
+									if (
+										(selection.anchorNode as Node).nodeType !== Node.TEXT_NODE
+									) {
 										// 如果是编辑框范围。则创建表情文本节点进行插入
 										const emojiText = document.createTextNode(`[:${id}:]`);
 										if (inputDOM.childNodes.length > 0) {
 											// 如果文本框的子元素大于0，则表示有其他元素，则按照位置插入表情节点
-											for (
-												let i = 0;
-												i < inputDOM.childNodes.length;
-												i++
-											) {
+											for (let i = 0; i < inputDOM.childNodes.length; i++) {
 												if (i === selection.anchorOffset) {
 													inputDOM.insertBefore(
 														emojiText,
@@ -122,7 +118,10 @@ export default function ChatInput(props: ChatInputProps) {
 										const rangeStartOffset = range.startOffset;
 										// 文本节点在光标位置处插入新的表情内容
 
-										(textNode as CharacterData).insertData(rangeStartOffset, `[:${id}:]`);
+										(textNode as CharacterData).insertData(
+											rangeStartOffset,
+											`[:${id}:]`
+										);
 										// 光标移动到到原来的位置加上新内容的长度
 										range.setStart(
 											textNode,
@@ -212,10 +211,9 @@ export default function ChatInput(props: ChatInputProps) {
 					className='chatInputControlButtons'
 					title='强制同步聊天记录'
 					onClick={() => {
-						wsAjax
-							.get('/getHistoryMessage', {
-								toId: props.nowChattingId,
-							})
+						ajax.get('/chat/getHistoryMessage', {
+							toId: props.nowChattingId,
+						})
 							.then((res) => {
 								if (res.code === 200) {
 									const { list } = res.data;
@@ -293,7 +291,7 @@ function setCaretPosition(element: HTMLDivElement, pos: number) {
 	return range;
 }
 
-function createRange(node: HTMLElement, chars: { count: any; }, range?: Range): Range {
+function createRange(node: HTMLElement, chars: { count: any }, range?: Range): Range {
 	if (!range) {
 		range = document.createRange();
 		range.selectNode(node);
@@ -324,7 +322,7 @@ function createRange(node: HTMLElement, chars: { count: any; }, range?: Range): 
 }
 
 interface EmojisProps {
-	onChoose: Function
+	onChoose: Function;
 }
 
 function Emojis(props: EmojisProps) {
