@@ -49,7 +49,7 @@ export class ChatRTC extends EventEmitter {
 	offerModal!: null | {
 		destroy: () => void;
 	};
-	candidateQueue!: Array<any>;
+	candidateQueue: Array<any>;
 	useSecurity: boolean;
 	security: string;
 
@@ -64,6 +64,7 @@ export class ChatRTC extends EventEmitter {
 		this.remoteStream = null;
 		this.useSecurity = false;
 		this.security = '[]';
+		this.candidateQueue = new Array();
 
 		this.socket.on('ON_PRIVATE_WEBRTC_REQUEST', (msg) => {
 			this.responseCall(msg);
@@ -107,6 +108,10 @@ export class ChatRTC extends EventEmitter {
 		this.socket.on('ON_PRIVATE_WEBRTC_OFFER', (msg) => {
 			if (msg.sender === this.sender && msg.receiver === this.receiver)
 				this.createAnswer(msg.sdp);
+		});
+
+		this.socket.on('ON_PRIVATE_WEBRTC_ANSWER', (msg) => {
+			this.receiveAnswer(msg.sdp);
 		});
 
 		this.socket.on('ON_PRIVATE_WEBRTC_CANDIDATE', (msg) => {
@@ -211,7 +216,7 @@ export class ChatRTC extends EventEmitter {
 							accept: PRIVATE_WEBRTC_ANSWER_TYPE.ACCEPT,
 							sender: this.sender,
 							receiver: this.receiver,
-							security: '[]',
+							security: '',
 						});
 					}
 
@@ -283,9 +288,11 @@ export class ChatRTC extends EventEmitter {
 				type: 'offer',
 			})
 		);
+
 		while (this.candidateQueue.length > 0) {
 			this.peer.addIceCandidate(this.candidateQueue.shift());
 		}
+
 		this.localStream = new MediaStream();
 		this.localStream.addTrack(
 			(await getDeviceStream(DEVICE_TYPE.VIDEO_DEVICE)).getVideoTracks()[0]
@@ -443,6 +450,7 @@ export class ChatRTC extends EventEmitter {
 		this.localStream = null;
 		this.remoteStream = null;
 		if (this.peer) this.peer.close();
+		this.candidateQueue = new Array();
 		store.dispatch(setCallStatus(CALL_STATUS_FREE));
 	}
 }

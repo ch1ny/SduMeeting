@@ -109,6 +109,14 @@ export class ChatSocket extends EventEmitter {
 					store.dispatch(setMessageHistory(ADD_MESSAGE_HISTORY, msg.data.message));
 					this.emit('MESSAGE_SENDER_OK', msg.data.message.toId);
 					break;
+				case ChatWebSocketType.CHAT_PRIVATE_WEBRTC_REQUEST:
+					// NOTE: 接到私人视频通话请求
+					this.emit('ON_PRIVATE_WEBRTC_REQUEST', msg);
+					break;
+				case ChatWebSocketType.CHAT_PRIVATE_WEBRTC_RESPONSE:
+					// NOTE: 接到私人视频通话响应
+					this.emit('ON_PRIVATE_WEBRTC_RESPONSE', msg);
+					break;
 				case ChatWebSocketType.CHAT_PRIVATE_WEBRTC_OFFER:
 					// NOTE: 接到 OFFER 请求
 					this.emit('ON_PRIVATE_WEBRTC_OFFER', msg);

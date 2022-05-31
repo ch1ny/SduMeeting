@@ -189,7 +189,7 @@ export default function ChatInput(props: ChatInputProps) {
 									},
 									getContainer: getMainContent,
 								});
-								(chatRtc as ChatRTC).createOffer(
+								(chatRtc as ChatRTC).callRemote(
 									props.nowChattingId,
 									decodeJWT(store.getState().authToken).username,
 									modal
