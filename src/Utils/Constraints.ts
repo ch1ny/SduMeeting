@@ -51,14 +51,14 @@ export const PRIVATE_WEBRTC_ANSWER_TYPE = {
 };
 
 // NOTE: 支持的编码器
-const senderCodecs = RTCRtpSender.getCapabilities('video')?.codecs;
-const receiverCodecs = RTCRtpReceiver.getCapabilities('video')?.codecs;
+const senderCodecs = RTCRtpSender.getCapabilities('video')?.codecs as RTCRtpCodecCapability[];
+const receiverCodecs = RTCRtpReceiver.getCapabilities('video')?.codecs as RTCRtpCodecCapability[];
 (() => {
 	const senderH264Index = senderCodecs?.findIndex(
 		(c) =>
 			c.mimeType === 'video/H264' &&
 			c.sdpFmtpLine ===
-				'level-asymmetry-allowed=1;packetization-mode=0;profile-level-id=42001f'
+				'level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f'
 	);
 	const senderH264 = (senderCodecs as Array<RTCRtpCodecCapability>)[
 		senderH264Index ? senderH264Index : 0
@@ -70,7 +70,7 @@ const receiverCodecs = RTCRtpReceiver.getCapabilities('video')?.codecs;
 		(c) =>
 			c.mimeType === 'video/H264' &&
 			c.sdpFmtpLine ===
-				'level-asymmetry-allowed=1;packetization-mode=0;profile-level-id=42001f'
+				'level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f'
 	);
 	const receiverH264 = (receiverCodecs as Array<RTCRtpCodecCapability>)[
 		receiverH264Index ? receiverH264Index : 0

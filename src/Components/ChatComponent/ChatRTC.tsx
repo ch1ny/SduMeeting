@@ -256,7 +256,7 @@ export class ChatRTC extends EventEmitter {
 			this.peer.getSenders().forEach((sender) => {
 				setupSenderTransform(sender, privateKey);
 			});
-		} else if (senderCodecs) {
+		} else {
 			this.peer
 				.getTransceivers()
 				.find((t) => t.sender.track?.kind === 'video')
@@ -310,7 +310,7 @@ export class ChatRTC extends EventEmitter {
 			this.peer.getSenders().forEach((sender) => {
 				setupSenderTransform(sender, this.security);
 			});
-		} else if (senderCodecs) {
+		} else {
 			this.peer
 				.getTransceivers()
 				.find((t) => t.sender.track?.kind === 'video')
@@ -413,7 +413,7 @@ export class ChatRTC extends EventEmitter {
 		peer.ontrack = (evt) => {
 			// NOTE: 解密
 			if (this.useSecurity) setupReceiverTransform(evt.receiver, this.security);
-			else if (receiverCodecs)
+			else
 				peer.getTransceivers()
 					.find((t) => t.receiver.track.kind === 'video')
 					?.setCodecPreferences(receiverCodecs);

@@ -50,7 +50,7 @@ export default class RTC extends EventEmitter {
 			sender.pc.getSenders().forEach((sender) => {
 				setupSenderTransform(sender, this.psw);
 			});
-		else if (senderCodecs) {
+		else {
 			sender.pc
 				.getTransceivers()
 				.find((t) => t.sender.track?.kind === 'video')
@@ -82,7 +82,7 @@ export default class RTC extends EventEmitter {
 
 			pc.ontrack = (e) => {
 				if (Boolean(this.psw)) setupReceiverTransform(e.receiver, this.psw);
-				else if (receiverCodecs) {
+				else {
 					pc.getTransceivers()
 						.find((t) => t.receiver.track.kind === 'video')
 						?.setCodecPreferences(receiverCodecs);
