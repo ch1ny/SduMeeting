@@ -121,6 +121,7 @@ export class ChatRTC extends EventEmitter {
 		});
 
 		this.socket.on('ON_PRIVATE_WEBRTC_DISCONNECT', (msg) => {
+			globalMessage.info('对方已挂断通话');
 			this.onHangUp(msg);
 		});
 	}
