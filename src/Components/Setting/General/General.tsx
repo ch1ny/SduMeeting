@@ -62,7 +62,7 @@ export default function General() {
 					}}>
 					私人加密通话
 				</Checkbox>
-				<Tooltip placement='right' overlay={'开启加密会大幅度提高CPU占用'}>
+				<Tooltip placement='right' overlay={'开启加密会大幅度提高CPU占用且不会开启GPU加速'}>
 					<QuestionCircleFilled style={{ color: 'gray', transform: 'translateY(25%)' }} />
 				</Tooltip>
 			</div>

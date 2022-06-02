@@ -4,7 +4,6 @@ import { ChatRTCContext } from 'Components/Chats/Chats';
 import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useEffect, useState } from 'react';
 import { CALL_STATUS_CALLING } from 'Utils/Constraints';
-import { decodeJWT } from 'Utils/Global';
 import store from 'Utils/Store/store';
 import { eWindow } from 'Utils/Types';
 import { ChatRTC } from '../ChatRTC';
@@ -19,11 +18,6 @@ interface ChatMainComponentProps {
 }
 
 export function ChatMainComponent(props: ChatMainComponentProps) {
-	const [myId, setMyId] = useState(0);
-	useEffect(() => {
-		setMyId(decodeJWT(store.getState().authToken).id);
-	}, []);
-
 	const { callStatus, nowChattingId, nowWebrtcFriendId } = store.getState();
 	const [onVideo, setOnVideo] = useState(
 		callStatus === CALL_STATUS_CALLING && nowChattingId === nowWebrtcFriendId
@@ -72,6 +66,12 @@ export function ChatMainComponent(props: ChatMainComponentProps) {
 				chatRtc.onEnded();
 			}
 		});
+		return () => {
+			chatRtc.removeAllListeners('LOCAL_STREAM_READY');
+			chatRtc.removeAllListeners('REMOTE_STREAM_READY');
+			chatRtc.removeAllListeners('ICE_DISCONNECT');
+			chatRtc.removeAllListeners('RTC_CONNECTION_FAILED');
+		};
 	}, []);
 
 	return (

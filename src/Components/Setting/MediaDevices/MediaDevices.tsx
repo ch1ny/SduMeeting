@@ -294,7 +294,7 @@ function getUserMediaDevices() {
 									webLabel: label.replace('Communications - ', '通讯设备 - '),
 								};
 							default:
-								return { label: label, webLabel: label };
+								return { label, webLabel: label };
 						}
 					})(
 						formerIndex === latterIndex

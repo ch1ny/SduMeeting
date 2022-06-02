@@ -224,6 +224,13 @@ export default function MeetingRoom(props: MeetingRoomProps) {
 				}
 				setAllMembers(new Map(allMembers));
 			});
+
+			return () => {
+				props.sfu.removeAllListeners('addRemoteStream');
+				props.sfu.removeAllListeners('removeRemoteStream');
+				props.sfu.removeAllListeners('onNewMemberJoin');
+				props.sfu.removeAllListeners('onJoinSuccess');
+			};
 		}
 	}, [props.sfu]);
 	useEffect(() => {
@@ -236,11 +243,21 @@ export default function MeetingRoom(props: MeetingRoomProps) {
 	const [isFullScreen, setIsFullScreen] = useState(false);
 	const fullScreenRef = useRef<HTMLDivElement>(null);
 	useEffect(() => {
-		(fullScreenRef.current as HTMLDivElement).addEventListener('fullscreenchange', () => {
+		const onFullScreenChange = () => {
 			const isFullScreen = document.fullscreenElement !== null;
 			setIsFullScreen(isFullScreen);
 			eWindow.ipc.send('MAIN_WINDOW_FULL_SCREEN', isFullScreen);
-		});
+		};
+		(fullScreenRef.current as HTMLDivElement).addEventListener(
+			'fullscreenchange',
+			onFullScreenChange
+		);
+		return () => {
+			(fullScreenRef.current as HTMLDivElement).removeEventListener(
+				'fullscreenchange',
+				onFullScreenChange
+			);
+		};
 	}, []);
 	return (
 		<>
