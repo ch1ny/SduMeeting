@@ -5,8 +5,9 @@ import {
 	LockOutlined,
 	PlusOutlined,
 	UserOutlined,
+	VerticalAlignTopOutlined,
 } from '@ant-design/icons';
-import { Button, Checkbox, Divider, Empty, Form, Input, Modal } from 'antd';
+import { Button, Checkbox, Divider, Empty, Form, Input, InputNumber, Modal } from 'antd';
 import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useEffect, useState } from 'react';
 import { CALL_STATUS_FREE, CALL_STATUS_OFFERING } from 'Utils/Constraints';
@@ -206,6 +207,8 @@ export default function MeetingList(props: MeetingListProps) {
 						remember: true,
 					}}
 					onFinish={(values) => {
+						console.log(values);
+
 						if (store.getState().callStatus === CALL_STATUS_FREE) {
 							store.dispatch(setCallStatus(CALL_STATUS_OFFERING));
 							setIsJoining(true);
@@ -236,6 +239,27 @@ export default function MeetingList(props: MeetingListProps) {
 							placeholder='您的名称'
 						/>
 					</Form.Item>
+					<Form.Item
+						name='joinLimit'
+						rules={[
+							{
+								required: true,
+								message: '请输入最大参会人数',
+							},
+						]}>
+						<InputNumber
+							style={{
+								width: '100%',
+							}}
+							prefix={
+								<VerticalAlignTopOutlined
+									style={{ color: 'rgba(0, 0, 0, 0.25)' }}
+								/>
+							}
+							min={1}
+							placeholder='最大参会人数'
+						/>
+					</Form.Item>
 					<Form.Item>
 						<Checkbox
 							checked={autoOpenMicroPhone}
@@ -258,7 +282,7 @@ export default function MeetingList(props: MeetingListProps) {
 					</Form.Item>
 					<Form.Item>
 						<Button type='primary' htmlType='submit' loading={isJoining}>
-							加入会议
+							创建会议
 						</Button>
 					</Form.Item>
 				</Form>

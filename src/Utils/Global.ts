@@ -54,7 +54,7 @@ function decodeJWT(token: string): UserInfo {
  * @param {string} device 设备类型 DEVICE_TYPE
  * @returns
  */
-function getDeviceStream(device: string): Promise<MediaStream> {
+async function getDeviceStream(device: string): Promise<MediaStream> {
 	switch (device) {
 		case DEVICE_TYPE.AUDIO_DEVICE:
 			const audioDevice = store.getState().usingAudioDevice as DeviceInfo;
@@ -65,7 +65,11 @@ function getDeviceStream(device: string): Promise<MediaStream> {
 				noiseSuppression: localStorage.getItem('noiseSuppression') !== 'false',
 				echoCancellation: localStorage.getItem('echoCancellation') !== 'false',
 			};
-			return navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
+			try {
+				return await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
+			} catch (e) {
+				return await getDefaultStream();
+			}
 		case DEVICE_TYPE.VIDEO_DEVICE:
 			const videoDevice = store.getState().usingVideoDevice as DeviceInfo;
 			const videoConstraints = {
@@ -78,12 +82,57 @@ function getDeviceStream(device: string): Promise<MediaStream> {
 					max: 30,
 				},
 			};
-			return navigator.mediaDevices.getUserMedia({
-				video: videoConstraints,
-			});
+			try {
+				return await navigator.mediaDevices.getUserMedia({
+					video: videoConstraints,
+				});
+			} catch (e) {
+				// const canvas = document.createElement('canvas');
+				// canvas.width = 1920;
+				// canvas.height = 1080;
+				// const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+				// // 绘制背景
+				// ctx.fillStyle = '#acacac';
+				// ctx.fillRect(0, 0, 1920, 1080);
+				// // 绘制圆
+				// ctx.strokeStyle = '#fff';
+				// ctx.lineWidth = 10;
+				// ctx.beginPath();
+				// ctx.arc(960, 400, 250, 0, 2 * Math.PI, true);
+				// ctx.stroke();
+				// // 绘制感叹号
+				// ctx.textAlign = 'center';
+				// ctx.textBaseline = 'middle';
+				// ctx.font = "bold 250px 'Times New Roman', Times, serif";
+				// ctx.fillStyle = '#fff';
+				// ctx.fillText('!', 960, 420); // 为了美观将感叹号稍微下移
+				// // 绘制提示文字
+				// ctx.font = "bold 125px 'Times New Roman', Times, serif";
+				// ctx.fillText('无 视 频 设 备', 960, 875);
+				// // TOFIX：远端接到的这个视频流无效
+				// return canvas.captureStream();
+				return await getDefaultStream();
+			}
 		default:
-			return Promise.resolve(new MediaStream());
+			return new MediaStream();
 	}
+}
+
+let defaultVideoWidget: HTMLVideoElement | undefined;
+function getDefaultStream(): Promise<MediaStream> {
+	return new Promise((resolve) => {
+		if (defaultVideoWidget) {
+			resolve((defaultVideoWidget as any).captureStream(1) as MediaStream);
+		} else {
+			defaultVideoWidget = document.createElement('video');
+			defaultVideoWidget.autoplay = true;
+			defaultVideoWidget.src = '../electronAssets/null.mp4';
+			defaultVideoWidget.loop = true;
+			defaultVideoWidget.onloadedmetadata = () => {
+				resolve((defaultVideoWidget as any).captureStream(1) as MediaStream);
+			};
+		}
+	});
 }
 
 function getDesktopStream(): Promise<MediaStream> {

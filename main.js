@@ -511,7 +511,6 @@ const diffieHellman = {
 		return new Array(global_p, global_g, clientPublicKey.toString('hex'));
 	},
 	answer(global_p, global_g, clientPublicKey) {
-		console.log(global_p, global_g, clientPublicKey);
 		const global_p_buffer = Buffer.from(global_p, 'hex');
 		const global_g_buffer = Buffer.from(global_g, 'hex');
 		const clienPublicKeyBuffer = Buffer.from(clientPublicKey, 'hex');

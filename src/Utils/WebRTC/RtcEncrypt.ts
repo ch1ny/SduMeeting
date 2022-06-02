@@ -22,91 +22,93 @@ let currentKeyIdentifier = 0;
 // 它使（加密的）视频和音频在观看和聆听时更有乐趣
 // 因为解码器不会立即抛出一个致命的错误。
 const frameTypeToCryptoOffset = {
-    key: 10,
-    delta: 3,
-    undefined: 1,
+	key: 10,
+	delta: 3,
+	undefined: 1,
 };
 
 function encodeFunction(encodedFrame: any, controller: any, cryptoKey?: string) {
-    const currentCryptoKey = cryptoKey || defaultCryptoKey;
-    // console.log(currentCryptoKey);
-    const view = new DataView(encodedFrame.data);
-    // Any length that is needed can be used for the new buffer.
-    // 任何需要的长度都可以用于新的缓冲区。
-    const newData = new ArrayBuffer(encodedFrame.data.byteLength + 5);
-    const newView = new DataView(newData);
+	const currentCryptoKey = cryptoKey || defaultCryptoKey;
+	// console.log(currentCryptoKey);
+	const view = new DataView(encodedFrame.data);
+	// Any length that is needed can be used for the new buffer.
+	// 任何需要的长度都可以用于新的缓冲区。
+	const newData = new ArrayBuffer(encodedFrame.data.byteLength + 5);
+	const newView = new DataView(newData);
 
-    const cryptoOffset = frameTypeToCryptoOffset[encodedFrame.type as keyof typeof frameTypeToCryptoOffset];
-    for (let i = 0; i < cryptoOffset && i < encodedFrame.data.byteLength; ++i) {
-        newView.setInt8(i, view.getInt8(i));
-    }
-    // This is a bitwise xor of the key with the payload. This is not strong encryption, just a demo.
-    // 这是对密钥和有效载荷进行的位数交换。这不是强加密，只是一个演示。
-    for (let i = cryptoOffset; i < encodedFrame.data.byteLength; ++i) {
-        const keyByte = currentCryptoKey.charCodeAt(i % currentCryptoKey.length);
-        newView.setInt8(i, view.getInt8(i) ^ keyByte);
-    }
-    // Append keyIdentifier.
-    // 添加keyIdentifier。
-    newView.setUint8(encodedFrame.data.byteLength, currentKeyIdentifier % 0xff);
-    // Append checksum
-    // 添加校验和
-    newView.setUint32(encodedFrame.data.byteLength + 1, 0xdeadbeef);
+	const cryptoOffset =
+		frameTypeToCryptoOffset[encodedFrame.type as keyof typeof frameTypeToCryptoOffset];
+	for (let i = 0; i < cryptoOffset && i < encodedFrame.data.byteLength; ++i) {
+		newView.setInt8(i, view.getInt8(i));
+	}
+	// This is a bitwise xor of the key with the payload. This is not strong encryption, just a demo.
+	// 这是对密钥和有效载荷进行的位数交换。这不是强加密，只是一个演示。
+	for (let i = cryptoOffset; i < encodedFrame.data.byteLength; ++i) {
+		const keyByte = currentCryptoKey.charCodeAt(i % currentCryptoKey.length);
+		newView.setInt8(i, view.getInt8(i) ^ keyByte);
+	}
+	// Append keyIdentifier.
+	// 添加keyIdentifier。
+	newView.setUint8(encodedFrame.data.byteLength, currentKeyIdentifier % 0xff);
+	// Append checksum
+	// 添加校验和
+	newView.setUint32(encodedFrame.data.byteLength + 1, 0xdeadbeef);
 
-    encodedFrame.data = newData;
-    //console.log("encode");
-    controller.enqueue(encodedFrame);
+	encodedFrame.data = newData;
+	//console.log("encode");
+	controller.enqueue(encodedFrame);
 }
 
 function decodeFunction(encodedFrame: any, controller: any, cryptoKey?: string) {
-    const view = new DataView(encodedFrame.data);
-    const checksum =
-        encodedFrame.data.byteLength > 4 ? view.getUint32(encodedFrame.data.byteLength - 4) : false;
-    const currentCryptoKey = cryptoKey || defaultCryptoKey;
-    if (checksum !== 0xdeadbeef) {
-        // console.log('Corrupted frame received, checksum ' + checksum.toString(16));
-        return; // This can happen when the key is set and there is an unencrypted frame in-flight.
-        // 这种情况可能发生在设置了密钥并且有一个未加密的帧在飞行的情况下。
-    }
-    const keyIdentifier = view.getUint8(encodedFrame.data.byteLength - 5);
-    if (keyIdentifier !== currentKeyIdentifier) {
-        // console.log(
-        //     `Key identifier mismatch, got ${keyIdentifier} expected ${currentKeyIdentifier}.`
-        // );
-        return;
-    }
+	const view = new DataView(encodedFrame.data);
+	const checksum =
+		encodedFrame.data.byteLength > 4 ? view.getUint32(encodedFrame.data.byteLength - 4) : false;
+	const currentCryptoKey = cryptoKey || defaultCryptoKey;
+	if (checksum !== 0xdeadbeef) {
+		// console.log('Corrupted frame received, checksum ' + checksum.toString(16));
+		return; // This can happen when the key is set and there is an unencrypted frame in-flight.
+		// 这种情况可能发生在设置了密钥并且有一个未加密的帧在飞行的情况下。
+	}
+	const keyIdentifier = view.getUint8(encodedFrame.data.byteLength - 5);
+	if (keyIdentifier !== currentKeyIdentifier) {
+		// console.log(
+		//     `Key identifier mismatch, got ${keyIdentifier} expected ${currentKeyIdentifier}.`
+		// );
+		return;
+	}
 
-    const newData = new ArrayBuffer(encodedFrame.data.byteLength - 5);
-    const newView = new DataView(newData);
-    const cryptoOffset = frameTypeToCryptoOffset[encodedFrame.type as keyof typeof frameTypeToCryptoOffset];
+	const newData = new ArrayBuffer(encodedFrame.data.byteLength - 5);
+	const newView = new DataView(newData);
+	const cryptoOffset =
+		frameTypeToCryptoOffset[encodedFrame.type as keyof typeof frameTypeToCryptoOffset];
 
-    for (let i = 0; i < cryptoOffset; ++i) {
-        newView.setInt8(i, view.getInt8(i));
-    }
-    for (let i = cryptoOffset; i < encodedFrame.data.byteLength - 5; ++i) {
-        const keyByte = currentCryptoKey.charCodeAt(i % currentCryptoKey.length);
-        newView.setInt8(i, view.getInt8(i) ^ keyByte);
-    }
-    encodedFrame.data = newData;
-    controller.enqueue(encodedFrame);
+	for (let i = 0; i < cryptoOffset; ++i) {
+		newView.setInt8(i, view.getInt8(i));
+	}
+	for (let i = cryptoOffset; i < encodedFrame.data.byteLength - 5; ++i) {
+		const keyByte = currentCryptoKey.charCodeAt(i % currentCryptoKey.length);
+		newView.setInt8(i, view.getInt8(i) ^ keyByte);
+	}
+	encodedFrame.data = newData;
+	controller.enqueue(encodedFrame);
 }
 
 export function setupSenderTransform(sender: RTCRtpSender, cryptoKey?: string) {
-    const senderStreams = (sender as any).createEncodedStreams();
-    const transformStream = new TransformStream({
-        transform: (frame, controller) => {
-            encodeFunction(frame, controller, cryptoKey)
-        },
-    });
-    senderStreams.readable.pipeThrough(transformStream).pipeTo(senderStreams.writable);
+	const senderStreams = (sender as any).createEncodedStreams();
+	const transformStream = new TransformStream({
+		transform: (frame, controller) => {
+			encodeFunction(frame, controller, cryptoKey);
+		},
+	});
+	senderStreams.readable.pipeThrough(transformStream).pipeTo(senderStreams.writable);
 }
 
 export function setupReceiverTransform(receiver: RTCRtpReceiver, cryptoKey?: string) {
-    const receiverStreams = (receiver as any).createEncodedStreams();
-    const transformStream = new TransformStream({
-        transform: (frame, controller) => {
-            decodeFunction(frame, controller, cryptoKey)
-        },
-    });
-    receiverStreams.readable.pipeThrough(transformStream).pipeTo(receiverStreams.writable);
+	const receiverStreams = (receiver as any).createEncodedStreams();
+	const transformStream = new TransformStream({
+		transform: (frame, controller) => {
+			decodeFunction(frame, controller, cryptoKey);
+		},
+	});
+	receiverStreams.readable.pipeThrough(transformStream).pipeTo(receiverStreams.writable);
 }
