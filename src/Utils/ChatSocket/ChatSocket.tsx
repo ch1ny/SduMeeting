@@ -6,6 +6,7 @@ import { getMainContent } from 'Utils/Global';
 import { AUDIO_TYPE, buildPropmt } from 'Utils/Prompt/Prompt';
 import { ADD_MESSAGE_HISTORY, setMessageHistory } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
+import { eWindow } from 'Utils/Types';
 
 let chatSocket: ChatSocket;
 
@@ -132,16 +133,30 @@ export class ChatSocket extends EventEmitter {
 				case ChatWebSocketType.CHAT_PRIVATE_WEBRTC_DISCONNECT:
 					this.emit('ON_PRIVATE_WEBRTC_DISCONNECT', msg);
 					break;
+				case 'NEW_CONNECTION':
+					socket.close(1000, '异地登录');
+					new Notification('异地登录', {
+						body: '您的账号已在其他机器上登录，您已被挤下线',
+					});
+					eWindow.ipc.send('LOG_OUT');
+					break;
+				default:
+					console.log('未知 chat socket 消息');
+					console.log(msg);
+					break;
 			}
 		};
 		socket.onerror = (evt) => {
 			console.warn('websocket出错');
 			console.log(evt);
-			this.socket = this.buildSocket(token);
 		};
 		socket.onclose = (evt) => {
 			console.log('websocket断开连接');
 			console.log(evt);
+			if (evt.code === 1000 && evt.reason === '异地登录') {
+				// 客户端因为异地登录主动断开连接
+			}
+			// eWindow.ipc.send('LOG_OUT');
 		};
 		return socket;
 	}
