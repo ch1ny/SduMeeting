@@ -71,11 +71,11 @@ export class ChatSocket extends EventEmitter {
 					};
 					(window as any).ipc.invoke('IS_MAIN_WINDOW_MINIMIZED').then((bool: boolean) => {
 						if (bool) {
-							new Notification('您的好友请求已通过', {
-								body: `${username} 已同意您的好友请求`,
+							new Notification(`${username} 已同意您的好友请求`, {
+								body: `嘿，我们已经是好友了，快来和我聊天吧！`,
 								icon: profile
 									? `http://meeting.aiolia.top:8080/file/pic/user/${id}.${profile}`
-									: '',
+									: drawUserProfile(username),
 								silent: true,
 							});
 						}
@@ -96,7 +96,7 @@ export class ChatSocket extends EventEmitter {
 								body: `${msg.data.message.message}`,
 								icon: profile
 									? `http://meeting.aiolia.top:8080/file/pic/user/${msg.data.message.fromId}.${profile}`
-									: '',
+									: drawUserProfile(friend.username),
 								silent: true,
 							});
 						}
@@ -151,6 +151,19 @@ export class ChatSocket extends EventEmitter {
 		// console.log(msg);
 		this.socket.send(JSON.stringify(msg));
 	}
+}
+
+function drawUserProfile(username: string) {
+	const canvas = document.createElement('canvas');
+	canvas.width = 500;
+	canvas.height = 500;
+	const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+	ctx.textAlign = 'center';
+	ctx.textBaseline = 'middle';
+	ctx.fillStyle = '#fff';
+	ctx.font = "bold 100px 'Times New Roman', Times, serif";
+	ctx.fillText(username, 250, 250);
+	return canvas.toDataURL('image/png');
 }
 
 export default invokeSocket;
