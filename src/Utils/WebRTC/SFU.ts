@@ -10,7 +10,13 @@ export default class SFU extends EventEmitter {
 	socket: WebSocket;
 	sender!: RTCSender;
 
-	constructor(userId: number, userName: string, meetingId: string, joinPassword?: string) {
+	constructor(
+		sfuIp: string,
+		userId: number,
+		userName: string,
+		meetingId: string,
+		joinPassword?: string
+	) {
 		super();
 		this._rtc = new RTC(joinPassword);
 		this.userId = userId;
@@ -18,8 +24,10 @@ export default class SFU extends EventEmitter {
 		this.meetingId = Number(meetingId);
 
 		// const sfuUrl = 'ws://localhost:3000/ws';
-		const sfuUrl = 'ws://webrtc.aiolia.top:3000/ws';
+		// const sfuUrl = 'ws://webrtc.aiolia.top:3000/ws';
 		// const sfuUrl = 'ws://121.40.95.78:3000/ws';
+		// TOFIX: 巩义的代码有问题，会返回 127.0.0.1
+		const sfuUrl = `ws://${sfuIp !== '127.0.0.1:3000' ? sfuIp : '121.40.95.78:3000'}/ws`;
 
 		this.socket = new WebSocket(sfuUrl);
 

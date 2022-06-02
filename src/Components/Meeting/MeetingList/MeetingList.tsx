@@ -10,6 +10,7 @@ import {
 import { Button, Checkbox, Divider, Empty, Form, Input, InputNumber, Modal } from 'antd';
 import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useEffect, useState } from 'react';
+import ajax from 'Utils/Axios/Axios';
 import { CALL_STATUS_FREE, CALL_STATUS_OFFERING } from 'Utils/Constraints';
 import eventBus from 'Utils/EventBus/EventBus';
 import { decodeJWT, getMainContent } from 'Utils/Global';
@@ -82,7 +83,12 @@ export default function MeetingList(props: MeetingListProps) {
 							description={
 								<div>
 									<div>暂无会议</div>
-									<Button>现在预定</Button>
+									<Button
+										onClick={() => {
+											setShowRandomModal(true);
+										}}>
+										现在发起
+									</Button>
 								</div>
 							}
 						/>
@@ -108,18 +114,30 @@ export default function MeetingList(props: MeetingListProps) {
 						remember: true,
 					}}
 					onFinish={(values) => {
-						console.log(values);
-
 						if (store.getState().callStatus === CALL_STATUS_FREE) {
-							store.dispatch(setCallStatus(CALL_STATUS_OFFERING));
-							setIsJoining(true);
-							eventBus.once('ATTEMPT_TO_JOIN', () => {
-								setIsJoining(false);
-								setShowJoinModal(false);
-							});
-							values.autoOpenCamera = autoOpenCamera;
-							values.autoOpenMicroPhone = autoOpenMicroPhone;
-							props.joinMeeting(values);
+							ajax.post('/meeting/join', {
+								userId: decodeJWT(store.getState().authToken).id,
+								meetingId: values.meetingId,
+							})
+								.then((res) => {
+									if (res.code === 0 && res.message === 'success') {
+										store.dispatch(setCallStatus(CALL_STATUS_OFFERING));
+										setIsJoining(true);
+										eventBus.once('ATTEMPT_TO_JOIN', () => {
+											setIsJoining(false);
+											setShowJoinModal(false);
+										});
+										values.sfuIp = res.data.addr;
+										values.autoOpenCamera = autoOpenCamera;
+										values.autoOpenMicroPhone = autoOpenMicroPhone;
+										props.joinMeeting(values);
+									} else {
+										globalMessage.error(`加入失败：${res.message}`);
+									}
+								})
+								.catch((err) => {
+									globalMessage.error('加入请求发送失败');
+								});
 						} else {
 							globalMessage.error('应用当前不处于空闲通话状态！');
 						}
@@ -207,20 +225,33 @@ export default function MeetingList(props: MeetingListProps) {
 						remember: true,
 					}}
 					onFinish={(values) => {
-						console.log(values);
-
 						if (store.getState().callStatus === CALL_STATUS_FREE) {
-							store.dispatch(setCallStatus(CALL_STATUS_OFFERING));
-							setIsJoining(true);
-							eventBus.once('ATTEMPT_TO_JOIN', () => {
-								setIsJoining(false);
-								setShowRandomModal(false);
-							});
-							// TODO: 这里是快速生成的随机会议号
-							values.meetingId = `${1e8 + Math.floor(Math.random() * 9e8)}`;
-							values.autoOpenCamera = autoOpenCamera;
-							values.autoOpenMicroPhone = autoOpenMicroPhone;
-							props.joinMeeting(values);
+							console.log(values);
+							ajax.post('/meeting/create', {
+								userId: decodeJWT(store.getState().authToken).id,
+								limit: values.joinLimit,
+								pattern: 1,
+							})
+								.then((res) => {
+									if (res.code === 0 && res.message === 'success') {
+										store.dispatch(setCallStatus(CALL_STATUS_OFFERING));
+										setIsJoining(true);
+										eventBus.once('ATTEMPT_TO_JOIN', () => {
+											setIsJoining(false);
+											setShowRandomModal(false);
+										});
+										values.meetingId = `${res.data.meetingId}`;
+										values.sfuIp = res.data.addr;
+										values.autoOpenCamera = autoOpenCamera;
+										values.autoOpenMicroPhone = autoOpenMicroPhone;
+										props.joinMeeting(values);
+									} else {
+										globalMessage.error(`创建失败：${res.message}`);
+									}
+								})
+								.catch((err) => {
+									globalMessage.error('创建请求发送失败');
+								});
 						} else {
 							globalMessage.error('应用当前不处于空闲通话状态！');
 						}

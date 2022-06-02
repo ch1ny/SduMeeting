@@ -252,12 +252,6 @@ export default function MeetingRoom(props: MeetingRoomProps) {
 			'fullscreenchange',
 			onFullScreenChange
 		);
-		return () => {
-			(fullScreenRef.current as HTMLDivElement).removeEventListener(
-				'fullscreenchange',
-				onFullScreenChange
-			);
-		};
 	}, []);
 	return (
 		<>
