@@ -11,12 +11,12 @@ export default function Index() {
 	const [selectedTab, setSelectedTab] = useState(0);
 	useEffect(() => {
 		eventBus.on('GET_PRIVATE_CALLED', () => {
-			setSelectedTab(0)
-		})
+			setSelectedTab(0);
+		});
 		return () => {
-			eventBus.offAll('GET_PRIVATE_CALLED')
-		}
-	}, [])
+			eventBus.offAll('GET_PRIVATE_CALLED');
+		};
+	}, []);
 
 	return (
 		<>

@@ -288,6 +288,7 @@ export default function MeetingList(props: MeetingListProps) {
 								/>
 							}
 							min={1}
+							max={100}
 							placeholder='最大参会人数'
 						/>
 					</Form.Item>

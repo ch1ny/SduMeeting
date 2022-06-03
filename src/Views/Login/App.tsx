@@ -126,7 +126,7 @@ export default function App() {
 				<div id='header'>
 					<div id='titleBar'>
 						<LogoIcon style={{ fontSize: '1.5rem' }} />
-						<span style={{ fontFamily: 'Microsoft Yahei' }}>山大会议</span>
+						<span style={{ fontFamily: 'FZZJ-TBPYTJW' }}>山大会议</span>
 						<button
 							className='titleBtn'
 							id='shutdown'

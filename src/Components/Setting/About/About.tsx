@@ -1,3 +1,4 @@
+import { CloudSyncOutlined } from '@ant-design/icons';
 import { Button, Image, Progress } from 'antd';
 import axios from 'axios';
 import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
@@ -114,11 +115,36 @@ export default function About() {
 					)}
 				</>
 			) : (
-				<Button type='primary' onClick={checkForUpdate} loading={checking}>
+				<Button
+					type='primary'
+					onClick={checkForUpdate}
+					loading={checking}
+					icon={<CloudSyncOutlined />}>
 					检查更新
 				</Button>
 			)}
 			<div id='copyright'>Copyright (c) 2021{thisYear ? ` - ${thisYear}` : ''} 德布罗煜</div>
+			<div>
+				<div>
+					<Button type='link' onClick={openAgreement}>
+						软件许可及服务协议
+					</Button>
+				</div>
+				<div>
+					源码地址：
+					<Button type='link' onClick={openSourceCodeOnGithub}>
+						https://github.com/ch1ny/SduMeeting
+					</Button>
+				</div>
+			</div>
 		</div>
 	);
 }
+
+const openAgreement = () => {
+	window.open('/agreement');
+};
+
+const openSourceCodeOnGithub = () => {
+	window.open('https://github.com/ch1ny/SduMeeting');
+};

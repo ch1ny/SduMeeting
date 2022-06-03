@@ -35,7 +35,7 @@ export default function App() {
 			className='register'
 			style={{ backgroundImage: `url(${require('./bg.jpg').default})` }}>
 			<div className='container'>
-				<div className='title'>山大会议 注册账号</div>
+				<div className='title'>山大会议 账号注册</div>
 				<div className='inputs'>
 					<Form
 						onFinish={(values) => {

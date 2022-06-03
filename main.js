@@ -108,7 +108,7 @@ function createLoginWindow() {
 			}
 		});
 
-		ipc.handleOnce('GET_LAST_PASSWORD', () => {
+		ipc.handle('GET_LAST_PASSWORD', () => {
 			let userPsw;
 			if (store.get('userSafePsw')) {
 				userPsw = safeStorage.decryptString(Buffer.from(store.get('userSafePsw').data));
@@ -127,6 +127,7 @@ function createLoginWindow() {
 				loginWindow.close();
 			});
 			ipc.removeAllListeners('USER_LOGIN');
+			ipc.removeHandler('GET_LAST_PASSWORD');
 		});
 
 		ipc.once('SAFE_PASSWORD', (event, shouldSave, userPsw) => {

@@ -1,0 +1,98 @@
+@import '~antd/dist/antd.css';
+
+* {
+	margin: 0%;
+	padding: 0%;
+	font-size: 12px;
+}
+
+#agreement {
+	display: flex;
+	justify-content: center;
+	padding-inline: 2em;
+
+	#asider {
+		padding-right: 3em;
+
+		#nav {
+			#head {
+				color: #0052d9;
+				position: relative;
+				line-height: 22px;
+
+				&::after {
+					content: '';
+					position: absolute;
+					top: 4px;
+					left: -8px;
+					width: 4px;
+					height: 22px;
+					background-color: #0052d9;
+				}
+			}
+		}
+	}
+
+	#content {
+		line-height: 1.5;
+
+		.module {
+			margin-top: 2.5rem;
+
+			.title {
+				line-height: 28px;
+				height: 28px;
+				color: #0052d9;
+				margin: 33px 0 19px 8px;
+				background-color: #e2edfb;
+				text-indent: 8px;
+				position: relative;
+
+				&::after {
+					content: '';
+					position: absolute;
+					top: 0;
+					left: -8px;
+					width: 4px;
+					height: 28px;
+					background-color: #0052d9;
+				}
+			}
+
+			p.p {
+				text-indent: 2em;
+				margin: 0%;
+			}
+
+			& > div > ul > li {
+				display: flex;
+
+				& > div {
+					&:first-child {
+						margin-right: 1em;
+					}
+
+					p {
+						margin: 0%;
+					}
+				}
+			}
+		}
+
+		.foot {
+			width: 100%;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+			margin-top: 3vw;
+
+			&Text {
+				user-select: none;
+				font-family: 'FZZJ-TBPYTJW';
+				font-size: 3vw;
+				margin-block: -0.725vw;
+			}
+		}
+	}
+}
