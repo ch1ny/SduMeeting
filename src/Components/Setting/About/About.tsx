@@ -3,6 +3,7 @@ import axios from 'axios';
 import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useEffect, useMemo, useState } from 'react';
 import { eWindow } from 'Utils/Types';
+import './style.scss';
 
 function needUpdate(nowVersion: string, targetVersion: string) {
 	const nowArr = nowVersion.split('.').map((i) => Number(i));
@@ -86,16 +87,18 @@ export default function About() {
 	};
 
 	return (
-		<div style={{ textAlign: 'center', userSelect: 'none' }}>
-			<Image
-				src={'../electronAssets/favicon.ico'}
-				preview={false}
-				width={'75%'}
-				height={'75%'}
-			/>
-			<div style={{ margin: '0.5rem', fontSize: '1.5rem', color: '#3c3c3c' }}>
-				V {appVersion}
+		<div id='settingAboutContainer'>
+			<div>
+				<Image
+					src={'../electronAssets/favicon177x128.ico'}
+					preview={false}
+					width={'25%'}
+					height={'25%'}
+				/>
 			</div>
+			<div className='settingAboutFaviconText'>山大会议</div>
+			<div className='settingAboutFaviconText'>SDU Meeting</div>
+			<div id='settingVersionText'>V {appVersion}</div>
 			{latestVersion ? (
 				<>
 					<div>检查到有新的可用版本：V {latestVersion}，是否进行更新？</div>
@@ -111,13 +114,11 @@ export default function About() {
 					)}
 				</>
 			) : (
-				<Button type='primary' size='small' onClick={checkForUpdate} loading={checking}>
+				<Button type='primary' onClick={checkForUpdate} loading={checking}>
 					检查更新
 				</Button>
 			)}
-			<div style={{ margin: '1rem' }}>
-				Copyright (c) 2021{thisYear ? ` - ${thisYear}` : ''} 德布罗煜
-			</div>
+			<div id='copyright'>Copyright (c) 2021{thisYear ? ` - ${thisYear}` : ''} 德布罗煜</div>
 		</div>
 	);
 }

@@ -1,0 +1,26 @@
+#settingAboutContainer {
+	text-align: center;
+	user-select: none;
+}
+
+@font-face {
+	font-family: 'FZZJ-TBPYTJW';
+	src: url('./FZZJ-TBPYTJW.TTF');
+}
+
+.settingAboutFaviconText {
+	font-family: 'FZZJ-TBPYTJW';
+	font-size: 1.725rem;
+	font-weight: bold;
+	color: #3c3c3c;
+}
+
+#settingVersionText {
+	margin-block: 1.5rem;
+	font-size: 1.5rem;
+	color: #3c3c3c;
+}
+
+#copyright {
+	margin: 1rem;
+}
