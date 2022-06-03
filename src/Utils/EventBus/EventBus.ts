@@ -93,6 +93,11 @@ class EventBus {
 		}
 	}
 
+	/**
+	 * 向事件总线添加事件柄回调
+	 * @param {string} type 事件柄名
+	 * @param {Function} cb 回调函数
+	 */
 	handle(type: string, cb: Function): { ok: boolean; err?: Error } {
 		if (this.handlers[type]) {
 			return {
@@ -107,6 +112,12 @@ class EventBus {
 		}
 	}
 
+	/**
+	 * 异步触发事件柄函数
+	 * @param {string} type 要触发的事件柄
+	 * @param {Array} args 传给回调函数的参数
+	 * @returns {Promise} 经过 Promise 封装后的回调函数执行结果
+	 */
 	invoke(type: string, ...args: any[]) {
 		const handler = this.handlers[type];
 		if (handler) {
@@ -116,6 +127,12 @@ class EventBus {
 		}
 	}
 
+	/**
+	 * 同步触发事件柄函数
+	 * @param {string} type 要触发的事件柄
+	 * @param {Array} args 传给回调函数的参数
+	 * @returns 回调函数执行结果
+	 */
 	invokeSync(type: string, ...args: any[]) {
 		const handler = this.handlers[type];
 		if (handler) {
@@ -125,6 +142,10 @@ class EventBus {
 		}
 	}
 
+	/**
+	 * 移除事件柄监听
+	 * @param {string} type 要移除的事件柄
+	 */
 	removeHandler(type: string) {
 		delete this.handlers[type];
 	}

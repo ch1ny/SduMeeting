@@ -11,7 +11,7 @@ import { DeviceInfo, eWindow, UserInfo } from './Types';
  * 用来返回 mainContent 模态屏遮罩层挂载DOM
  * @returns Id值为'mainContent'的DOM
  */
-function getMainContent() {
+function getMainContent(): HTMLElement {
 	const content = document.getElementById('mainContent');
 	if (content) {
 		return content;
@@ -87,30 +87,6 @@ async function getDeviceStream(device: string): Promise<MediaStream> {
 					video: videoConstraints,
 				});
 			} catch (e) {
-				// const canvas = document.createElement('canvas');
-				// canvas.width = 1920;
-				// canvas.height = 1080;
-				// const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
-				// // 绘制背景
-				// ctx.fillStyle = '#acacac';
-				// ctx.fillRect(0, 0, 1920, 1080);
-				// // 绘制圆
-				// ctx.strokeStyle = '#fff';
-				// ctx.lineWidth = 10;
-				// ctx.beginPath();
-				// ctx.arc(960, 400, 250, 0, 2 * Math.PI, true);
-				// ctx.stroke();
-				// // 绘制感叹号
-				// ctx.textAlign = 'center';
-				// ctx.textBaseline = 'middle';
-				// ctx.font = "bold 250px 'Times New Roman', Times, serif";
-				// ctx.fillStyle = '#fff';
-				// ctx.fillText('!', 960, 420); // 为了美观将感叹号稍微下移
-				// // 绘制提示文字
-				// ctx.font = "bold 125px 'Times New Roman', Times, serif";
-				// ctx.fillText('无 视 频 设 备', 960, 875);
-				// // TOFIX：远端接到的这个视频流无效
-				// return canvas.captureStream();
 				return await getDefaultStream();
 			}
 		default:

@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-const { useState, useRef, useReducer, useEffect } = require('react');
+const { useState, useRef, useEffect } = require('react');
 
 /**
  * 【自定义Hooks】保留数据在上一个时刻的状态
@@ -15,6 +15,10 @@ const usePrevious = (value: any): typeof value => {
 	return ref.current;
 };
 
+/**
+ * 【自定义Hooks】监听媒体流音量
+ * @returns 音量、连接流函数、断连函数
+ */
 const useVolume = () => {
 	const [volume, setVolume] = useState(0);
 	const ref = useRef({});
