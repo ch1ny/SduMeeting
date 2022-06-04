@@ -8,12 +8,18 @@ export const buildPropmt = function (audioType: string, loop = false) {
 	const audioContext = new AudioContext();
 	let source = audioContext.createBufferSource();
 	const audio = require(`./audios/${audioType}.mp3`);
+
+	let abortController = new AbortController();
+	let abortSignal = abortController.signal;
+
 	const startAudioPropmt = () => {
 		if (source.buffer) {
 			source.stop();
 			source = audioContext.createBufferSource();
 		}
-		fetch(audio.default)
+		fetch(audio.default, {
+			signal: abortSignal,
+		})
 			.then((res) => {
 				return res.arrayBuffer();
 			})
@@ -22,18 +28,26 @@ export const buildPropmt = function (audioType: string, loop = false) {
 					return decodeData;
 				});
 			})
-			.then(async (audioBuffer) => {
+			.then((audioBuffer) => {
 				stopAudioPropmt();
 				source.buffer = audioBuffer;
 				source.loop = loop;
 				source.connect(audioContext.destination);
+				source.start(0);
+			})
+			.catch((message) => {
+				console.log(message);
 			});
-		source.start(0);
 	};
+
 	const stopAudioPropmt = () => {
 		if (source.buffer) {
 			source.stop();
 			source = audioContext.createBufferSource();
+		} else {
+			abortController.abort();
+			abortController = new AbortController();
+			abortSignal = abortController.signal;
 		}
 	};
 	return [startAudioPropmt, stopAudioPropmt];

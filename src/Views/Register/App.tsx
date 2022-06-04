@@ -11,6 +11,10 @@ import ajax from 'Utils/Axios/Axios';
 import './App.scss';
 
 export default function App() {
+	useEffect(() => {
+		document.title = '账号注册 - 山大会议';
+	}, []);
+
 	const [sendCaptchaTick, setSendCaptchaTick] = useState(0);
 	const [sendCaptchaInterval, setSendCaptchaInterval] = useState<NodeJS.Timeout | null>(null);
 	useEffect(() => {

@@ -126,7 +126,7 @@ export class ChatRTC extends EventEmitter {
 		});
 	}
 
-	async callRemote(targetId: number, myName: string, offerModal: any) {
+	callRemote(targetId: number, myName: string, offerModal: any) {
 		this.useSecurity = localStorage.getItem('securityPrivateWebrtc') === 'true';
 		this.callAudioPrompt[0]();
 		store.dispatch(setCallStatus(CALL_STATUS_OFFERING));
@@ -134,17 +134,19 @@ export class ChatRTC extends EventEmitter {
 		this.sender = this.myId;
 		this.receiver = targetId;
 		let pgArr: Array<string> = [];
-		if (this.useSecurity) {
-			pgArr = await eWindow.ipc.invoke('DIFFIE_HELLMAN');
-		}
-		this.socket.send({
-			type: ChatWebSocketType.CHAT_PRIVATE_WEBRTC_REQUEST,
-			sender: this.myId,
-			senderName: myName,
-			security: JSON.stringify(pgArr),
-			receiver: targetId,
-		});
-		this.offerModal = offerModal;
+		(async () => {
+			if (this.useSecurity) {
+				pgArr = await eWindow.ipc.invoke('DIFFIE_HELLMAN');
+			}
+			this.socket.send({
+				type: ChatWebSocketType.CHAT_PRIVATE_WEBRTC_REQUEST,
+				sender: this.myId,
+				senderName: myName,
+				security: JSON.stringify(pgArr),
+				receiver: targetId,
+			});
+			this.offerModal = offerModal;
+		})();
 	}
 
 	responseCall(msg: any) {
