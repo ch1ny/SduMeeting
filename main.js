@@ -7,7 +7,6 @@ const {
 	nativeImage,
 	safeStorage,
 	dialog,
-	shell,
 } = require('electron');
 const path = require('path');
 const url = require('url');
@@ -41,6 +40,7 @@ function createLoginWindow() {
 			frame: false,
 			transparent: true,
 			show: false,
+			icon: path.join(DIRNAME, 'electronAssets', 'favicon.ico'),
 			alwaysOnTop: true,
 			skipTaskbar: true,
 			resizable: process.env.NODE_ENV === 'development',
@@ -186,6 +186,7 @@ function createMainWindow(userEmail) {
 			minWidth: parseInt(screenWidth * 0.45),
 			frame: false,
 			transparent: true,
+			icon: path.join(DIRNAME, 'electronAssets', 'favicon.ico'),
 			show: false,
 			fullscreenable: false,
 			webPreferences: {
@@ -282,7 +283,13 @@ function createMainWindow(userEmail) {
 							width: parseInt(screenWidth * 0.8),
 							height: parseInt(screenHeight * 0.8),
 							autoHideMenuBar: true,
-							icon: 'https://github.githubassets.com/favicons/favicon.svg',
+							icon: path.join(
+								DIRNAME,
+								'electronAssets',
+								'img',
+								'favicons',
+								'github.ico'
+							),
 						},
 					};
 				case 'myBlog':
@@ -292,7 +299,13 @@ function createMainWindow(userEmail) {
 							width: parseInt(screenWidth * 0.8),
 							height: parseInt(screenHeight * 0.9),
 							autoHideMenuBar: true,
-							icon: 'https://assets.aiolia.top/Pictures/Others/116359b4ccf19917.jpg',
+							icon: path.join(
+								DIRNAME,
+								'electronAssets',
+								'img',
+								'favicons',
+								'blog.ico'
+							),
 						},
 					};
 				case 'react':
@@ -302,7 +315,13 @@ function createMainWindow(userEmail) {
 							width: parseInt(screenWidth * 0.8),
 							height: parseInt(screenHeight * 0.9),
 							autoHideMenuBar: true,
-							icon: 'https://reactjs.org/favicon.ico',
+							icon: path.join(
+								DIRNAME,
+								'electronAssets',
+								'img',
+								'favicons',
+								'react.ico'
+							),
 						},
 					};
 				case 'electron':
@@ -312,7 +331,13 @@ function createMainWindow(userEmail) {
 							width: parseInt(screenWidth * 0.8),
 							height: parseInt(screenHeight * 0.9),
 							autoHideMenuBar: true,
-							icon: 'https://www.electronjs.org/images/favicon.b7a59262df48d6563400baf5671da548.ico',
+							icon: path.join(
+								DIRNAME,
+								'electronAssets',
+								'img',
+								'favicons',
+								'electron.ico'
+							),
 						},
 					};
 				default:

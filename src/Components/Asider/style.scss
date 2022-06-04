@@ -5,6 +5,7 @@
 	background-image: linear-gradient(to bottom, #29323c 0%, #485563 100%);
 	width: 4rem;
 	height: 100%;
+	user-select: none;
 
 	.avatarContainer {
 		width: 100%;
@@ -15,6 +16,7 @@
 
 		* {
 			cursor: pointer;
+			-webkit-user-drag: none;
 		}
 	}
 
