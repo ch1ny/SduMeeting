@@ -5,7 +5,11 @@ import {
 	MailOutlined,
 	UserOutlined,
 } from '@ant-design/icons';
-import { Button, Form, Input, notification, Select } from 'antd';
+import Button from 'antd/lib/button';
+import Form from 'antd/lib/form';
+import Input from 'antd/lib/input';
+import notification from 'antd/lib/notification';
+import Select from 'antd/lib/select';
 import React, { useEffect, useState } from 'react';
 import ajax from 'Utils/Axios/Axios';
 import './App.scss';

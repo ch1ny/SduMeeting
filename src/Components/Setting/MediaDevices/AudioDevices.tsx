@@ -1,4 +1,7 @@
-import { Button, Checkbox, Progress, Select } from 'antd';
+import Button from 'antd/lib/button';
+import Checkbox from 'antd/lib/checkbox';
+import Progress from 'antd/lib/progress';
+import Select from 'antd/lib/select';
 import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useEffect, useRef, useState } from 'react';
 import { DEVICE_TYPE } from 'Utils/Constraints';

@@ -1,4 +1,7 @@
-import { Affix, Anchor, Image, Typography } from 'antd';
+import Affix from 'antd/lib/affix';
+import Anchor from 'antd/lib/anchor';
+import Image from 'antd/lib/image';
+import Typography from 'antd/lib/typography';
 import React, { useEffect } from 'react';
 import './App.scss';
 

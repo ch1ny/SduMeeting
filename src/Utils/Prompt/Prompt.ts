@@ -7,7 +7,7 @@ export const AUDIO_TYPE = {
 export const buildPropmt = function (audioType: string, loop = false) {
 	const audioContext = new AudioContext();
 	let source = audioContext.createBufferSource();
-	const audio = require(`./audios/${audioType}.mp3`);
+	const audio = require(`./audios/${audioType}.aac`);
 
 	let abortController = new AbortController();
 	let abortSignal = abortController.signal;

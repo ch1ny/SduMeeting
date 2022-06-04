@@ -5,18 +5,16 @@ import {
 	SearchOutlined,
 	UserAddOutlined,
 } from '@ant-design/icons';
-import {
-	Avatar,
-	Badge,
-	Button,
-	Divider,
-	Empty,
-	Input,
-	List,
-	Modal,
-	Segmented,
-	Skeleton,
-} from 'antd';
+import Avatar from 'antd/lib/avatar';
+import Badge from 'antd/lib/badge';
+import Button from 'antd/lib/button';
+import Divider from 'antd/lib/divider';
+import Empty from 'antd/lib/empty';
+import Input from 'antd/lib/input';
+import List from 'antd/lib/list';
+import Modal from 'antd/lib/modal';
+import Segmented from 'antd/lib/segmented';
+import Skeleton from 'antd/lib/skeleton';
 import { ChatMainComponent } from 'Components/ChatComponent/ChatMainComponent/ChatMainComponent';
 import { ChatRTC } from 'Components/ChatComponent/ChatRTC';
 import FriendBubble from 'Components/ChatComponent/FriendBubble';

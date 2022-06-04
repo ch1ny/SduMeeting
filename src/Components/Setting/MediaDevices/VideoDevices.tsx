@@ -1,4 +1,5 @@
-import { Button, Select } from 'antd';
+import Button from 'antd/lib/button';
+import Select from 'antd/lib/select';
 import React, { useEffect, useRef, useState } from 'react';
 import { DEVICE_TYPE } from 'Utils/Constraints';
 import eventBus from 'Utils/EventBus/EventBus';

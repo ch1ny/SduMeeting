@@ -1,5 +1,4 @@
 import axios, { AxiosInstance, AxiosRequestHeaders } from 'axios';
-import store from 'Utils/Store/store';
 
 const instance = axios.create({
 	baseURL: 'http://meeting.aiolia.top:8080/',
@@ -10,11 +9,10 @@ const instance = axios.create({
 instance.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
 // wsInstance.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
 
-store.subscribe(() => {
-	const token = store.getState().authToken;
+export const updateToken = (token: string) => {
 	instance.defaults.headers.common['Authorization'] = token;
 	// wsInstance.defaults.headers.common['Authorization'] = token;
-});
+};
 
 function convertParamsToData(param: object) {
 	const paramArr = [];

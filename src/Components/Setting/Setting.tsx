@@ -1,5 +1,8 @@
 import { SettingFilled } from '@ant-design/icons';
-import { Anchor, Divider, Modal, Typography } from 'antd';
+import Anchor from 'antd/lib/anchor';
+import Divider from 'antd/lib/divider';
+import Modal from 'antd/lib/modal';
+import Typography from 'antd/lib/typography';
 import React, { useEffect, useState } from 'react';
 import eventBus from 'Utils/EventBus/EventBus';
 import { getMainContent } from 'Utils/Global';

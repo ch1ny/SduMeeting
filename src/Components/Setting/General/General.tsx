@@ -1,5 +1,8 @@
 import { AlertOutlined, LogoutOutlined, QuestionCircleFilled } from '@ant-design/icons';
-import { Button, Checkbox, Modal, Tooltip } from 'antd';
+import Button from 'antd/lib/button';
+import Checkbox from 'antd/lib/checkbox';
+import Modal from 'antd/lib/modal';
+import Tooltip from 'antd/lib/tooltip';
 import React, { useEffect, useState } from 'react';
 import { getMainContent } from 'Utils/Global';
 import { eWindow } from 'Utils/Types';

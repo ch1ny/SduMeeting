@@ -1,5 +1,5 @@
 import { CustomerServiceOutlined } from '@ant-design/icons';
-import { Button } from 'antd';
+import Button from 'antd/lib/button';
 import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useEffect, useState } from 'react';
 import { DEVICE_TYPE } from 'Utils/Constraints';

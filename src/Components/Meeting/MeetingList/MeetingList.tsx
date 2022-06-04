@@ -7,7 +7,14 @@ import {
 	UserOutlined,
 	VerticalAlignTopOutlined,
 } from '@ant-design/icons';
-import { Button, Checkbox, Divider, Empty, Form, Input, InputNumber, Modal } from 'antd';
+import { InputNumber } from 'antd';
+import Button from 'antd/lib/button';
+import Checkbox from 'antd/lib/checkbox';
+import Divider from 'antd/lib/divider';
+import Empty from 'antd/lib/empty';
+import Form from 'antd/lib/form';
+import Input from 'antd/lib/input';
+import Modal from 'antd/lib/modal';
 import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useEffect, useState } from 'react';
 import ajax from 'Utils/Axios/Axios';

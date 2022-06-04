@@ -1,5 +1,7 @@
 import { CloudSyncOutlined } from '@ant-design/icons';
-import { Button, Image, Progress } from 'antd';
+import Button from 'antd/lib/button';
+import Image from 'antd/lib/image';
+import Progress from 'antd/lib/progress';
 import axios from 'axios';
 import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useEffect, useMemo, useState } from 'react';

@@ -1,7 +1,9 @@
 import { CameraOutlined, UserOutlined } from '@ant-design/icons';
-import { Avatar, Button, Image, Upload } from 'antd';
 import ImgCrop from 'antd-img-crop';
-import { UploadChangeParam } from 'antd/lib/upload';
+import Avatar from 'antd/lib/avatar';
+import Button from 'antd/lib/button';
+import Image from 'antd/lib/image';
+import Upload, { UploadChangeParam } from 'antd/lib/upload';
 import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useState } from 'react';
 import './style.scss';

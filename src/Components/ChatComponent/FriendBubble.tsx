@@ -1,4 +1,5 @@
-import { Avatar, Badge } from 'antd';
+import Avatar from 'antd/lib/avatar';
+import Badge from 'antd/lib/badge';
 import React, { CSSProperties, useEffect, useState } from 'react';
 import invokeSocket from 'Utils/ChatSocket/ChatSocket';
 import { ChatWebSocketType } from 'Utils/Constraints';

@@ -1,5 +1,6 @@
 import { HistoryOutlined } from '@ant-design/icons';
-import { Avatar, Button } from 'antd';
+import Avatar from 'antd/lib/avatar';
+import Button from 'antd/lib/button';
 import classNames from 'classnames';
 import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useEffect, useRef, useState } from 'react';

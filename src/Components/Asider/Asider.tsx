@@ -1,5 +1,6 @@
 import { MessageOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons';
-import { Avatar, Badge } from 'antd';
+import Avatar from 'antd/lib/avatar';
+import Badge from 'antd/lib/badge';
 import classNames from 'classnames';
 import React, { useEffect, useState } from 'react';
 import { decodeJWT } from 'Utils/Global';

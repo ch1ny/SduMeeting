@@ -1,5 +1,7 @@
 import { IdcardOutlined, SolutionOutlined } from '@ant-design/icons';
-import { Button, Image, Typography } from 'antd';
+import Button from 'antd/lib/button';
+import Image from 'antd/lib/image';
+import Typography from 'antd/lib/typography';
 import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import UploadAvatar from 'Components/UploadAvatar/UploadAvatar';
 import React, { useEffect, useState } from 'react';

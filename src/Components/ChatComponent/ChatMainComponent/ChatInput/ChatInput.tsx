@@ -5,7 +5,9 @@ import {
 	SmileOutlined,
 	WhatsAppOutlined,
 } from '@ant-design/icons';
-import { Button, Modal, Popover } from 'antd';
+import Button from 'antd/lib/button';
+import Modal from 'antd/lib/modal';
+import Popover from 'antd/lib/popover';
 import { ChatRTC } from 'Components/ChatComponent/ChatRTC';
 import { ChatRTCContext } from 'Components/Chats/Chats';
 import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';

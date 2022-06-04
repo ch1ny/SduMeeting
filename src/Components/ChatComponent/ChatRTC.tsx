@@ -4,7 +4,7 @@ import {
 	CloseOutlined,
 	ExclamationCircleOutlined,
 } from '@ant-design/icons';
-import { Modal } from 'antd';
+import Modal from 'antd/lib/modal';
 import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import { EventEmitter } from 'events';
 import React from 'react';

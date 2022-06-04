@@ -1,4 +1,5 @@
-import { Dropdown, Menu } from 'antd';
+import Dropdown from 'antd/lib/dropdown';
+import Menu from 'antd/lib/menu';
 import classNames from 'classnames';
 import { ChatRTCContext } from 'Components/Chats/Chats';
 import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
