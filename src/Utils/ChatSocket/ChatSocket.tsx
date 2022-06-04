@@ -156,7 +156,10 @@ export class ChatSocket extends EventEmitter {
 			if (evt.code === 1000 && evt.reason === '异地登录') {
 				// 客户端因为异地登录主动断开连接
 			}
-			// eWindow.ipc.send('LOG_OUT');
+
+			globalMessage.error('与服务器断开连接，正在为您退出登录', 3, () => {
+				eWindow.ipc.send('LOG_OUT');
+			});
 		};
 		return socket;
 	}

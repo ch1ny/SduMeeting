@@ -279,11 +279,44 @@ function createMainWindow(userEmail) {
 					return {
 						action: 'allow',
 						overrideBrowserWindowOptions: {
+							width: parseInt(screenWidth * 0.8),
+							height: parseInt(screenHeight * 0.8),
 							autoHideMenuBar: true,
 							icon: 'https://github.githubassets.com/favicons/favicon.svg',
 						},
 					};
+				case 'myBlog':
+					return {
+						action: 'allow',
+						overrideBrowserWindowOptions: {
+							width: parseInt(screenWidth * 0.8),
+							height: parseInt(screenHeight * 0.9),
+							autoHideMenuBar: true,
+							icon: 'https://assets.aiolia.top/Pictures/Others/116359b4ccf19917.jpg',
+						},
+					};
+				case 'react':
+					return {
+						action: 'allow',
+						overrideBrowserWindowOptions: {
+							width: parseInt(screenWidth * 0.8),
+							height: parseInt(screenHeight * 0.9),
+							autoHideMenuBar: true,
+							icon: 'https://reactjs.org/favicon.ico',
+						},
+					};
+				case 'electron':
+					return {
+						action: 'allow',
+						overrideBrowserWindowOptions: {
+							width: parseInt(screenWidth * 0.8),
+							height: parseInt(screenHeight * 0.9),
+							autoHideMenuBar: true,
+							icon: 'https://www.electronjs.org/images/favicon.b7a59262df48d6563400baf5671da548.ico',
+						},
+					};
 				default:
+					console.log(evt);
 					return { action: 'deny' };
 			}
 		});
