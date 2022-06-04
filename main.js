@@ -146,6 +146,27 @@ function createLoginWindow() {
 			loginWindow = null;
 		});
 
+		loginWindow.webContents.setWindowOpenHandler((evt) => {
+			if (evt.frameName === 'register')
+				return {
+					action: 'allow',
+					overrideBrowserWindowOptions: {
+						width: parseInt(screenWidth * 0.6),
+						height: parseInt(screenHeight * 0.8),
+						alwaysOnTop: true,
+						autoHideMenuBar: true,
+						icon: path.join(DIRNAME, 'electronAssets', 'favicon.ico'),
+						webPreferences: {
+							devTools: !app.isPackaged,
+						},
+					},
+				};
+			else
+				return {
+					action: 'deny',
+				};
+		});
+
 		loginWindow.on('ready-to-show', () => {
 			// NOTE: 根据用户电脑的缩放比自动调整页面缩放
 			loginWindow.webContents.setZoomFactor(1.25 / screenScale);
@@ -183,7 +204,6 @@ function createMainWindow(userEmail) {
 			);
 		} else {
 			mainWindow.loadURL('http://localhost:9000/main');
-			// mainWindow.webContents.openDevTools();
 		}
 
 		const contextMenu = Menu.buildFromTemplate([
@@ -192,8 +212,6 @@ function createMainWindow(userEmail) {
 				click: () => {
 					if (loginWindow !== null) {
 						loginWindow.hide();
-						// loginWindow.setSkipTaskbar(true)
-						// loginWindow.minimize()
 					} else {
 						mainWindow.minimize();
 					}
@@ -239,6 +257,34 @@ function createMainWindow(userEmail) {
 				isMaximized = isMax;
 			} else if (!isMax) {
 				store.set('mainWindowSize', mainWindow.getSize());
+			}
+		});
+
+		mainWindow.webContents.setWindowOpenHandler((evt) => {
+			switch (evt.frameName) {
+				case 'agreement':
+					return {
+						action: 'allow',
+						overrideBrowserWindowOptions: {
+							width: parseInt(screenWidth * 0.8),
+							height: parseInt(screenHeight * 0.9),
+							autoHideMenuBar: true,
+							icon: path.join(DIRNAME, 'electronAssets', 'favicon.ico'),
+							webPreferences: {
+								devTools: !app.isPackaged,
+							},
+						},
+					};
+				case 'sourceCode':
+					return {
+						action: 'allow',
+						overrideBrowserWindowOptions: {
+							autoHideMenuBar: true,
+							icon: 'https://github.githubassets.com/favicons/favicon.svg',
+						},
+					};
+				default:
+					return { action: 'deny' };
 			}
 		});
 

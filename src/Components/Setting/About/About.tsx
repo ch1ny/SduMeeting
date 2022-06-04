@@ -142,9 +142,12 @@ export default function About() {
 }
 
 const openAgreement = () => {
-	window.open('/agreement');
+	window.open(
+		process.env.NODE_ENV === 'development' ? './agreement/' : '../agreement/index.html',
+		'agreement'
+	);
 };
 
 const openSourceCodeOnGithub = () => {
-	window.open('https://github.com/ch1ny/SduMeeting');
+	window.open('https://github.com/ch1ny/SduMeeting', 'sourceCode');
 };

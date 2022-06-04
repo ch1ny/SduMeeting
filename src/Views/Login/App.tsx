@@ -242,7 +242,8 @@ export default function App() {
 									process.env.NODE_ENV === 'development'
 										? './register/'
 										: '../register/index.html';
-								window.open(registerUrl);
+								const registerWindow = window.open(registerUrl, 'register');
+								console.log(registerWindow);
 							}}>
 							注 册
 						</RippleButton>

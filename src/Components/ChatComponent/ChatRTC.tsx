@@ -87,9 +87,9 @@ export class ChatRTC extends EventEmitter {
 								duration: 1.5,
 							});
 							break;
-						case PRIVATE_WEBRTC_ANSWER_TYPE.NO_USER:
+						case PRIVATE_WEBRTC_ANSWER_TYPE.OFFLINE:
 							globalMessage.error({
-								content: '呼叫的用户不存在',
+								content: '呼叫的用户不在线',
 								duration: 1.5,
 							});
 							break;

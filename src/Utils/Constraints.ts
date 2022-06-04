@@ -44,7 +44,7 @@ export enum ChatWebSocketType {
  * 私人聊天响应常量
  */
 export const PRIVATE_WEBRTC_ANSWER_TYPE = {
-	NO_USER: -2, // 不存在的用户
+	OFFLINE: -2, // 离线的用户
 	REJECT: -1, // 拒绝请求
 	BUSY: 0, // 占线中
 	ACCEPT: 1, // 接受请求
