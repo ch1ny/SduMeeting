@@ -38,6 +38,8 @@ export enum ChatWebSocketType {
 	CHAT_PRIVATE_WEBRTC_DISCONNECT, // 断开视频聊天
 	CHAT_PRIVATE_WEBRTC_REQUEST, // 发送视频通话请求
 	CHAT_PRIVATE_WEBRTC_RESPONSE, // 响应视频通话请求
+	UNDEFINED_11, // 未定义 11 占位
+	REMOVE_FRIEND, // 移除好友
 }
 
 /**

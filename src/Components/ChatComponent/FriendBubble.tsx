@@ -1,5 +1,9 @@
+import { DeleteOutlined } from '@ant-design/icons';
 import Avatar from 'antd/lib/avatar';
 import Badge from 'antd/lib/badge';
+import Dropdown from 'antd/lib/dropdown';
+import Menu from 'antd/lib/menu';
+import Modal from 'antd/lib/modal';
 import React, { CSSProperties, useEffect, useState } from 'react';
 import invokeSocket from 'Utils/ChatSocket/ChatSocket';
 import { ChatWebSocketType } from 'Utils/Constraints';
@@ -12,6 +16,7 @@ interface FriendBubbleProps {
 	style?: CSSProperties;
 	id: number;
 	onClick: React.MouseEventHandler<HTMLDivElement>;
+	onRemoveFriend: (friendId: number) => void;
 	unreadNumber: number;
 	profile: false | string;
 	username: string;
@@ -30,42 +35,74 @@ export default function FriendBubble(props: FriendBubbleProps) {
 	}, []);
 
 	return (
-		<div
-			className='friendBubbles'
-			onClick={(evt) => {
-				props.onClick(evt);
-				// TODO: 签收未读消息并将它们移出未读消息列表
-				if (props.unreadNumber > 0) {
-					invokeSocket().send({
-						sender: props.id,
-						type: ChatWebSocketType.CHAT_READ_MESSAGE,
-					});
-					store.dispatch(setUnreadMessages(REMOVE_UNREAD_MESSAGES, { userId: props.id }));
-				}
-			}}
-			style={props.style}>
-			<div className='avatarContainer'>
-				<Avatar
-					src={
-						props.profile
-							? `http://meeting.aiolia.top:8080/file/pic/user/${props.id}.${props.profile}`
-							: undefined
+		<Dropdown
+			overlay={
+				<Menu
+					items={[
+						{
+							label: '移除好友',
+							key: 'DELETE_FRIEND',
+							icon: <DeleteOutlined />,
+							onClick: () => {
+								Modal.confirm({
+									title: '删除好友',
+									content: `您确定要将 ${props.username} 从您的好友列表中删除吗？`,
+									cancelText: '取消',
+									okText: '确认',
+									okButtonProps: {
+										danger: true,
+									},
+									onOk: () => {
+										props.onRemoveFriend(props.id);
+									},
+								});
+							},
+						},
+					]}
+				/>
+			}
+			trigger={['contextMenu']}>
+			<div
+				className='friendBubbles'
+				onClick={(evt) => {
+					props.onClick(evt);
+					// NOTE: 签收未读消息并将它们移出未读消息列表
+					if (props.unreadNumber > 0) {
+						invokeSocket().send({
+							sender: props.id,
+							type: ChatWebSocketType.CHAT_READ_MESSAGE,
+						});
+						store.dispatch(
+							setUnreadMessages(REMOVE_UNREAD_MESSAGES, { userId: props.id })
+						);
 					}
-					size={35}>
-					{props.username}
-				</Avatar>
-			</div>
-			<div className='textContainer'>
-				<div className='userName'>{props.username}</div>
-				<div className='newestMessage'>{latestMessage ? latestMessage.message : ''}</div>
-			</div>
-			<div className='rightDiv'>
-				<div className='newestMessageTime'>
-					{latestMessage ? dateToTime(latestMessage.date) : '无消息'}
+				}}
+				style={props.style}>
+				<div className='avatarContainer'>
+					<Avatar
+						src={
+							props.profile
+								? `http://meeting.aiolia.top:8080/file/pic/user/${props.id}.${props.profile}`
+								: undefined
+						}
+						size={35}>
+						{props.username}
+					</Avatar>
 				</div>
-				<Badge count={props.unreadNumber} size='small' />
+				<div className='textContainer'>
+					<div className='userName'>{props.username}</div>
+					<div className='newestMessage'>
+						{latestMessage ? latestMessage.message : ''}
+					</div>
+				</div>
+				<div className='rightDiv'>
+					<div className='newestMessageTime'>
+						{latestMessage ? dateToTime(latestMessage.date) : '无消息'}
+					</div>
+					<Badge count={props.unreadNumber} size='small' />
+				</div>
 			</div>
-		</div>
+		</Dropdown>
 	);
 }
 

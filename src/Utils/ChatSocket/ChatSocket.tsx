@@ -133,6 +133,9 @@ export class ChatSocket extends EventEmitter {
 				case ChatWebSocketType.CHAT_PRIVATE_WEBRTC_DISCONNECT:
 					this.emit('ON_PRIVATE_WEBRTC_DISCONNECT', msg);
 					break;
+				case 'REMOVE_FRIEND_RECEIVER_OK':
+					this.emit('ON_REMOVED_BY_A_FRIEND', msg.data);
+					break;
 				case 'NEW_CONNECTION':
 					socket.close(1000, '异地登录');
 					new Notification('异地登录', {

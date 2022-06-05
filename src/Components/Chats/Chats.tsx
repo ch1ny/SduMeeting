@@ -14,7 +14,6 @@ import Input from 'antd/lib/input';
 import List from 'antd/lib/list';
 import Modal from 'antd/lib/modal';
 import Segmented from 'antd/lib/segmented';
-import Skeleton from 'antd/lib/skeleton';
 import { ChatMainComponent } from 'Components/ChatComponent/ChatMainComponent/ChatMainComponent';
 import { ChatRTC } from 'Components/ChatComponent/ChatRTC';
 import FriendBubble from 'Components/ChatComponent/FriendBubble';
@@ -95,6 +94,12 @@ export default function Chats() {
 				return new Map(state.set(action.friend.uid, action.friend));
 			case 'removeFriend':
 				state.delete(action.friend.uid);
+				if (store.getState().nowWebrtcFriendId === action.friend.uid) {
+					chatRtc?.hangUp();
+				}
+				if (nowChatting && (nowChatting as any).uid === action.friend.uid) {
+					setNowChatting(undefined);
+				}
 				return new Map(state);
 			case 'initFriends':
 				return new Map(action.friends.map((item: any) => ({ 0: item.uid, 1: item })));
@@ -178,6 +183,9 @@ export default function Chats() {
 			_chatSocket.on('REPLY_RECEIVER_OK', (friend) => {
 				dispatchFriendsList({ type: 'addFriend', friend });
 			});
+			_chatSocket.on('ON_REMOVED_BY_A_FRIEND', (data: { uid: number; id: number }) => {
+				dispatchFriendsList({ type: 'removeFriend', friend: { uid: data.uid } });
+			});
 			setChatSocket(_chatSocket);
 			setChatRtc(
 				new ChatRTC({
@@ -189,6 +197,19 @@ export default function Chats() {
 	}, []);
 
 	const [showAddFriendModal, setShowAddFriendModal] = useState(false);
+
+	const removeFriend = (id: number) => {
+		chatSocket?.send({
+			toId: id,
+			type: ChatWebSocketType.REMOVE_FRIEND,
+		});
+		dispatchFriendsList({
+			type: 'removeFriend',
+			friend: {
+				uid: id,
+			},
+		});
+	};
 
 	return (
 		<ChatRTCContext.Provider value={chatRtc}>
@@ -223,6 +244,7 @@ export default function Chats() {
 									onClick={() => {
 										store.dispatch(setNowChattingId(friendId));
 									}}
+									onRemoveFriend={removeFriend}
 									unreadNumber={
 										unreadNumber[`${friend.uid}` as keyof typeof unreadNumber]
 									}
@@ -372,7 +394,11 @@ function AddFriendModal(props: AddFriendModalProps) {
 				}
 				footer={null}>
 				<>
-					<div style={{ display: segment === '添加好友' ? '' : 'none', height: '40vh' }}>
+					<div
+						style={{
+							display: segment === '添加好友' ? '' : 'none',
+							height: '50vh',
+						}}>
 						<Input.Search
 							placeholder='输入昵称查询好友'
 							enterButton={
@@ -384,47 +410,45 @@ function AddFriendModal(props: AddFriendModalProps) {
 							onSearch={onSearch}
 						/>
 						<Divider />
-						<div style={{ overflowY: 'auto', height: '75%' }}>
+						<div style={{ overflowY: 'auto', height: 'calc(100% - 5rem)' }}>
 							<List
 								className='demo-loadmore-list'
 								itemLayout='horizontal'
 								dataSource={searchResult}
 								renderItem={(item) => (
-									<Skeleton avatar title={false} loading={searching} active>
-										<List.Item
-											actions={[
-												<Button
-													icon={<PlusOutlined />}
-													type={'primary'}
-													onClick={() => {
-														// INFO: 发送好友请求
-														invokeSocket().send({
-															toId: (item as any).uid,
-															type: ChatWebSocketType.CHAT_SEND_FRIEND_REQUEST,
-														});
-													}}>
-													添加好友
-												</Button>,
-											]}>
-											<List.Item.Meta
-												avatar={
-													<Avatar
-														src={
-															(item as any).profile
-																? `http://meeting.aiolia.top:8080/file/pic/user/${
-																		(item as any).uid
-																  }.${(item as any).profile}`
-																: (item as any).profile
-														}
-														size={50}
-														children={(item as any).username}
-													/>
-												}
-												title={<a href='#'>{(item as any).username}</a>}
-												description={(item as any).email}
-											/>
-										</List.Item>
-									</Skeleton>
+									<List.Item
+										actions={[
+											<Button
+												icon={<PlusOutlined />}
+												type={'primary'}
+												onClick={() => {
+													// INFO: 发送好友请求
+													invokeSocket().send({
+														toId: (item as any).uid,
+														type: ChatWebSocketType.CHAT_SEND_FRIEND_REQUEST,
+													});
+												}}>
+												添加好友
+											</Button>,
+										]}>
+										<List.Item.Meta
+											avatar={
+												<Avatar
+													src={
+														(item as any).profile
+															? `http://meeting.aiolia.top:8080/file/pic/user/${
+																	(item as any).uid
+															  }.${(item as any).profile}`
+															: (item as any).profile
+													}
+													size={50}
+													children={(item as any).username}
+												/>
+											}
+											title={<a href='#'>{(item as any).username}</a>}
+											description={(item as any).email}
+										/>
+									</List.Item>
 								)}
 							/>
 						</div>
