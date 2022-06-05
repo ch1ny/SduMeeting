@@ -35,6 +35,8 @@ input:-webkit-autofill:active {
 		flex-direction: column;
 		justify-content: center;
 		align-items: center;
+		box-shadow: inset 1px 1px 7px rgba(250, 252, 255, 0.58),
+			inset -1px -1px 7px rgba(6, 4, 1, 0.42);
 
 		.title {
 			font-size: 1.75rem;

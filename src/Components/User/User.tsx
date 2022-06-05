@@ -1,4 +1,4 @@
-import { IdcardOutlined, SolutionOutlined } from '@ant-design/icons';
+import { KeyOutlined, SolutionOutlined } from '@ant-design/icons';
 import Button from 'antd/lib/button';
 import Image from 'antd/lib/image';
 import Typography from 'antd/lib/typography';
@@ -9,9 +9,9 @@ import ajax from 'Utils/Axios/Axios';
 import { decodeJWT, getMainContent } from 'Utils/Global';
 import { setAuthToken } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
+import FootCopyRight from './FootCopyRight/FootCopyRight';
+import NameCard from './NameCard/NameCard';
 import './style.scss';
-
-const thisYear = new Date().getFullYear();
 
 export default function User() {
 	const [userId, setUserId] = useState(0);
@@ -102,38 +102,15 @@ export default function User() {
 							/>
 						</div>
 
-						<div className='userInfoCopyRight'>
-							<p>
-								© {thisYear} <a onClick={openMyBlog}>德布罗煜</a> Powered by
-							</p>
-							<p>
-								<a onClick={openReact}>React.js</a> &amp;{' '}
-								<a onClick={openElectron}>Electron.js</a>
-							</p>
-							<p style={{ fontSize: '1rem' }}>
-								<a
-									onClick={openSourceCodeOnGithub}
-									style={{ fontFamily: 'FZZJ-TBPYTJW' }}>
-									SDU Meeting
-								</a>
-								®
-							</p>
-						</div>
+						<FootCopyRight />
 					</div>
 					<div>
-						<div
-							className='mainInfo'
-							style={{
-								backgroundImage: `url(${require('./namecard.png').default})`,
-							}}>
-							<Typography.Title level={3} style={{ color: 'white' }}>
-								<IdcardOutlined style={{ marginRight: '0.5rem' }} />
-								{username}
-							</Typography.Title>
-							<div className='userInfoDescriptions email'>{email}</div>
-							<div className='userInfoDescriptions welcome'>
-								您是我们的第 {userId} 位用户！
-							</div>
+						<NameCard username={username} userId={userId} email={email} />
+
+						<div className='functionTools'>
+							<Button onClick={openModifyPassword} icon={<KeyOutlined />}>
+								修改密码
+							</Button>
 						</div>
 					</div>
 				</div>
@@ -149,18 +126,11 @@ const openAgreement = () => {
 	);
 };
 
-const openSourceCodeOnGithub = () => {
-	window.open('https://github.com/ch1ny/SduMeeting', 'sourceCode');
-};
-
-const openMyBlog = () => {
-	window.open('https://aiolia.top/', 'myBlog');
-};
-
-const openReact = () => {
-	window.open('https://reactjs.org/', 'react');
-};
-
-const openElectron = () => {
-	window.open('https://www.electronjs.org/', 'electron');
+const openModifyPassword = () => {
+	const userinfo = decodeJWT(store.getState().authToken);
+	const modifyPasswordUrl =
+		process.env.NODE_ENV === 'development'
+			? `./register?type=forgetPassword&email=${userinfo.email}`
+			: `../register/index.html?type=forgetPassword&email=${userinfo.email}`;
+	window.open(modifyPasswordUrl, 'register');
 };

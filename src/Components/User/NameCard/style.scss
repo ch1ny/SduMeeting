@@ -1,0 +1,47 @@
+.mainInfo {
+	position: relative;
+	width: 100%;
+	min-height: 10rem;
+	height: 20vw;
+	max-height: 15rem;
+	padding-inline: 1rem;
+	border-radius: 15px;
+	color: white;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+
+	& > div {
+		position: relative;
+
+		&.userInfoDescriptions {
+			font-size: 1.125rem;
+			z-index: 1;
+		}
+
+		&.email {
+			color: #cfcfcf;
+		}
+
+		&#canvas {
+			position: absolute;
+			top: 0%;
+			left: 0%;
+			height: 100%;
+			width: 100%;
+			border-radius: 15px;
+			overflow: hidden;
+		}
+
+		&#clay {
+			position: absolute;
+			top: 0%;
+			left: 0%;
+			height: 100%;
+			width: 100%;
+			border-radius: 15px;
+			box-shadow: inset 7px 7px 14px rgba(250, 252, 255, 0.58),
+				inset -7px -7px 14px rgba(6, 4, 1, 0.42);
+		}
+	}
+}

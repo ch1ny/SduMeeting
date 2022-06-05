@@ -18,6 +18,12 @@ export default function Index() {
 		};
 	}, []);
 
+	useEffect(() => {
+		if (selectedTab === 2) {
+			eventBus.emit('DRAW_USER_NAMECARD_BACKGROUND');
+		}
+	}, [selectedTab]);
+
 	return (
 		<>
 			<DragBar />

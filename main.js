@@ -340,6 +340,19 @@ function createMainWindow(userEmail) {
 							),
 						},
 					};
+				case 'register':
+					return {
+						action: 'allow',
+						overrideBrowserWindowOptions: {
+							width: parseInt(screenWidth * 0.6),
+							height: parseInt(screenHeight * 0.8),
+							autoHideMenuBar: true,
+							icon: path.join(DIRNAME, 'electronAssets', 'favicon.ico'),
+							webPreferences: {
+								devTools: !app.isPackaged,
+							},
+						},
+					};
 				default:
 					console.log(evt);
 					return { action: 'deny' };

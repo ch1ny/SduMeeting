@@ -8,7 +8,7 @@ let CAV: any = {
 		isNumber: function (a: any) {
 			return !isNaN(parseFloat(a)) && isFinite(a);
 		},
-	}
+	},
 };
 (function () {
 	for (
@@ -449,8 +449,8 @@ CAV.Mesh.prototype.update = function (a: string | any[], b: any) {
 					this.side === CAV.FRONT
 						? (g = Math.max(g, 0))
 						: this.side === CAV.BACK
-							? (g = Math.abs(Math.min(g, 0)))
-							: this.side === CAV.DOUBLE && (g = Math.max(Math.abs(g), 0)),
+						? (g = Math.abs(Math.min(g, 0)))
+						: this.side === CAV.DOUBLE && (g = Math.max(Math.abs(g), 0)),
 					CAV.Vector4.multiplyVectors(
 						this.material.slave.rgba,
 						this.material.ambient.rgba,
@@ -483,8 +483,8 @@ CAV.Scene.prototype = {
 		a instanceof CAV.Mesh && ~this.meshes.indexOf(a)
 			? this.meshes.splice(this.meshes.indexOf(a), 1)
 			: a instanceof CAV.Light &&
-			~this.lights.indexOf(a) &&
-			this.lights.splice(this.lights.indexOf(a), 1);
+			  ~this.lights.indexOf(a) &&
+			  this.lights.splice(this.lights.indexOf(a), 1);
 		return this;
 	},
 };
@@ -513,6 +513,9 @@ CAV.CanvasRenderer = function () {
 	CAV.Renderer.call(this);
 	this.element = document.createElement('canvas');
 	this.element.style.display = 'block';
+	this.element.style.position = 'absolute';
+	this.element.style.left = '0';
+	this.element.style.top = '0';
 	this.context = this.element.getContext('2d');
 	this.setSize(this.element.width, this.element.height);
 };
@@ -529,7 +532,7 @@ CAV.CanvasRenderer.prototype.clear = function () {
 	this.context.clearRect(-this.halfWidth, -this.halfHeight, this.width, this.height);
 	return this;
 };
-CAV.CanvasRenderer.prototype.render = function (a: { meshes: string | any[]; lights: any; }) {
+CAV.CanvasRenderer.prototype.render = function (a: { meshes: string | any[]; lights: any }) {
 	CAV.Renderer.prototype.render.call(this, a);
 	var b, c, d, e, f;
 	this.clear();
@@ -604,7 +607,25 @@ export function Victor(container: string, anitOut: string) {
 		var k = CAV.Vector3.create();
 		var z = document.getElementById(container || 'container');
 		var w = document.getElementById(anitOut || 'anitOut');
-		var D: { element: any; setSize: (arg0: number, arg1: number) => void; clear: () => void; width: number; height: number; halfWidth: any; halfHeight: any; render: (arg0: any) => void; }, I: { remove: (arg0: any) => void; add: (arg0: any) => void; lights: string | any[]; }, h: any, q: { vertices: string | any[]; segmentWidth: number; sliceHeight: number; dirty: boolean; }, y;
+		var D: {
+				element: any;
+				setSize: (arg0: number, arg1: number) => void;
+				clear: () => void;
+				width: number;
+				height: number;
+				halfWidth: any;
+				halfHeight: any;
+				render: (arg0: any) => void;
+			},
+			I: { remove: (arg0: any) => void; add: (arg0: any) => void; lights: string | any[] },
+			h: any,
+			q: {
+				vertices: string | any[];
+				segmentWidth: number;
+				sliceHeight: number;
+				dirty: boolean;
+			},
+			y;
 		var g: any;
 		var r;
 
@@ -773,7 +794,7 @@ export function Victor(container: string, anitOut: string) {
 			window.addEventListener('resize', j);
 		}
 
-		function A(N: { x: any; y: number; }) {
+		function A(N: { x: any; y: number }) {
 			CAV.Vector3.set(k, N.x, D.height - N.y);
 			CAV.Vector3.subtract(k, L);
 		}

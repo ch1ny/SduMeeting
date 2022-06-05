@@ -37,31 +37,10 @@
 			&:last-child {
 				flex-grow: 1;
 
-				& > div.mainInfo {
+				.functionTools {
+					margin-top: 1rem;
 					width: 100%;
-					min-height: 10rem;
-					height: 20vw;
-					max-height: 15rem;
-					padding-inline: 1rem;
-					border-radius: 15px;
-					background-repeat: no-repeat;
-					background-size: cover;
-					color: white;
-					display: flex;
-					flex-direction: column;
-					justify-content: center;
-					box-shadow: inset 10px 10px 11px rgba(250, 252, 255, 0.48),
-						inset -10px -10px 15px rgba(6, 4, 1, 0.22);
-
-					& > div {
-						&.userInfoDescriptions {
-							font-size: 1.125rem;
-						}
-
-						&.email {
-							color: #afafaf;
-						}
-					}
+					height: fit-content;
 				}
 			}
 		}

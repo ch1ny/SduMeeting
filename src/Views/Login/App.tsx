@@ -222,6 +222,9 @@ export default function App() {
 									}}>
 									自动登录
 								</Checkbox>
+								<a onClick={openModifyPassword} style={{ marginLeft: '0.5em' }}>
+									忘记密码
+								</a>
 							</Form.Item>
 							<Form.Item>
 								<RippleButton
@@ -237,16 +240,7 @@ export default function App() {
 						className='form'
 						id='registerForm'
 						style={{ display: showRegister ? 'flex' : 'none' }}>
-						<RippleButton
-							className='submit'
-							onClick={() => {
-								const registerUrl =
-									process.env.NODE_ENV === 'development'
-										? './register/'
-										: '../register/index.html';
-								const registerWindow = window.open(registerUrl, 'register');
-								console.log(registerWindow);
-							}}>
+						<RippleButton className='submit' onClick={openRegister}>
 							注 册
 						</RippleButton>
 					</div>
@@ -255,3 +249,19 @@ export default function App() {
 		</>
 	);
 }
+
+const openRegister = () => {
+	const registerUrl =
+		process.env.NODE_ENV === 'development'
+			? './register?type=register'
+			: '../register/index.html?type=register';
+	window.open(registerUrl, 'register');
+};
+
+const openModifyPassword = () => {
+	const modifyPasswordUrl =
+		process.env.NODE_ENV === 'development'
+			? './register?type=forgetPassword'
+			: '../register/index.html?type=forgetPassword';
+	window.open(modifyPasswordUrl, 'register');
+};
