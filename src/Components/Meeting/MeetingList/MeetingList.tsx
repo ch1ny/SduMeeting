@@ -266,6 +266,7 @@ export default function MeetingList(props: MeetingListProps) {
 					<Form.Item
 						name='joinName'
 						initialValue={username}
+						label='与会使用昵称'
 						rules={[
 							{
 								required: true,
@@ -279,6 +280,8 @@ export default function MeetingList(props: MeetingListProps) {
 					</Form.Item>
 					<Form.Item
 						name='joinLimit'
+						initialValue={10}
+						label='最大与会人数'
 						rules={[
 							{
 								required: true,

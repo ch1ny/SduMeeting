@@ -339,28 +339,22 @@ function AddFriendModal(props: AddFriendModalProps) {
 	const [segment, setSegment] = useState('添加好友');
 
 	const [searchResult, setSearchResult] = useState([]);
-	const [searching, setSearching] = useState(false);
 
 	const onSearch = (searchStr: string) => {
-		setSearching(true);
 		ajax.get('/login_and_register/findUser', {
 			name: searchStr,
-		})
-			.then((res) => {
-				if (res.code === 200) {
-					const { users } = res.data;
-					setSearchResult(users);
-					if (users.length === 0) {
-						globalMessage.warn({
-							content: '没有查询到相关用户',
-							getPopupContainer: getMainContent,
-						});
-					}
+		}).then((res) => {
+			if (res.code === 200) {
+				const { users } = res.data;
+				setSearchResult(users);
+				if (users.length === 0) {
+					globalMessage.warn({
+						content: '没有查询到相关用户',
+						getPopupContainer: getMainContent,
+					});
 				}
-			})
-			.finally(() => {
-				setSearching(false);
-			});
+			}
+		});
 	};
 
 	return (

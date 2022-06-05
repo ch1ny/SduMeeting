@@ -30,7 +30,9 @@ export default function Topbar(props: TopbarProps) {
 				<LeftOutlined />
 				退出会议
 			</Button>
-			<span ref={meetingIdRef}>{props.meetingId}</span>
+			<span id='meetingIdSpan' ref={meetingIdRef}>
+				{props.meetingId}
+			</span>
 			<Button
 				type='text'
 				id='copyBtn'

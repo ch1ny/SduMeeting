@@ -18,29 +18,36 @@
 		}
 	}
 
+	#meetingIdSpan {
+		display: inline-block;
+		transform: translateX(-10vmin);
+	}
+
 	#copyBtn {
 		color: white;
 		padding: 0%;
+		transform: translateX(-10vmin);
 	}
 }
 
 #videoContainer {
 	width: 100%;
 	height: calc(100vh - 4rem);
-	background-color: black;
 
 	#mainBox {
 		height: 90%;
 		display: flex;
+		background-color: #efefef;
 
 		#mainVideo {
 			position: relative;
-			width: calc(100% - 11rem);
 			padding-inline: 0.1rem;
+			background-color: black;
 		}
 
 		#members {
-			width: 11rem;
+			min-width: 11rem;
+			max-width: 11rem;
 			height: 100%;
 			background-color: #303030;
 			display: flex;

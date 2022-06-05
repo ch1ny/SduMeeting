@@ -1,4 +1,8 @@
-import Icon, { FullscreenExitOutlined, FullscreenOutlined } from '@ant-design/icons';
+import Icon, {
+	FullscreenExitOutlined,
+	FullscreenOutlined,
+	MessageOutlined,
+} from '@ant-design/icons';
 import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { DEVICE_TYPE } from 'Utils/Constraints';
@@ -8,6 +12,7 @@ import store from 'Utils/Store/store';
 import { eWindow } from 'Utils/Types';
 import { RTCSender } from 'Utils/WebRTC/RTC';
 import SFU from 'Utils/WebRTC/SFU';
+import ChatBox from './ChatBox/ChatBox';
 import MainVideo from './MainVideo/MainVideo';
 import MeetingMembers from './MeetingMembers/MeetingMembers';
 import './style.scss';
@@ -253,6 +258,32 @@ export default function MeetingRoom(props: MeetingRoomProps) {
 			onFullScreenChange
 		);
 	}, []);
+
+	const [isShowChatBox, setIsShowChatBox] = useState(false);
+	const [messages, setMessages] = useState<
+		Array<{
+			userId: number;
+			userName: string;
+			message: string;
+		}>
+	>([]);
+	useEffect(() => {
+		props.sfu.on('onChatMessage', (msg) => {
+			messages.push({
+				userName: `${allMembers.get(msg.userId)}${
+					msg.userId === props.userId ? ' (我)' : ''
+				}`,
+				userId: msg.userId,
+				message: msg.message,
+			});
+			setMessages([...messages]);
+		});
+
+		return () => {
+			props.sfu.removeAllListeners('onChatMessage');
+		};
+	}, [messages]);
+
 	return (
 		<>
 			<Topbar leaveMeeting={props.leaveMeeting} meetingId={props.meetingId} />
@@ -276,6 +307,24 @@ export default function MeetingRoom(props: MeetingRoomProps) {
 							}
 						}}
 						userId={props.userId}
+					/>
+					<ChatBox
+						messages={messages}
+						sendMessage={(msgText) => {
+							props.sfu.send({
+								type: 'chat',
+								data: {
+									meetingId: Number(props.meetingId),
+									userId: props.userId,
+									message: msgText,
+								},
+							});
+						}}
+						style={{
+							minWidth: isShowChatBox ? '10rem' : '0%',
+							maxWidth: isShowChatBox ? '10rem' : '0%',
+							transform: isShowChatBox ? 'translateX(-10rem)' : '',
+						}}
 					/>
 				</div>
 				<ToolBar
@@ -333,6 +382,14 @@ export default function MeetingRoom(props: MeetingRoomProps) {
 									// setIsSharingScreen(0)
 									globalMessage.error('请等待他人结束屏幕分享！');
 								}
+							}}
+						/>,
+						<ToolButton
+							icon={<MessageOutlined />}
+							text={'聊天'}
+							title={'聊天'}
+							onClick={() => {
+								setIsShowChatBox(!isShowChatBox);
 							}}
 						/>,
 					]}

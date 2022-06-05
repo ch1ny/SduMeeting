@@ -1,4 +1,9 @@
-import { LoadingOutlined, LockOutlined, UserOutlined } from '@ant-design/icons';
+import {
+	LoadingOutlined,
+	LockOutlined,
+	QuestionCircleOutlined,
+	UserOutlined,
+} from '@ant-design/icons';
 import Checkbox from 'antd/lib/checkbox';
 import Form from 'antd/lib/form';
 import Input from 'antd/lib/input';
@@ -222,8 +227,12 @@ export default function App() {
 									}}>
 									自动登录
 								</Checkbox>
-								<a onClick={openModifyPassword} style={{ marginLeft: '0.5em' }}>
-									忘记密码
+								<a
+									onClick={openModifyPassword}
+									style={{
+										marginLeft: '0.5em',
+									}}>
+									<QuestionCircleOutlined /> 忘记密码
 								</a>
 							</Form.Item>
 							<Form.Item>

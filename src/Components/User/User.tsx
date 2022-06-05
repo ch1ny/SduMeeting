@@ -19,7 +19,7 @@ export default function User() {
 	const [username, setUsername] = useState('');
 	const [profile, setProfile] = useState<string | undefined>(undefined);
 	useEffect(() => {
-		return store.subscribe(() => {
+		const updateUserInfo = () => {
 			const { email, id, profile, username } = decodeJWT(store.getState().authToken);
 			setUserId(id);
 			setEmail(email);
@@ -29,7 +29,9 @@ export default function User() {
 					? `http://meeting.aiolia.top:8080/file/pic/user/${id}.${profile}`
 					: undefined
 			);
-		});
+		};
+		updateUserInfo();
+		return store.subscribe(updateUserInfo);
 	}, []);
 
 	const uploadAvatar = function (file: Blob) {

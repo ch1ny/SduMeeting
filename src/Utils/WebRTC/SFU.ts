@@ -62,6 +62,9 @@ export default class SFU extends EventEmitter {
 					// 这里是加入会议后接到已推流的消息进行订阅
 					this.onSubscribe(parseMessage);
 					break;
+				case 'chatSuccess':
+					this.emit('onChatMessage', parseMessage.data);
+					break;
 				case 'heartPackage':
 					// 心跳包
 					// console.log('heartPackage:::');

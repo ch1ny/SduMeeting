@@ -2,7 +2,6 @@ import { IdcardOutlined } from '@ant-design/icons';
 import Typography from 'antd/lib/typography';
 import { Victor } from 'Components/Victor/Victor';
 import React, { useEffect } from 'react';
-import eventBus from 'Utils/EventBus/EventBus';
 import './style.scss';
 
 interface NameCardProps {
@@ -14,11 +13,9 @@ interface NameCardProps {
 export default function NameCard(props: NameCardProps) {
 	// 设置动态背景
 	useEffect(() => {
-		eventBus.once('DRAW_USER_NAMECARD_BACKGROUND', () => {
-			const victor = Victor('nameCard', 'canvas');
-			const theme = ['#ff1324', '#ff3851'];
-			if (victor) victor(theme).set();
-		});
+		const victor = Victor('nameCard', 'canvas');
+		const theme = ['#ff1324', '#ff3851'];
+		if (victor) victor(theme).set();
 	}, []);
 
 	return (
