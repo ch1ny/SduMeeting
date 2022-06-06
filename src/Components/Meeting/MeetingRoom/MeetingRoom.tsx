@@ -394,9 +394,6 @@ export default function MeetingRoom(props: MeetingRoomProps) {
 													);
 													screenShareSfu.on('connect', () => {
 														screenShareSfu.join();
-														screenShareSfu.on('newMessage', (msg) => {
-															console.log(msg);
-														});
 														screenShareSfu.on('onJoinSuccess', () => {
 															screenShareSfu.publish(stream);
 														});

@@ -47,7 +47,6 @@ export default class SFU extends EventEmitter {
 		this.socket.onmessage = (e) => {
 			const parseMessage = JSON.parse(e.data);
 			// if (parseMessage && parseMessage.type !== 'heartPackage') console.log(parseMessage);
-			this.emit('newMessage', parseMessage);
 			switch (parseMessage.type) {
 				case 'newUser':
 					this.onNewMemberJoin(parseMessage);
