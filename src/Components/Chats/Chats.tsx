@@ -45,43 +45,38 @@ export const ChatRTCContext = React.createContext<ChatRTC | undefined>(undefined
 export default function Chats() {
 	const [nowChatting, setNowChatting] = useState(undefined);
 	const [chatSocket, setChatSocket] = useState<ChatSocket | undefined>(undefined);
-	const onReceiveMessage = ({ data }: { data: { message: any } }) => {
-		// NOTE: 接收到消息，加入历史记录中，并根据当前打开的会话框决定是否加入未读消息队列中
-		const { message } = data;
-		message.myId = decodeJWT(store.getState().authToken).id;
-		if (!nowChatting || (nowChatting as any).uid !== message.fromId) {
-			store.dispatch(setUnreadMessages(ADD_UNREAD_MESSAGE, message));
-			store.dispatch(setMessageHistory(ADD_MESSAGE_HISTORY, message));
-		} else {
-			store.dispatch(setMessageHistory(ADD_MESSAGE_HISTORY, message));
-			invokeSocket().send({
-				sender: (nowChatting as any).uid,
-				type: ChatWebSocketType.CHAT_READ_MESSAGE,
-			});
-		}
-		dispatchFriendsList({
-			type: 'upgradeFriend',
-			friend: {
-				uid: message.fromId,
-			},
-		});
-	};
-	const onSendMessage = (friendId: number) => {
-		dispatchFriendsList({ type: 'upgradeFriend', friend: { uid: friendId } });
-	};
 
 	useEffect(() => {
+		const onReceiveMessage = ({ data }: { data: { message: any } }) => {
+			// NOTE: 接收到消息，加入历史记录中，并根据当前打开的会话框决定是否加入未读消息队列中
+			const { message } = data;
+			message.myId = decodeJWT(store.getState().authToken).id;
+			if (!nowChatting || (nowChatting as any).uid !== message.fromId) {
+				store.dispatch(setUnreadMessages(ADD_UNREAD_MESSAGE, message));
+				store.dispatch(setMessageHistory(ADD_MESSAGE_HISTORY, message));
+			} else {
+				store.dispatch(setMessageHistory(ADD_MESSAGE_HISTORY, message));
+				invokeSocket().send({
+					sender: (nowChatting as any).uid,
+					type: ChatWebSocketType.CHAT_READ_MESSAGE,
+				});
+			}
+			dispatchFriendsList({
+				type: 'upgradeFriend',
+				friend: {
+					uid: message.fromId,
+				},
+			});
+		};
 		if (chatSocket) {
 			chatSocket.on('MESSAGE_RECEIVER_OK', onReceiveMessage);
-			chatSocket.on('MESSAGE_SENDER_OK', onSendMessage);
 		}
 		return () => {
 			if (chatSocket) {
 				chatSocket.removeAllListeners('MESSAGE_RECEIVER_OK');
-				chatSocket.removeAllListeners('MESSAGE_SENDER_OK');
 			}
 		};
-	}, [nowChatting]);
+	}, [nowChatting, chatSocket]);
 
 	const [friendsList, dispatchFriendsList] = useReducer<
 		(
@@ -129,6 +124,29 @@ export default function Chats() {
 	}, [friendsList]);
 
 	const [requests, setRequests] = useState([]);
+	const onRequestReceived = (data: any) => {
+		const newRequests = [...requests] as any;
+		newRequests.push({
+			date: data.date,
+			uid: data.userId,
+			profile: data.profile,
+			id: data.id,
+			email: data.email,
+			username: data.username,
+		});
+		setRequests(newRequests);
+	};
+	useEffect(() => {
+		if (chatSocket) {
+			chatSocket.on('ON_REQUEST_RECEIVER_OK', onRequestReceived);
+		}
+		return () => {
+			if (chatSocket) {
+				chatSocket.removeAllListeners('ON_REQUEST_RECEIVER_OK');
+			}
+		};
+	}, [requests, chatSocket]);
+
 	const [unreadNumber, setUnreadNumber] = useState({});
 	useEffect(
 		() =>
@@ -185,6 +203,9 @@ export default function Chats() {
 			});
 			_chatSocket.on('ON_REMOVED_BY_A_FRIEND', (data: { uid: number; id: number }) => {
 				dispatchFriendsList({ type: 'removeFriend', friend: { uid: data.uid } });
+			});
+			_chatSocket.on('MESSAGE_SENDER_OK', (friendId: number) => {
+				dispatchFriendsList({ type: 'upgradeFriend', friend: { uid: friendId } });
 			});
 			setChatSocket(_chatSocket);
 			setChatRtc(

@@ -39,6 +39,17 @@ export class ChatSocket extends EventEmitter {
 						getPopupContainer: getMainContent,
 					});
 					break;
+				case 'REQUEST_RECEIVER_OK':
+					new Notification('好友请求', {
+						body: `${msg.data.username} 想要成为您的好友`,
+						icon: msg.data.profile
+							? `http://meeting.aiolia.top:8080/file/pic/user/${msg.data.userId}.${msg.data.profile}`
+							: drawUserProfile(msg.data.username),
+						silent: true,
+					});
+					this.emit('ON_REQUEST_RECEIVER_OK', msg.data);
+					playMessageAudio();
+					break;
 				case 'HAVE_ALREADY_REQUESTED':
 					globalMessage.warn({
 						content: '已向该用户发送好友请求，请勿重复发送',
