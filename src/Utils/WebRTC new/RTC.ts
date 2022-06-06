@@ -19,10 +19,12 @@ export default class RTC extends EventEmitter {
 	_sender!: RTCSender;
 	_receivers!: Map<number, RTCReceiver>;
 	psw?: string;
+	sendOnly: boolean;
 
 	constructor(sendOnly: boolean, psw?: string) {
 		super();
-		if (!sendOnly) this._receivers = new Map();
+		this.sendOnly = sendOnly;
+		this._receivers = new Map();
 		this.psw = psw;
 	}
 
@@ -77,9 +79,10 @@ export default class RTC extends EventEmitter {
 			};
 
 			// 添加收发器
+			const direction = this.sendOnly ? 'inactive' : 'recvonly';
 
-			pc.addTransceiver('audio', { direction: 'recvonly' });
-			pc.addTransceiver('video', { direction: 'recvonly' });
+			pc.addTransceiver('audio', { direction });
+			pc.addTransceiver('video', { direction });
 
 			pc.ontrack = (e) => {
 				if (Boolean(this.psw)) setupReceiverTransform(e.receiver, this.psw);

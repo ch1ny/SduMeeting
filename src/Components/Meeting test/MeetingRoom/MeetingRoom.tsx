@@ -3,7 +3,6 @@ import Icon, {
 	FullscreenOutlined,
 	MessageOutlined,
 } from '@ant-design/icons';
-import notification from 'antd/lib/notification';
 import axios from 'axios';
 import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -30,6 +29,7 @@ interface MeetingRoomProps {
 	meetingId: string;
 	sfu: SFU;
 	userId: number;
+	sfuIp: string;
 }
 
 const _stream = new MediaStream();
@@ -86,7 +86,7 @@ export default function MeetingRoom(props: MeetingRoomProps) {
 			if (track) {
 				track.enabled = isUsingMicroPhone;
 			}
-			setTrackEnableStatus(props.sfu.sender, 'audio', isUsingMicroPhone);
+			if (props.sfu) setTrackEnableStatus(props.sfu.sender, 'audio', isUsingMicroPhone);
 		}
 	}, [isUsingMicroPhone]);
 
@@ -119,7 +119,7 @@ export default function MeetingRoom(props: MeetingRoomProps) {
 				track.enabled = isUsingCamera;
 				(localPlayedStream as MediaStream).getVideoTracks()[0].enabled = isUsingCamera;
 			}
-			setTrackEnableStatus(props.sfu.sender, 'video', isUsingCamera);
+			if (props.sfu) setTrackEnableStatus(props.sfu.sender, 'video', isUsingCamera);
 		}
 	}, [isUsingCamera]);
 
@@ -141,10 +141,7 @@ export default function MeetingRoom(props: MeetingRoomProps) {
 		/>
 	);
 
-	const [mainVideo, setMainVideo] = useState({
-		stream: _stream,
-		streamName: '',
-	});
+	const [mainVideo, setMainVideo] = useState(_stream);
 
 	const localStream = useMemo(() => new MediaStream(), []);
 	const [localPlayedStream, setLocalPlayedStream] = useState<MediaStream | undefined>(undefined);
@@ -154,7 +151,12 @@ export default function MeetingRoom(props: MeetingRoomProps) {
 	useEffect(() => {
 		if (videoTrack) {
 			if (prevVideoTrack) {
-				replaceRemoteTrack(props.sfu.sender.pc.getSenders(), prevVideoTrack, videoTrack);
+				if (props.sfu)
+					replaceRemoteTrack(
+						props.sfu.sender.pc.getSenders(),
+						prevVideoTrack,
+						videoTrack
+					);
 				const lps = localPlayedStream as MediaStream;
 				lps.removeTrack(lps.getVideoTracks()[0]);
 				lps.addTrack(videoTrack);
@@ -170,7 +172,12 @@ export default function MeetingRoom(props: MeetingRoomProps) {
 	useEffect(() => {
 		if (audioTrack) {
 			if (prevAudioTrack) {
-				replaceRemoteTrack(props.sfu.sender.pc.getSenders(), prevAudioTrack, audioTrack);
+				if (props.sfu)
+					replaceRemoteTrack(
+						props.sfu.sender.pc.getSenders(),
+						prevAudioTrack,
+						audioTrack
+					);
 			} else localStream.addTrack(audioTrack);
 			if (localStreamStatus !== 3) {
 				setLocalStreamStatus(localStream.getTracks().length);
@@ -191,10 +198,7 @@ export default function MeetingRoom(props: MeetingRoomProps) {
 			const clonedStream = new MediaStream();
 			clonedStream.addTrack(track);
 			setLocalPlayedStream(clonedStream);
-			setMainVideo({
-				stream: clonedStream,
-				streamName: props.joinName,
-			});
+			setMainVideo(clonedStream);
 			setMembers(new Map(members.set(props.userId, { stream: clonedStream })));
 		});
 	}, [usingVideoDevice]);
@@ -218,31 +222,12 @@ export default function MeetingRoom(props: MeetingRoomProps) {
 			props.sfu.on('addRemoteStream', (id: number, stream: MediaStream) => {
 				setMembers(new Map(members.set(id, { stream })));
 			});
-			props.sfu.on('addScreenShare', (id: number, stream: MediaStream) => {
-				setMainVideo({
-					stream,
-					streamName: `${allMembers.get(-id)}的屏幕共享`,
-				});
-				setIsSharingScreen(id);
-			});
 			props.sfu.on('removeRemoteStream', (id: number) => {
 				members.delete(id);
-				if (mainVideo.stream === _stream) {
-					const first = members.entries().next();
-					setMainVideo({
-						stream: first.value[1].stream,
-						streamName: `${allMembers.get(first.value[0])}`,
-					});
+				if (mainVideo === _stream) {
+					setMainVideo(members.entries().next().value[1].stream);
 				}
 				setMembers(new Map(members));
-			});
-			props.sfu.on('removeScreenShare', (id: number) => {
-				const stream = members.get(props.userId)?.stream;
-				setMainVideo({
-					stream: stream as MediaStream,
-					streamName: `${allMembers.get(props.userId)}`,
-				});
-				setIsSharingScreen(0);
 			});
 			props.sfu.on('onNewMemberJoin', (newMember: { id: number; name: string }) => {
 				// console.log('===onNewMemberJoin===');
@@ -259,9 +244,7 @@ export default function MeetingRoom(props: MeetingRoomProps) {
 
 			return () => {
 				props.sfu.removeAllListeners('addRemoteStream');
-				props.sfu.removeAllListeners('addScreenShare');
 				props.sfu.removeAllListeners('removeRemoteStream');
-				props.sfu.removeAllListeners('removeScreenShare');
 				props.sfu.removeAllListeners('onNewMemberJoin');
 				props.sfu.removeAllListeners('onJoinSuccess');
 			};
@@ -269,7 +252,9 @@ export default function MeetingRoom(props: MeetingRoomProps) {
 	}, [props.sfu]);
 	useEffect(() => {
 		if (localStreamStatus === 2) {
-			props.sfu.publish(localStream);
+			// props.sfu.publish(localStream);
+			console.log('local ready to publish');
+
 			setLocalStreamStatus(3);
 		}
 	}, [localStreamStatus]);
@@ -297,30 +282,24 @@ export default function MeetingRoom(props: MeetingRoomProps) {
 		}>
 	>([]);
 	useEffect(() => {
-		props.sfu.on('onChatMessage', (msg) => {
-			messages.push({
-				userName: `${allMembers.get(msg.userId)}${
-					msg.userId === props.userId ? ' (我)' : ''
-				}`,
-				userId: msg.userId,
-				message: msg.message,
+		if (props.sfu)
+			props.sfu.on('onChatMessage', (msg) => {
+				messages.push({
+					userName: `${allMembers.get(msg.userId)}${
+						msg.userId === props.userId ? ' (我)' : ''
+					}`,
+					userId: msg.userId,
+					message: msg.message,
+				});
+				setMessages([...messages]);
 			});
-			setMessages([...messages]);
-		});
 
 		return () => {
-			props.sfu.removeAllListeners('onChatMessage');
+			if (props.sfu) props.sfu.removeAllListeners('onChatMessage');
 		};
 	}, [messages]);
 
 	const [screenShareSfu, setScreenShareSfu] = useState<SFU | undefined>(undefined);
-	useEffect(() => {
-		if (screenShareSfu)
-			return () => {
-				screenShareSfu.socket.close();
-				setScreenShareSfu(undefined);
-			};
-	}, [screenShareSfu]);
 	const [isExchangingSharingStatus, setIsExchangingSharingStatus] = useState(false);
 
 	return (
@@ -329,8 +308,7 @@ export default function MeetingRoom(props: MeetingRoomProps) {
 			<div id={`videoContainer${isFullScreen ? 'FullScreen' : ''}`} ref={fullScreenRef}>
 				<div id='mainBox'>
 					<MainVideo
-						stream={mainVideo.stream}
-						streamName={mainVideo.streamName}
+						stream={mainVideo}
 						muted={isSharingScreen === 0 || isSharingScreen === -props.userId}
 					/>
 					<MeetingMembers
@@ -341,26 +319,25 @@ export default function MeetingRoom(props: MeetingRoomProps) {
 								isSharingScreen === 0 &&
 								(evt.target as HTMLElement).className === 'meetingMemberVideo'
 							) {
-								const target = evt.target as HTMLVideoElement;
-								setMainVideo({
-									stream: target.srcObject as MediaStream,
-									streamName: `${target.getAttribute('memberName')}`,
-								});
+								setMainVideo(
+									(evt.target as HTMLVideoElement).srcObject as MediaStream
+								);
 							}
 						}}
 						userId={props.userId}
 					/>
 					<ChatBox
 						messages={messages}
-						sendMessage={(msgText) => {
-							props.sfu.send({
-								type: 'chat',
-								data: {
-									meetingId: Number(props.meetingId),
-									userId: props.userId,
-									message: msgText,
-								},
-							});
+						sendMessage={(msgText: any) => {
+							if (props.sfu)
+								props.sfu.send({
+									type: 'chat',
+									data: {
+										meetingId: Number(props.meetingId),
+										userId: props.userId,
+										message: msgText,
+									},
+								});
 						}}
 						style={{
 							minWidth: isShowChatBox ? '10rem' : '0%',
@@ -408,64 +385,37 @@ export default function MeetingRoom(props: MeetingRoomProps) {
 							onClick={() => {
 								if (isSharingScreen === 0) {
 									setIsExchangingSharingStatus(true);
-									axios
-										.post(
-											`http://${props.sfu.sfuIp}/screenOn`,
-											`userId=${props.userId}&meetingId=${props.meetingId}`
-										)
-										.then((response) => {
-											return response.data;
-										})
-										.then((res) => {
-											if (res.code === 0 && res.message === 'success') {
-												getDesktopStream().then((stream) => {
-													setMainVideo({
-														stream,
-														streamName: `${props.joinName}的屏幕共享`,
-													});
-													setIsSharingScreen(-props.userId);
-													const screenShareSfu = new SFU(
-														props.sfu.sfuIp,
-														-props.userId,
-														`${props.joinName}的屏幕共享`,
-														props.meetingId
-													);
-													screenShareSfu.on('connect', () => {
-														screenShareSfu.join();
-														screenShareSfu.on('newMessage', (msg) => {
-															console.log(msg);
-														});
-														screenShareSfu.on('onJoinSuccess', () => {
-															screenShareSfu.publish(stream);
-														});
-													});
-													setScreenShareSfu(screenShareSfu);
-												});
-											} else {
-												notification.error({
-													message: '屏幕共享失败',
-													description: `${res.message}`,
-												});
-											}
-										})
-										.finally(() => {
-											setIsExchangingSharingStatus(false);
+									getDesktopStream().then((stream) => {
+										setMainVideo(stream);
+										setIsSharingScreen(-props.userId);
+										// TODO: 完善屏幕共享逻辑
+										const screenShareSfu = new SFU(
+											props.sfuIp,
+											props.userId,
+											`${props.joinName}的屏幕共享`,
+											props.meetingId
+										);
+										screenShareSfu.on('connect', () => {
+											screenShareSfu.on('onJoinSuccess', () => {
+												screenShareSfu.publish(localStream);
+											});
+											screenShareSfu.join();
 										});
+										setScreenShareSfu(screenShareSfu);
+									});
 								} else if (isSharingScreen === -props.userId) {
 									setIsExchangingSharingStatus(true);
 									axios
 										.post(
-											`http://${props.sfu.sfuIp}/screenOff`,
+											`http://${props.sfuIp}/screenOff`,
 											`userId=${props.userId}&meetingId=${props.meetingId}`
 										)
 										.then(() => {
 											if (screenShareSfu) {
 												screenShareSfu.socket.close();
 												setScreenShareSfu(undefined);
-												setMainVideo({
-													stream: localPlayedStream as MediaStream,
-													streamName: props.joinName,
-												});
+												const stream = members.get(props.userId)?.stream;
+												setMainVideo(stream as MediaStream);
 												setIsSharingScreen(0);
 											}
 										})

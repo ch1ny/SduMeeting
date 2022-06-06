@@ -5,7 +5,6 @@ import { eWindow } from 'Utils/Types';
 interface MainVideoProps {
 	muted: boolean;
 	stream: MediaStream;
-	streamName: string;
 }
 
 export default function MainVideo(props: MainVideoProps) {
@@ -43,7 +42,6 @@ export default function MainVideo(props: MainVideoProps) {
 
 	return (
 		<div id='mainVideo'>
-			<div id='streamName'>正在观看: {props.streamName}</div>
 			<video
 				id='video'
 				width='100%'

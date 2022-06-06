@@ -17,12 +17,12 @@ export interface RTCReceiver {
 
 export default class RTC extends EventEmitter {
 	_sender!: RTCSender;
-	_receivers!: Map<number, RTCReceiver>;
+	_receivers: Map<number, RTCReceiver>;
 	psw?: string;
 
-	constructor(sendOnly: boolean, psw?: string) {
+	constructor(psw?: string) {
 		super();
-		if (!sendOnly) this._receivers = new Map();
+		this._receivers = new Map();
 		this.psw = psw;
 	}
 
@@ -77,7 +77,6 @@ export default class RTC extends EventEmitter {
 			};
 
 			// 添加收发器
-
 			pc.addTransceiver('audio', { direction: 'recvonly' });
 			pc.addTransceiver('video', { direction: 'recvonly' });
 

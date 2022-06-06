@@ -10,9 +10,6 @@ interface MemberProps {
 export default function Member(props: MemberProps) {
 	const videoRef = useRef<HTMLVideoElement>(null);
 	useEffect(() => {
-		(videoRef.current as HTMLVideoElement).setAttribute('memberName', props.member);
-	}, []);
-	useEffect(() => {
 		(videoRef.current as HTMLVideoElement).srcObject = props.stream;
 	}, [props.stream]);
 

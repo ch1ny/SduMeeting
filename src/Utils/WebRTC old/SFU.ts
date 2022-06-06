@@ -10,7 +10,6 @@ export default class SFU extends EventEmitter {
 	socket: WebSocket;
 	sender!: RTCSender;
 	sfuIp: string;
-	sendOnly: boolean;
 
 	constructor(
 		sfuIp: string,
@@ -20,11 +19,7 @@ export default class SFU extends EventEmitter {
 		joinPassword?: string
 	) {
 		super();
-
-		// this.sendOnly = false;
-		this.sendOnly = userId < 0;
-
-		this._rtc = new RTC(this.sendOnly, joinPassword);
+		this._rtc = new RTC(joinPassword);
 		this.userId = userId;
 		this.userName = userName;
 		this.meetingId = Number(meetingId);
@@ -33,26 +28,28 @@ export default class SFU extends EventEmitter {
 		// const sfuUrl = 'ws://webrtc.aiolia.top:3000/ws';
 		// const sfuUrl = 'ws://121.40.95.78:3000/ws';
 		// TOFIX: 巩义的代码有问题，会返回 127.0.0.1
-		this.sfuIp = sfuIp === '127.0.0.1:3000' ? '121.40.95.78:3000' : sfuIp;
+		this.sfuIp = sfuIp !== '127.0.0.1:3000' ? sfuIp : '121.40.95.78:3000';
 		console.log(this.sfuIp);
 		const sfuUrl = `ws://${this.sfuIp}/ws`;
 
 		this.socket = new WebSocket(sfuUrl);
 
 		this.socket.onopen = () => {
-			// console.log('WebSocket连接成功...');
+			console.log('WebSocket连接成功...');
 			this._onRoomConnect();
 		};
 
 		this.socket.onmessage = (e) => {
 			const parseMessage = JSON.parse(e.data);
 			// if (parseMessage && parseMessage.type !== 'heartPackage') console.log(parseMessage);
-			this.emit('newMessage', parseMessage);
+
 			switch (parseMessage.type) {
 				case 'newUser':
+					// console.log(parseMessage);
 					this.onNewMemberJoin(parseMessage);
 					break;
 				case 'joinSuccess':
+					// TODO: 希望在这里返回当前所有用户对应的ID和个人信息
 					// console.log(parseMessage);
 					this.onJoinSuccess(parseMessage);
 					break;
@@ -62,7 +59,7 @@ export default class SFU extends EventEmitter {
 					break;
 				case 'userLeave':
 					// 这里是有人停止推流
-					if (!this.sendOnly) this.onUnpublish(parseMessage);
+					this.onUnpublish(parseMessage);
 					break;
 				case 'subscribeSuccess':
 					// 这里是加入会议后接到已推流的消息进行订阅
@@ -84,37 +81,34 @@ export default class SFU extends EventEmitter {
 		};
 
 		this.socket.onerror = (e) => {
-			// console.log('onerror::');
+			console.log('onerror::');
 			console.warn(e);
 			this.emit('error');
 		};
 
 		this.socket.onclose = (e) => {
-			// console.log('onclose::');
+			console.log('onclose::');
 			console.warn(e);
 		};
 	}
 
 	_onRoomConnect = () => {
-		// console.log('onRoomConnect');
+		console.log('onRoomConnect');
 
 		this._rtc.on('localstream', (id, stream) => {
 			this.emit('addLocalStream', id, stream);
 		});
 
 		this._rtc.on('addtrack', (id, stream) => {
-			if (id < 0 && id !== -this.userId) {
-				this.emit('addScreenShare', id, stream);
-			} else {
-				this.emit('addRemoteStream', id, stream);
-			}
+			console.log(`ontrack ${id}`);
+			this.emit('addRemoteStream', id, stream);
 		});
 
 		this.emit('connect');
 	};
 
 	join() {
-		// console.log(`Join to [${this.meetingId}] as [${this.userName}:${this.userId}]`);
+		console.log(`Join to [${this.meetingId}] as [${this.userName}:${this.userId}]`);
 		let message = {
 			type: 'join',
 			data: {
@@ -134,9 +128,7 @@ export default class SFU extends EventEmitter {
 	// 成功加入会议
 	onJoinSuccess(message: any) {
 		this.emit('onJoinSuccess', message.data.allUserInfos);
-		if (this.sendOnly) return;
 		for (const pubId of message.data.pubIds) {
-			console.log(`${this.userId} 准备接收 ${pubId}`);
 			this._onRtcCreateReceiver(pubId);
 		}
 	}
@@ -172,7 +164,7 @@ export default class SFU extends EventEmitter {
 					sender.pc.setLocalDescription(desc);
 				});
 		} catch (error) {
-			// console.log('onCreateSender error =>' + error);
+			console.log('onCreateSender error =>' + error);
 		}
 	}
 
@@ -186,39 +178,30 @@ export default class SFU extends EventEmitter {
 				meetingId: this.meetingId,
 			},
 		};
-		// console.log('===publish===');
-		// console.log(message);
+		console.log('===publish===');
+		console.log(message);
 		this.send(message);
 	}
 
 	onPublish(message: any) {
-		const pubId = message['data']['pubId'];
-
 		// 服务器返回的Answer信息 如A ---> Offer---> SFU---> Answer ---> A
-		if (this.sender && pubId === this.userId) {
-			// console.log('onPublish:::自已发布的Id:::' + message['data']['pubId']);
+		if (this.sender && message['data']['pubId'] == this.userId) {
+			console.log('onPublish:::自已发布的Id:::' + message['data']['pubId']);
 			this.sender.pc.setRemoteDescription(message['data']['jsep']);
-			return;
 		}
 
-		if (this.userId > 0 && pubId !== this.userId && pubId !== -this.userId) {
-			// 服务器返回其他人发布的信息 如 A ---> Pub ---> SFU ---> B
-			// console.log('onPublish:::其他人发布的Id:::' + pubId);
+		// 服务器返回其他人发布的信息 如 A ---> Pub ---> SFU ---> B
+		if (message['data']['pubId'] != this.userId) {
+			console.log('onPublish:::其他人发布的Id:::' + message['data']['pubId']);
 			// 使用发布者的userId创建Receiver
-			this._onRtcCreateReceiver(pubId);
+			this._onRtcCreateReceiver(message['data']['pubId']);
 		}
 	}
 
 	onUnpublish(message: any) {
-		// console.log('退出用户:' + message['data']['leaverId']);
-		const leaverId = message['data']['leaverId'];
-
-		this._rtc.closeReceiver(leaverId);
-		if (leaverId > 0) {
-			this.emit('removeRemoteStream', leaverId);
-		} else {
-			this.emit('removeScreenShare', leaverId);
-		}
+		console.log('退出用户:' + message['data']['leaverId']);
+		this._rtc.closeReceiver(message['data']['leaverId']);
+		this.emit('removeRemoteStream', message['data']['leaverId']);
 	}
 
 	_onRtcCreateReceiver(pubId: number) {
@@ -237,7 +220,7 @@ export default class SFU extends EventEmitter {
 				receiver.pc.setLocalDescription(desc);
 			});
 		} catch (error) {
-			// console.log('onRtcCreateReceiver error =>' + error);
+			console.log('onRtcCreateReceiver error =>' + error);
 		}
 	}
 
@@ -251,9 +234,8 @@ export default class SFU extends EventEmitter {
 				meetingId: this.meetingId,
 			},
 		};
-
-		// console.log('===subscribe===');
-		// console.log(message);
+		console.log('===subscribe===');
+		console.log(message);
 		this.send(message);
 	}
 
@@ -261,14 +243,14 @@ export default class SFU extends EventEmitter {
 		// 使用发布者的Id获取Receiver
 		const receiver = this._rtc.getReceivers(message['data']['pubId']);
 		if (receiver) {
-			// console.log('服务器应答Id:' + message['data']['pubId']);
+			console.log('服务器应答Id:' + message['data']['pubId']);
 			if (receiver.pc.remoteDescription) {
 				console.warn('已建立远程连接！');
 			} else {
 				receiver.pc.setRemoteDescription(message['data']['jsep']);
 			}
 		} else {
-			// console.log('receiver == null');
+			console.log('receiver == null');
 		}
 	}
 }

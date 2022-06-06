@@ -21,8 +21,8 @@ export default class SFU extends EventEmitter {
 	) {
 		super();
 
-		// this.sendOnly = false;
-		this.sendOnly = userId < 0;
+		// this.sendOnly = userId < 0;
+		this.sendOnly = false;
 
 		this._rtc = new RTC(this.sendOnly, joinPassword);
 		this.userId = userId;
@@ -50,9 +50,11 @@ export default class SFU extends EventEmitter {
 			this.emit('newMessage', parseMessage);
 			switch (parseMessage.type) {
 				case 'newUser':
+					// console.log(parseMessage);
 					this.onNewMemberJoin(parseMessage);
 					break;
 				case 'joinSuccess':
+					// TODO: 希望在这里返回当前所有用户对应的ID和个人信息
 					// console.log(parseMessage);
 					this.onJoinSuccess(parseMessage);
 					break;
@@ -134,11 +136,12 @@ export default class SFU extends EventEmitter {
 	// 成功加入会议
 	onJoinSuccess(message: any) {
 		this.emit('onJoinSuccess', message.data.allUserInfos);
-		if (this.sendOnly) return;
-		for (const pubId of message.data.pubIds) {
-			console.log(`${this.userId} 准备接收 ${pubId}`);
-			this._onRtcCreateReceiver(pubId);
-		}
+		if (!this.sendOnly)
+			for (const pubId of message.data.pubIds) {
+				console.log(`${this.userId} 准备接收 ${pubId}`);
+
+				this._onRtcCreateReceiver(pubId);
+			}
 	}
 
 	send(data: any) {
@@ -201,7 +204,7 @@ export default class SFU extends EventEmitter {
 			return;
 		}
 
-		if (this.userId > 0 && pubId !== this.userId && pubId !== -this.userId) {
+		if (pubId !== this.userId && pubId !== -this.userId) {
 			// 服务器返回其他人发布的信息 如 A ---> Pub ---> SFU ---> B
 			// console.log('onPublish:::其他人发布的Id:::' + pubId);
 			// 使用发布者的userId创建Receiver
@@ -213,8 +216,8 @@ export default class SFU extends EventEmitter {
 		// console.log('退出用户:' + message['data']['leaverId']);
 		const leaverId = message['data']['leaverId'];
 
-		this._rtc.closeReceiver(leaverId);
 		if (leaverId > 0) {
+			this._rtc.closeReceiver(leaverId);
 			this.emit('removeRemoteStream', leaverId);
 		} else {
 			this.emit('removeScreenShare', leaverId);
