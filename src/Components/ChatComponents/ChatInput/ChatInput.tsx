@@ -18,7 +18,7 @@ import { decodeJWT, getMainContent } from 'Utils/Global';
 import { setMessageHistory, SYNC_CLOUD_MESSAGE_HISTORY } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
 import { ChatRTC } from 'Utils/WebRTC/ChatRTC';
-import { emojiRegExp } from '../../emoji';
+import { emojiRegExp } from '../emoji';
 import './ChatInput.scss';
 
 interface ChatInputProps {

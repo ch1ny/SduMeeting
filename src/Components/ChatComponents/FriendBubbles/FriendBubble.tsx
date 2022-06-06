@@ -10,7 +10,7 @@ import { ChatWebSocketType } from 'Utils/Constraints';
 import { isSameDay, isSameWeek, isSameYear, translateDayNumberToDayChara } from 'Utils/Global';
 import { REMOVE_UNREAD_MESSAGES, setUnreadMessages } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
-import './FriendBubble.scss';
+import './style.scss';
 
 interface FriendBubbleProps {
 	style?: CSSProperties;

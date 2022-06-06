@@ -15,7 +15,7 @@ import {
 } from 'Utils/Global';
 import { GET_MORE_MESSAGE_HISTORY, setMessageHistory } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
-import { emojiRegExp } from '../../emoji';
+import { emojiRegExp } from '../emoji';
 
 interface ChatMessagesProps {
 	id: number;

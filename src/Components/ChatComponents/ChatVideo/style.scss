@@ -1,0 +1,39 @@
+.videoChatContainer {
+	position: relative;
+	height: 0%;
+	#remoteVideo {
+		width: 0;
+		height: 0;
+	}
+
+	#localVideo {
+		width: 0;
+		height: 0;
+	}
+
+	&.onVideo {
+		height: 55%;
+
+		#remoteVideo {
+			width: 100%;
+			height: 100%;
+			background-color: #000000;
+		}
+
+		#localVideo {
+			&.hidden {
+				display: none;
+			}
+
+			position: absolute;
+			right: 1vmin;
+			bottom: 1vmin;
+			width: 19.2%;
+			height: auto;
+
+			&:hover {
+				opacity: 0.99;
+			}
+		}
+	}
+}
