@@ -441,6 +441,18 @@ export class ChatRTC extends EventEmitter {
 		return peer;
 	}
 
+	changeVideoTrack(newTrack: MediaStreamTrack) {
+		if (this.localStream && this.peer) {
+			const oldTrack = this.localStream.getVideoTracks()[0];
+			this.localStream.removeTrack(oldTrack);
+			this.localStream.addTrack(newTrack);
+			this.peer
+				.getSenders()
+				.find((s) => s.track === oldTrack)
+				?.replaceTrack(newTrack);
+		}
+	}
+
 	/**
 	 * 结束通话后清空数据
 	 */

@@ -4,7 +4,8 @@ import classNames from 'classnames';
 import { ChatRTCContext } from 'Components/Chats/Chats';
 import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useEffect, useState } from 'react';
-import { CALL_STATUS_CALLING } from 'Utils/Constraints';
+import { CALL_STATUS_CALLING, DEVICE_TYPE } from 'Utils/Constraints';
+import { getDesktopStream, getDeviceStream } from 'Utils/Global';
 import store from 'Utils/Store/store';
 import { eWindow } from 'Utils/Types';
 import { ChatRTC } from '../ChatRTC';
@@ -46,6 +47,7 @@ export function ChatMainComponent(props: ChatMainComponentProps) {
 	const remoteRef = React.useRef<HTMLVideoElement>(null);
 	const localRef = React.useRef<HTMLVideoElement>(null);
 	const [showLocal, setShowLocal] = useState(true);
+	const [showDesktop, setShowDesktop] = useState(false);
 	const chatRtc = React.useContext(ChatRTCContext) as ChatRTC;
 	useEffect(() => {
 		chatRtc.on('LOCAL_STREAM_READY', (stream: MediaStream) => {
@@ -65,6 +67,7 @@ export function ChatMainComponent(props: ChatMainComponentProps) {
 				globalMessage.warn('本次连接已断开');
 				console.log('本次连接已断开');
 				chatRtc.onEnded();
+				setShowDesktop(false);
 			}
 		});
 		return () => {
@@ -74,6 +77,17 @@ export function ChatMainComponent(props: ChatMainComponentProps) {
 			chatRtc.removeAllListeners('RTC_CONNECTION_FAILED');
 		};
 	}, []);
+	useEffect(() => {
+		if (showDesktop) {
+			getDesktopStream().then((stream) => {
+				chatRtc.changeVideoTrack(stream.getVideoTracks()[0]);
+			});
+		} else {
+			getDeviceStream(DEVICE_TYPE.VIDEO_DEVICE).then((stream) => {
+				chatRtc.changeVideoTrack(stream.getVideoTracks()[0]);
+			});
+		}
+	}, [showDesktop]);
 
 	return (
 		<>
@@ -106,6 +120,13 @@ export function ChatMainComponent(props: ChatMainComponentProps) {
 										key: 'SHOW_LOCAL_SWITCHER',
 										onClick: () => {
 											setShowLocal(!showLocal);
+										},
+									},
+									{
+										label: showDesktop ? '停止共享' : '共享屏幕',
+										key: 'EXCHANGE_CAMERA_OR_DESKTOP',
+										onClick: () => {
+											setShowDesktop(!showDesktop);
 										},
 									},
 								]}
