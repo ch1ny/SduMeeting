@@ -363,9 +363,9 @@ export default function MeetingRoom(props: MeetingRoomProps) {
 							});
 						}}
 						style={{
-							minWidth: isShowChatBox ? '10rem' : '0%',
-							maxWidth: isShowChatBox ? '10rem' : '0%',
-							transform: isShowChatBox ? 'translateX(-10rem)' : '',
+							minWidth: isShowChatBox ? '15rem' : '0%',
+							maxWidth: isShowChatBox ? '15rem' : '0%',
+							transform: isShowChatBox ? 'translateX(-15rem)' : '',
 						}}
 					/>
 				</div>

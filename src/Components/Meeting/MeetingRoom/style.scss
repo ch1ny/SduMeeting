@@ -135,6 +135,13 @@
 		#mainVideo {
 			position: relative;
 			width: 100%;
+
+			#streamName {
+				position: absolute;
+				color: white;
+				background-color: #303030;
+				padding: 0.125rem 0.25rem;
+			}
 		}
 
 		#members {
