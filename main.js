@@ -318,7 +318,15 @@ function createMainWindow(userEmail) {
 
 		ipc.on('EXCHANGE_MAIN_WINDOW_MAXIMIZED_STATUS', () => {
 			if (mainWindow.isMaximized()) {
-				mainWindow.unmaximize();
+				const mainWindowSize = store.get('mainWindowSize');
+				const [mainWindowWidth, mainWindowHeight] = mainWindowSize
+					? mainWindowSize
+					: [parseInt(screenWidth * 0.6), parseInt(screenHeight * 0.8)];
+				mainWindow.setSize(
+					mainWindowWidth > 0 ? mainWindowWidth : parseInt(screenWidth * 0.6),
+					mainWindowHeight > 0 ? mainWindowHeight : parseInt(screenHeight * 0.8)
+				);
+				mainWindow.center();
 			} else {
 				mainWindow.maximize();
 			}
@@ -332,12 +340,12 @@ function createMainWindow(userEmail) {
 			mainWindow.show();
 		});
 
-		ipc.on('MAIN_WINDOW_FULL_SCREEN', (event, isFullScreen) => {
+		ipc.on('MAIN_WINDOW_FULL_SCREEN', (evt, isFullScreen) => {
 			mainWindow.setFullScreenable(isFullScreen);
 			mainWindow.setFullScreen(isFullScreen);
 			mainWindow.setResizable(!isFullScreen);
 
-			if (!isFullScreen) {
+			if (!isFullScreen && !isMaximized) {
 				const mainWindowSize = store.get('mainWindowSize');
 				const [mainWindowWidth, mainWindowHeight] = mainWindowSize
 					? mainWindowSize
@@ -347,9 +355,9 @@ function createMainWindow(userEmail) {
 					mainWindowHeight > 0 ? mainWindowHeight : parseInt(screenHeight * 0.8)
 				);
 				mainWindow.center();
-				mainWindow.moveTop();
-				mainWindow.focus();
 			}
+			mainWindow.moveTop();
+			mainWindow.focus();
 		});
 
 		ipc.on('EXCHANGE_OPEN_AFTER_START_STATUS', (evt, openAtLogin) => {
