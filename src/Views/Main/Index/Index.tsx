@@ -42,7 +42,11 @@ export default function Index() {
 							<Meeting />
 						</div>
 						{selectedTab === 2 && (
-							<div>
+							<div
+								style={{
+									width: '100%',
+									height: '100%',
+								}}>
 								<User />
 							</div>
 						)}
