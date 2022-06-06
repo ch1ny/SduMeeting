@@ -1,4 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import Dropdown from 'antd/lib/dropdown';
+import Menu from 'antd/lib/menu';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import './style.scss';
 
 interface MemberProps {
@@ -16,19 +18,49 @@ export default function Member(props: MemberProps) {
 		(videoRef.current as HTMLVideoElement).srcObject = props.stream;
 	}, [props.stream]);
 
+	const [muted, setMuted] = useState(false);
+	const innerDom = useMemo(
+		() => (
+			<div className='meetingMember'>
+				<video
+					width='100%'
+					height='100%'
+					ref={videoRef}
+					autoPlay={true}
+					muted={props.muted || muted}
+					className='meetingMemberVideo'
+				/>
+				<span className='memberName' title={props.member}>
+					{props.member}
+				</span>
+			</div>
+		),
+		[muted]
+	);
+
 	return (
-		<div className='meetingMember'>
-			<video
-				width='100%'
-				height='100%'
-				ref={videoRef}
-				autoPlay={true}
-				muted={props.muted}
-				className='meetingMemberVideo'
-			/>
-			<span className='memberName' title={props.member}>
-				{props.member}
-			</span>
-		</div>
+		<>
+			{props.muted ? (
+				innerDom
+			) : (
+				<Dropdown
+					overlay={
+						<Menu
+							items={[
+								{
+									label: muted ? '取消静音' : '暂时静音',
+									key: `MeetingMembersMuteButton`,
+									onClick: () => {
+										setMuted(!muted);
+									},
+								},
+							]}
+						/>
+					}
+					trigger={['contextMenu']}>
+					{innerDom}
+				</Dropdown>
+			)}
+		</>
 	);
 }

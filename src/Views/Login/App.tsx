@@ -8,7 +8,12 @@ import Checkbox from 'antd/lib/checkbox';
 import Form from 'antd/lib/form';
 import Input from 'antd/lib/input';
 import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
-import { LogoIcon, MinimizeIcon, RegisterIcon, ShutdownIcon } from 'Components/MyIcon/MyIcon';
+import {
+	LogoIcon,
+	MinimizeIcon,
+	RegisterIcon,
+	ShutdownIcon,
+} from 'Components/MyIcon/LoginViewIcons';
 import RippleButton from 'Components/RippleButton/RippleButton';
 import { Victor } from 'Components/Victor/Victor';
 import React, { useEffect, useRef, useState } from 'react';
