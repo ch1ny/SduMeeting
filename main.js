@@ -7,6 +7,7 @@ const {
 	nativeImage,
 	safeStorage,
 	dialog,
+	shell,
 } = require('electron');
 const path = require('path');
 const url = require('url');
@@ -276,70 +277,6 @@ function createMainWindow(userEmail) {
 							},
 						},
 					};
-				case 'sourceCode':
-					return {
-						action: 'allow',
-						overrideBrowserWindowOptions: {
-							width: parseInt(screenWidth * 0.8),
-							height: parseInt(screenHeight * 0.8),
-							autoHideMenuBar: true,
-							icon: path.join(
-								DIRNAME,
-								'electronAssets',
-								'img',
-								'favicons',
-								'github.ico'
-							),
-						},
-					};
-				case 'myBlog':
-					return {
-						action: 'allow',
-						overrideBrowserWindowOptions: {
-							width: parseInt(screenWidth * 0.8),
-							height: parseInt(screenHeight * 0.9),
-							autoHideMenuBar: true,
-							icon: path.join(
-								DIRNAME,
-								'electronAssets',
-								'img',
-								'favicons',
-								'blog.ico'
-							),
-						},
-					};
-				case 'react':
-					return {
-						action: 'allow',
-						overrideBrowserWindowOptions: {
-							width: parseInt(screenWidth * 0.8),
-							height: parseInt(screenHeight * 0.9),
-							autoHideMenuBar: true,
-							icon: path.join(
-								DIRNAME,
-								'electronAssets',
-								'img',
-								'favicons',
-								'react.ico'
-							),
-						},
-					};
-				case 'electron':
-					return {
-						action: 'allow',
-						overrideBrowserWindowOptions: {
-							width: parseInt(screenWidth * 0.8),
-							height: parseInt(screenHeight * 0.9),
-							autoHideMenuBar: true,
-							icon: path.join(
-								DIRNAME,
-								'electronAssets',
-								'img',
-								'favicons',
-								'electron.ico'
-							),
-						},
-					};
 				case 'register':
 					return {
 						action: 'allow',
@@ -355,6 +292,7 @@ function createMainWindow(userEmail) {
 					};
 				default:
 					console.log(evt);
+					shell.openExternal(evt.url);
 					return { action: 'deny' };
 			}
 		});
