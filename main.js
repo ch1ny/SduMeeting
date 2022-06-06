@@ -347,6 +347,8 @@ function createMainWindow(userEmail) {
 					mainWindowHeight > 0 ? mainWindowHeight : parseInt(screenHeight * 0.8)
 				);
 				mainWindow.center();
+				mainWindow.moveTop();
+				mainWindow.focus();
 			}
 		});
 

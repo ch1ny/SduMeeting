@@ -402,6 +402,7 @@ export default function MeetingRoom(props: MeetingRoomProps) {
 							}}
 						/>,
 						<ToolButton
+							disabled={isExchangingSharingStatus}
 							icon={<ShareScreenIcon />}
 							text={isSharingScreen === -props.userId ? '停止共享' : '屏幕共享'}
 							title={isSharingScreen === -props.userId ? '停止共享' : '屏幕共享'}

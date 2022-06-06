@@ -26,7 +26,7 @@ export default function User() {
 			setUsername(username);
 			setProfile(
 				profile
-					? `http://meeting.aiolia.top:8080/file/pic/user/${id}.${profile}`
+					? `http://meeting.aiolia.top:8080/file/pic/user/${id}.${profile}?${Date.now()}`
 					: undefined
 			);
 		};
