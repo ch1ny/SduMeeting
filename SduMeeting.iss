@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "SduMeeting"
-#define MyAppVersion "0.8.3"
+#define MyAppVersion "0.8.4"
 #define MyAppPublisher "Shandong University, AioliaRegulus"
 #define MyAppURL "https://gitee.com/sdumeeting/front-end"
 #define MyAppExeName "SduMeeting.exe"
