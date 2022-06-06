@@ -8,7 +8,6 @@ import {
 import Button from 'antd/lib/button';
 import Modal from 'antd/lib/modal';
 import Popover from 'antd/lib/popover';
-import { ChatRTC } from 'Components/ChatComponent/ChatRTC';
 import { ChatRTCContext } from 'Components/Chats/Chats';
 import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useEffect, useRef, useState } from 'react';
@@ -18,6 +17,7 @@ import { CALL_STATUS_FREE, ChatWebSocketType } from 'Utils/Constraints';
 import { decodeJWT, getMainContent } from 'Utils/Global';
 import { setMessageHistory, SYNC_CLOUD_MESSAGE_HISTORY } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
+import { ChatRTC } from 'Utils/WebRTC/ChatRTC';
 import { emojiRegExp } from '../../emoji';
 import './ChatInput.scss';
 

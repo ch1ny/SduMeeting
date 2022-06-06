@@ -15,7 +15,6 @@ import List from 'antd/lib/list';
 import Modal from 'antd/lib/modal';
 import Segmented from 'antd/lib/segmented';
 import { ChatMainComponent } from 'Components/ChatComponent/ChatMainComponent/ChatMainComponent';
-import { ChatRTC } from 'Components/ChatComponent/ChatRTC';
 import FriendBubble from 'Components/ChatComponent/FriendBubble';
 import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useEffect, useReducer, useState } from 'react';
@@ -38,6 +37,7 @@ import {
 } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
 import { eWindow } from 'Utils/Types';
+import { ChatRTC } from 'Utils/WebRTC/ChatRTC';
 import './style.scss';
 
 export const ChatRTCContext = React.createContext<ChatRTC | undefined>(undefined);

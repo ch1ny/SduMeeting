@@ -8,7 +8,7 @@ import { CALL_STATUS_CALLING, DEVICE_TYPE } from 'Utils/Constraints';
 import { getDesktopStream, getDeviceStream } from 'Utils/Global';
 import store from 'Utils/Store/store';
 import { eWindow } from 'Utils/Types';
-import { ChatRTC } from '../ChatRTC';
+import { ChatRTC } from 'Utils/WebRTC/ChatRTC';
 import ChatInput from './ChatInput/ChatInput';
 import ChatMessages from './ChatMessages/ChatMessages';
 import './style.scss';
