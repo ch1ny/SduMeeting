@@ -55,42 +55,42 @@ function decodeJWT(token: string): UserInfo {
  * @returns
  */
 async function getDeviceStream(device: string): Promise<MediaStream> {
-	switch (device) {
-		case DEVICE_TYPE.AUDIO_DEVICE:
-			const audioDevice = store.getState().usingAudioDevice as DeviceInfo;
-			const audioConstraints = {
-				deviceId: {
-					exact: audioDevice.deviceId,
-				},
-				noiseSuppression: localStorage.getItem('noiseSuppression') !== 'false',
-				echoCancellation: localStorage.getItem('echoCancellation') !== 'false',
-			};
-			try {
-				return await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
-			} catch (e) {
-				return await getDefaultStream();
-			}
-		case DEVICE_TYPE.VIDEO_DEVICE:
-			const videoDevice = store.getState().usingVideoDevice as DeviceInfo;
-			const videoConstraints = {
-				deviceId: {
-					exact: videoDevice.deviceId,
-				},
-				width: 1920,
-				height: 1080,
-				frameRate: {
-					max: 30,
-				},
-			};
-			try {
+	try {
+		switch (device) {
+			case DEVICE_TYPE.AUDIO_DEVICE:
+				const audioDevice = store.getState().usingAudioDevice as DeviceInfo;
+				const audioConstraints = {
+					deviceId: {
+						exact: audioDevice.deviceId,
+					},
+					noiseSuppression: localStorage.getItem('noiseSuppression') !== 'false',
+					echoCancellation: localStorage.getItem('echoCancellation') !== 'false',
+				};
+				return await navigator.mediaDevices.getUserMedia({
+					audio: audioConstraints,
+				});
+			case DEVICE_TYPE.VIDEO_DEVICE:
+				const videoDevice = store.getState().usingVideoDevice as DeviceInfo;
+				const videoConstraints = {
+					deviceId: {
+						exact: videoDevice.deviceId,
+					},
+					width: 1920,
+					height: 1080,
+					frameRate: {
+						max: 30,
+					},
+				};
 				return await navigator.mediaDevices.getUserMedia({
 					video: videoConstraints,
 				});
-			} catch (e) {
+
+			default:
 				return await getDefaultStream();
-			}
-		default:
-			return new MediaStream();
+		}
+	} catch (err) {
+		console.warn(err);
+		return await getDefaultStream();
 	}
 }
 

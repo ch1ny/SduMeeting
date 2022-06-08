@@ -61,7 +61,10 @@ function updateAvailableAudioDevices(
 	}
 }
 
-function exchangeVideoDevice(state = null, action: { type: string; deviceInfo: DeviceInfo }) {
+function exchangeVideoDevice(
+	state = { webLabel: '无设备', deviceId: '', label: '' },
+	action: { type: string; deviceInfo: DeviceInfo }
+) {
 	switch (action.type) {
 		case EXCHANGE_VIDEO_DEVICE:
 			localStorage.setItem('usingVideoDevice', action.deviceInfo.deviceId);
@@ -71,7 +74,10 @@ function exchangeVideoDevice(state = null, action: { type: string; deviceInfo: D
 	}
 }
 
-function exchangeAudioDevice(state = null, action: { type: string; deviceInfo: DeviceInfo }) {
+function exchangeAudioDevice(
+	state = { webLabel: '无设备', deviceId: '', label: '' },
+	action: { type: string; deviceInfo: DeviceInfo }
+) {
 	switch (action.type) {
 		case EXCHANGE_AUDIO_DEVICE:
 			localStorage.setItem('usingAudioDevice', action.deviceInfo.deviceId);
