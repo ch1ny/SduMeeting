@@ -38,14 +38,12 @@ export function ChatMainContainer(props: ChatMainContainerProps) {
 						textChats: true,
 						onVideo,
 					})}>
-					<div id='chatMessages'>
-						<ChatMessages
-							id={props.id}
-							username={props.username}
-							profile={props.profile}
-							onVideo={onVideo}
-						/>
-					</div>
+					<ChatMessages
+						id={props.id}
+						username={props.username}
+						profile={props.profile}
+						onVideo={onVideo}
+					/>
 					<div id='chatInput'>
 						<ChatInput
 							nowChattingId={props.id}

@@ -89,8 +89,21 @@ export default function ChatMessages(props: ChatMessagesProps) {
 		}
 	}, [props.username, props.id, props.profile, props.onVideo, myProfile]);
 
+	const scrollRef = useRef<HTMLDivElement>(null);
+	const [prevScrollHeight, setPrevScrollHeight] = useState(0);
+	useEffect(() => {
+		// NOTE: 调节滚动条位置
+		const msgsDiv = scrollRef.current as HTMLDivElement;
+		const { scrollHeight, clientHeight, scrollTop } = msgsDiv;
+		// NOTE: 偏差值设为 1
+		if (prevScrollHeight > clientHeight && clientHeight + scrollTop + 1 >= prevScrollHeight) {
+			msgsDiv.scrollTop = scrollHeight - clientHeight;
+		}
+		setPrevScrollHeight(scrollHeight);
+	}, [messages]);
+
 	return (
-		<>
+		<div id='chatMessages' ref={scrollRef}>
 			<Button
 				type='link'
 				className='moreMessagesButton'
@@ -150,7 +163,7 @@ export default function ChatMessages(props: ChatMessagesProps) {
 					)}
 				</React.Fragment>
 			))}
-		</>
+		</div>
 	);
 }
 
