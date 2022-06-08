@@ -404,6 +404,7 @@ export default function MeetingRoom(props: MeetingRoomProps) {
 												notification.error({
 													message: '屏幕共享失败',
 													description: `${res.message}`,
+													top: 48,
 												});
 											}
 										})

@@ -1,4 +1,4 @@
-import { CameraOutlined, UserOutlined } from '@ant-design/icons';
+import { CameraOutlined, LoadingOutlined, UserOutlined } from '@ant-design/icons';
 import ImgCrop from 'antd-img-crop';
 import Avatar from 'antd/lib/avatar';
 import Button from 'antd/lib/button';
@@ -39,7 +39,13 @@ export default function UploadAvatar(props: UploadAvatarProps) {
 					width={120}
 					height={120}
 					src={props.avatar}
-					placeholder={<Avatar shape='square' size={120} icon={<UserOutlined />} />}
+					placeholder={
+						<Avatar
+							shape='square'
+							size={120}
+							icon={props.avatar ? <LoadingOutlined /> : <UserOutlined />}
+						/>
+					}
 					preview={props.avatar ? { getContainer: props.getContainer } : false}
 				/>
 			</div>

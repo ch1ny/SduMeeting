@@ -20,11 +20,11 @@ export default function Asider(props: AsiderProps) {
 	useEffect(() => {
 		eWindow.ipc.invoke('GET_USER_AUTH_TOKEN_AFTER_LOGIN').then((authToken: string) => {
 			store.dispatch(setAuthToken(authToken));
-			const { username, id, profile } = decodeJWT(authToken);
+			const { username, iat, id, profile } = decodeJWT(authToken);
 			setUserName(username);
 			setProfile(
 				profile
-					? `http://meeting.aiolia.top:8080/file/pic/user/${id}.${profile}?${Date.now()}`
+					? `http://meeting.aiolia.top:8080/file/pic/user/${id}.${profile}?iat=${iat}`
 					: profile
 			);
 		});
@@ -36,11 +36,11 @@ export default function Asider(props: AsiderProps) {
 			store.subscribe(() => {
 				const state = store.getState();
 				if (!state.authToken) return;
-				const { profile, id } = decodeJWT(state.authToken);
+				const { profile, iat, id } = decodeJWT(state.authToken);
 				// INFO: 通过追加 params 实现刷新图片缓存
 				setProfile(
 					profile
-						? `http://meeting.aiolia.top:8080/file/pic/user/${id}.${profile}?${Date.now()}`
+						? `http://meeting.aiolia.top:8080/file/pic/user/${id}.${profile}?iat=${iat}`
 						: profile
 				);
 				let unreadNum = 0;

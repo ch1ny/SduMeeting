@@ -20,13 +20,13 @@ export default function User() {
 	const [profile, setProfile] = useState<string | undefined>(undefined);
 	useEffect(() => {
 		const updateUserInfo = () => {
-			const { email, id, profile, username } = decodeJWT(store.getState().authToken);
+			const { email, iat, id, profile, username } = decodeJWT(store.getState().authToken);
 			setUserId(id);
 			setEmail(email);
 			setUsername(username);
 			setProfile(
 				profile
-					? `http://meeting.aiolia.top:8080/file/pic/user/${id}.${profile}?${Date.now()}`
+					? `http://meeting.aiolia.top:8080/file/pic/user/${id}.${profile}?iat=${iat}`
 					: undefined
 			);
 		};
