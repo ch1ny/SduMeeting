@@ -42,10 +42,11 @@ export default class RTC extends EventEmitter {
 			sender.pc.addTrack(track);
 		}
 
-		sender.pc
-			.getTransceivers()
-			.find((t) => t.sender.track?.kind === 'video')
-			?.setCodecPreferences(senderCodecs);
+		if (localStorage.getItem('gpuAcceleration') !== 'false')
+			sender.pc
+				.getTransceivers()
+				.find((t) => t.sender.track?.kind === 'video')
+				?.setCodecPreferences(senderCodecs);
 
 		this.emit('localstream', pubId, stream);
 		this._sender = sender;
@@ -71,9 +72,10 @@ export default class RTC extends EventEmitter {
 			pc.addTransceiver('video', { direction: 'recvonly' });
 
 			pc.ontrack = (e) => {
-				pc.getTransceivers()
-					.find((t) => t.receiver.track.kind === 'video')
-					?.setCodecPreferences(receiverCodecs);
+				if (localStorage.getItem('gpuAcceleration') !== 'false')
+					pc.getTransceivers()
+						.find((t) => t.receiver.track.kind === 'video')
+						?.setCodecPreferences(receiverCodecs);
 
 				// console.log(`ontrack`);
 				const receiver = this._receivers.get(pubId) as RTCReceiver;

@@ -13,6 +13,9 @@ export default function General() {
 	const [securityPrivateWebrtc, setSecurityPrivateWebrtc] = useState(
 		localStorage.getItem('securityPrivateWebrtc') === 'true'
 	);
+	const [gpuAcceleration, setGPUAcceleration] = useState(
+		localStorage.getItem('gpuAcceleration') !== 'false'
+	);
 	useEffect(() => {
 		eWindow.ipc.invoke('GET_OPEN_AFTER_START_STATUS').then((status: boolean) => {
 			setAutoOpen(status);
@@ -65,7 +68,20 @@ export default function General() {
 					}}>
 					私人加密通话
 				</Checkbox>
-				<Tooltip placement='right' overlay={'开启加密会大幅度提高CPU占用且不会开启GPU加速'}>
+				<Tooltip placement='right' overlay={'开启加密会大幅度提高CPU占用'}>
+					<QuestionCircleFilled style={{ color: 'gray', transform: 'translateY(25%)' }} />
+				</Tooltip>
+			</div>
+			<div style={{ display: 'flex' }}>
+				<Checkbox
+					checked={gpuAcceleration}
+					onChange={(e) => {
+						setGPUAcceleration(e.target.checked);
+						localStorage.setItem('gpuAcceleration', `${e.target.checked}`);
+					}}>
+					视频硬件加速
+				</Checkbox>
+				<Tooltip placement='right' overlay={'加密通话时不会启用GPU加速'}>
 					<QuestionCircleFilled style={{ color: 'gray', transform: 'translateY(25%)' }} />
 				</Tooltip>
 			</div>

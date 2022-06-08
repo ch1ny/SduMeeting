@@ -259,7 +259,7 @@ export class ChatRTC extends EventEmitter {
 			this.peer.getSenders().forEach((sender) => {
 				setupSenderTransform(sender, privateKey);
 			});
-		} else {
+		} else if (localStorage.getItem('gpuAcceleration') !== 'false') {
 			this.peer
 				.getTransceivers()
 				.find((t) => t.sender.track?.kind === 'video')
@@ -313,7 +313,7 @@ export class ChatRTC extends EventEmitter {
 			this.peer.getSenders().forEach((sender) => {
 				setupSenderTransform(sender, this.security);
 			});
-		} else {
+		} else if (localStorage.getItem('gpuAcceleration') !== 'false') {
 			this.peer
 				.getTransceivers()
 				.find((t) => t.sender.track?.kind === 'video')
@@ -416,7 +416,7 @@ export class ChatRTC extends EventEmitter {
 		peer.ontrack = (evt) => {
 			// NOTE: 解密
 			if (this.useSecurity) setupReceiverTransform(evt.receiver, this.security);
-			else
+			else if (localStorage.getItem('gpuAcceleration') !== 'false')
 				peer.getTransceivers()
 					.find((t) => t.receiver.track.kind === 'video')
 					?.setCodecPreferences(receiverCodecs);
