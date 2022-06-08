@@ -1,8 +1,8 @@
 import { CopyOutlined, DisconnectOutlined, LeftOutlined } from '@ant-design/icons';
 import Button from 'antd/lib/button';
 import Modal from 'antd/lib/modal';
-import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useRef } from 'react';
+import { globalMessage } from 'Utils/GlobalMessage/GlobalMessage';
 
 interface TopbarProps {
 	leaveMeeting: Function;

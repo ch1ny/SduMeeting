@@ -7,7 +7,6 @@ import {
 import Checkbox from 'antd/lib/checkbox';
 import Form from 'antd/lib/form';
 import Input from 'antd/lib/input';
-import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import {
 	LogoIcon,
 	MinimizeIcon,
@@ -19,6 +18,7 @@ import { Victor } from 'Components/Victor/Victor';
 import React, { useEffect, useRef, useState } from 'react';
 import ajax from 'Utils/Axios/Axios';
 import { decodeJWT } from 'Utils/Global';
+import { globalMessage } from 'Utils/GlobalMessage/GlobalMessage';
 import { eWindow } from 'Utils/Types';
 import './App.scss';
 

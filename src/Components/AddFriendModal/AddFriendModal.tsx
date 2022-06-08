@@ -7,7 +7,6 @@ import Input from 'antd/lib/input';
 import List from 'antd/lib/list';
 import Modal from 'antd/lib/modal';
 import Segmented from 'antd/lib/segmented';
-import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useState } from 'react';
 import ajax from 'Utils/Axios/Axios';
 import invokeSocket from 'Utils/ChatSocket/ChatSocket';
@@ -18,6 +17,7 @@ import {
 	REJECT_FRIEND_REQUEST,
 } from 'Utils/Constraints';
 import { getMainContent } from 'Utils/Global';
+import { globalMessage } from 'Utils/GlobalMessage/GlobalMessage';
 
 interface AddFriendModalProps {
 	visible: boolean;

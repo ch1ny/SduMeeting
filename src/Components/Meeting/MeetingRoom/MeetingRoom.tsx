@@ -1,11 +1,11 @@
 import { FullscreenExitOutlined, FullscreenOutlined, MessageOutlined } from '@ant-design/icons';
 import notification from 'antd/lib/notification';
 import axios from 'axios';
-import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import { CameraIcon, MicroPhoneIcon, ShareScreenIcon } from 'Components/MyIcon/MainViewIcons';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { DEVICE_TYPE } from 'Utils/Constraints';
 import { getDesktopStream, getDeviceStream } from 'Utils/Global';
+import { globalMessage } from 'Utils/GlobalMessage/GlobalMessage';
 import { usePrevious } from 'Utils/MyHooks/MyHooks';
 import store from 'Utils/Store/store';
 import { eWindow } from 'Utils/Types';

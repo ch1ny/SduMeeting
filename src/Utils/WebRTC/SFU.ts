@@ -1,5 +1,5 @@
-import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import { EventEmitter } from 'events';
+import { globalMessage } from 'Utils/GlobalMessage/GlobalMessage';
 import RTC, { RTCSender } from './RTC';
 
 export default class SFU extends EventEmitter {

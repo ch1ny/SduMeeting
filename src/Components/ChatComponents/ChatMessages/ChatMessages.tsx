@@ -2,7 +2,6 @@ import { HistoryOutlined } from '@ant-design/icons';
 import Avatar from 'antd/lib/avatar';
 import Button from 'antd/lib/button';
 import classNames from 'classnames';
-import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useEffect, useRef, useState } from 'react';
 import ajax from 'Utils/Axios/Axios';
 import {
@@ -13,6 +12,7 @@ import {
 	isSameYear,
 	translateDayNumberToDayChara,
 } from 'Utils/Global';
+import { globalMessage } from 'Utils/GlobalMessage/GlobalMessage';
 import { GET_MORE_MESSAGE_HISTORY, setMessageHistory } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
 import { emojiRegExp } from '../emoji';

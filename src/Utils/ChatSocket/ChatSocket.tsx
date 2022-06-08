@@ -1,8 +1,8 @@
-import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import { EventEmitter } from 'events';
 import { ChatWebSocketType } from 'Utils/Constraints';
 import eventBus from 'Utils/EventBus/EventBus';
 import { getMainContent } from 'Utils/Global';
+import { globalMessage } from 'Utils/GlobalMessage/GlobalMessage';
 import { AUDIO_TYPE, buildPropmt } from 'Utils/Prompt/Prompt';
 import { ADD_MESSAGE_HISTORY, setMessageHistory, setNowChattingId } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';

@@ -1,8 +1,8 @@
-import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useEffect, useState } from 'react';
 import { CALL_STATUS_CALLING, CALL_STATUS_FREE } from 'Utils/Constraints';
 import eventBus from 'Utils/EventBus/EventBus';
 import { decodeJWT } from 'Utils/Global';
+import { globalMessage } from 'Utils/GlobalMessage/GlobalMessage';
 import { setCallStatus } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
 import SFU from 'Utils/WebRTC/SFU';

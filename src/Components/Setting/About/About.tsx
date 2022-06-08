@@ -3,8 +3,8 @@ import Button from 'antd/lib/button';
 import Image from 'antd/lib/image';
 import Progress from 'antd/lib/progress';
 import axios from 'axios';
-import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useEffect, useMemo, useState } from 'react';
+import { globalMessage } from 'Utils/GlobalMessage/GlobalMessage';
 import { eWindow } from 'Utils/Types';
 import './style.scss';
 

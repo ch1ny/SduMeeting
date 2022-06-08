@@ -1,8 +1,8 @@
 import { CustomerServiceOutlined } from '@ant-design/icons';
 import Button from 'antd/lib/button';
-import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useEffect, useState } from 'react';
 import { DEVICE_TYPE } from 'Utils/Constraints';
+import { globalMessage } from 'Utils/GlobalMessage/GlobalMessage';
 import { updateAvailableDevices } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
 import { DeviceInfo } from 'Utils/Types';

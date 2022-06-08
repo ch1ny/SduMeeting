@@ -5,7 +5,6 @@ import {
 	ExclamationCircleOutlined,
 } from '@ant-design/icons';
 import Modal from 'antd/lib/modal';
-import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import { EventEmitter } from 'events';
 import React from 'react';
 import { ChatSocket } from 'Utils/ChatSocket/ChatSocket';
@@ -22,6 +21,7 @@ import {
 } from 'Utils/Constraints';
 import eventBus from 'Utils/EventBus/EventBus';
 import { getDeviceStream, getMainContent } from 'Utils/Global';
+import { globalMessage } from 'Utils/GlobalMessage/GlobalMessage';
 import { AUDIO_TYPE, buildPropmt } from 'Utils/Prompt/Prompt';
 import { setCallStatus, setNowChattingId, setNowWebrtcFriendId } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';

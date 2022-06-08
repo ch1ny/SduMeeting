@@ -4,8 +4,8 @@ import Avatar from 'antd/lib/avatar';
 import Button from 'antd/lib/button';
 import Image from 'antd/lib/image';
 import Upload, { UploadChangeParam } from 'antd/lib/upload';
-import { globalMessage } from 'Components/GlobalMessage/GlobalMessage';
 import React, { useState } from 'react';
+import { globalMessage } from 'Utils/GlobalMessage/GlobalMessage';
 import './style.scss';
 
 interface UploadAvatarProps {
