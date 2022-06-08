@@ -4,7 +4,7 @@ import { ChatWebSocketType } from 'Utils/Constraints';
 import eventBus from 'Utils/EventBus/EventBus';
 import { getMainContent } from 'Utils/Global';
 import { AUDIO_TYPE, buildPropmt } from 'Utils/Prompt/Prompt';
-import { ADD_MESSAGE_HISTORY, setMessageHistory } from 'Utils/Store/actions';
+import { ADD_MESSAGE_HISTORY, setMessageHistory, setNowChattingId } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
 import { eWindow } from 'Utils/Types';
 
@@ -94,13 +94,24 @@ export class ChatSocket extends EventEmitter {
 						'GET_FRIEND_INFO_BY_ID',
 						msg.data.message.fromId
 					);
-					new Notification(`${friend.username} 向您发送了一条消息`, {
-						body: `${msg.data.message.message}`,
-						icon: friend.profile
-							? `http://meeting.aiolia.top:8080/file/pic/user/${msg.data.message.fromId}.${friend.profile}`
-							: drawUserProfile(friend.username),
-						silent: true,
-					});
+					const newMessageNotify = new Notification(
+						`${friend.username} 向您发送了一条消息`,
+						{
+							body: `${msg.data.message.message}`,
+							icon: friend.profile
+								? `http://meeting.aiolia.top:8080/file/pic/user/${msg.data.message.fromId}.${friend.profile}`
+								: drawUserProfile(friend.username),
+							silent: true,
+							tag: 'NEW_MESSAGE_NOTIFICATION',
+							renotify: true,
+						}
+					);
+					newMessageNotify.onclick = () => {
+						eWindow.ipc.send('FOCUS_ON_MAIN_WINDOW');
+						newMessageNotify.close();
+						store.dispatch(setNowChattingId(msg.data.message.fromId));
+						eventBus.emit('SET_SELECTED_TAB', 0);
+					};
 					playMessageAudio();
 					break;
 				case 'MESSAGE_SENDER_OK':
