@@ -14,7 +14,6 @@ export interface MeetingInfo {
 	joinName: string;
 	meetingId: string;
 	sfuIp: string;
-	joinPassword?: string;
 	autoOpenCamera: boolean;
 	autoOpenMicroPhone: boolean;
 }
@@ -39,8 +38,7 @@ export default function Meeting() {
 					(meetingInfo as MeetingInfo).sfuIp,
 					userId,
 					(meetingInfo as MeetingInfo).joinName,
-					(meetingInfo as MeetingInfo).meetingId,
-					(meetingInfo as MeetingInfo).joinPassword
+					(meetingInfo as MeetingInfo).meetingId
 				)
 			);
 		} else if (sfu) {

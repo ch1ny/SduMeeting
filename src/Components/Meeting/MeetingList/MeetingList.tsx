@@ -1,7 +1,6 @@
 import {
 	CommentOutlined,
 	ForwardOutlined,
-	KeyOutlined,
 	LockOutlined,
 	PlusOutlined,
 	UserOutlined,
@@ -174,13 +173,6 @@ export default function MeetingList(props: MeetingListProps) {
 						<Input
 							prefix={<UserOutlined style={{ color: 'rgba(0, 0, 0, 0.25)' }} />}
 							placeholder='您的名称'
-						/>
-					</Form.Item>
-					<Form.Item name='joinPassword'>
-						<Input.Password
-							spellCheck={false}
-							prefix={<KeyOutlined style={{ color: 'rgba(0, 0, 0, 0.25)' }} />}
-							placeholder='与会密码，如果没有可以不填'
 						/>
 					</Form.Item>
 					<Form.Item>

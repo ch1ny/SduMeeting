@@ -12,19 +12,13 @@ export default class SFU extends EventEmitter {
 	sfuIp: string;
 	sendOnly: boolean;
 
-	constructor(
-		sfuIp: string,
-		userId: number,
-		userName: string,
-		meetingId: string,
-		joinPassword?: string
-	) {
+	constructor(sfuIp: string, userId: number, userName: string, meetingId: string) {
 		super();
 
 		// this.sendOnly = false;
 		this.sendOnly = userId < 0;
 
-		this._rtc = new RTC(this.sendOnly, joinPassword);
+		this._rtc = new RTC(this.sendOnly);
 		this.userId = userId;
 		this.userName = userName;
 		this.meetingId = Number(meetingId);

@@ -1,6 +1,5 @@
 import { EventEmitter } from 'events';
 import { receiverCodecs, senderCodecs } from 'Utils/Constraints';
-import { setupReceiverTransform, setupSenderTransform } from './RtcEncrypt';
 
 const ices = 'stun:stun.stunprotocol.org:3478'; // INFO: 一个免费的 STUN 服务器
 
@@ -18,12 +17,10 @@ export interface RTCReceiver {
 export default class RTC extends EventEmitter {
 	_sender!: RTCSender;
 	_receivers!: Map<number, RTCReceiver>;
-	psw?: string;
 
-	constructor(sendOnly: boolean, psw?: string) {
+	constructor(sendOnly: boolean) {
 		super();
 		if (!sendOnly) this._receivers = new Map();
-		this.psw = psw;
 	}
 
 	getSender() {
@@ -37,25 +34,18 @@ export default class RTC extends EventEmitter {
 	createSender(pubId: number, stream: MediaStream): RTCSender {
 		let sender = {
 			offerSent: false,
-			pc: new (RTCPeerConnection as any)({
+			pc: new RTCPeerConnection({
 				iceServers: [{ urls: ices }],
-				encodedInsertableStreams: Boolean(this.psw),
-			}) as RTCPeerConnection,
+			}),
 		};
 		for (const track of stream.getTracks()) {
 			sender.pc.addTrack(track);
 		}
 
-		if (Boolean(this.psw))
-			sender.pc.getSenders().forEach((sender) => {
-				setupSenderTransform(sender, this.psw);
-			});
-		else {
-			sender.pc
-				.getTransceivers()
-				.find((t) => t.sender.track?.kind === 'video')
-				?.setCodecPreferences(senderCodecs);
-		}
+		sender.pc
+			.getTransceivers()
+			.find((t) => t.sender.track?.kind === 'video')
+			?.setCodecPreferences(senderCodecs);
 
 		this.emit('localstream', pubId, stream);
 		this._sender = sender;
@@ -67,10 +57,9 @@ export default class RTC extends EventEmitter {
 		// INFO: 阻止重复建立接收器
 		if (_receiver) return _receiver;
 		try {
-			const pc = new (RTCPeerConnection as any)({
+			const pc = new RTCPeerConnection({
 				iceServers: [{ urls: ices }],
-				encodedInsertableStreams: Boolean(this.psw),
-			}) as RTCPeerConnection;
+			});
 
 			pc.onicecandidate = (e) => {
 				// console.log(`receiver.pc.onicecandidate => ${e.candidate}`);
@@ -82,12 +71,10 @@ export default class RTC extends EventEmitter {
 			pc.addTransceiver('video', { direction: 'recvonly' });
 
 			pc.ontrack = (e) => {
-				if (Boolean(this.psw)) setupReceiverTransform(e.receiver, this.psw);
-				else {
-					pc.getTransceivers()
-						.find((t) => t.receiver.track.kind === 'video')
-						?.setCodecPreferences(receiverCodecs);
-				}
+				pc.getTransceivers()
+					.find((t) => t.receiver.track.kind === 'video')
+					?.setCodecPreferences(receiverCodecs);
+
 				// console.log(`ontrack`);
 				const receiver = this._receivers.get(pubId) as RTCReceiver;
 				if (!receiver.stream) {
