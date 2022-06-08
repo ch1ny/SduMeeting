@@ -41,8 +41,8 @@ function getUserMediaDevices() {
 			);
 			return { label, webLabel, deviceId: device.deviceId };
 		};
-		let videoDevices = [],
-			audioDevices = [];
+		const videoDevices: DeviceInfo[] = [],
+			audioDevices: DeviceInfo[] = [];
 		for (const index in devices) {
 			const device = devices[index];
 			if (device.kind === 'videoinput') {
@@ -55,24 +55,28 @@ function getUserMediaDevices() {
 		store.dispatch(updateAvailableDevices(DEVICE_TYPE.AUDIO_DEVICE, audioDevices));
 		const lastVideoDevice = localStorage.getItem('usingVideoDevice');
 		const lastAudioDevice = localStorage.getItem('usingAudioDevice');
-		(() => {
-			store.dispatch(exchangeMediaDevice(DEVICE_TYPE.VIDEO_DEVICE, videoDevices[0]));
-			for (const device of videoDevices) {
-				if (device.deviceId === lastVideoDevice) {
-					store.dispatch(exchangeMediaDevice(DEVICE_TYPE.VIDEO_DEVICE, device));
-					return;
+		if (videoDevices.length > 0) {
+			(() => {
+				store.dispatch(exchangeMediaDevice(DEVICE_TYPE.VIDEO_DEVICE, videoDevices[0]));
+				for (const device of videoDevices) {
+					if (device.deviceId === lastVideoDevice) {
+						store.dispatch(exchangeMediaDevice(DEVICE_TYPE.VIDEO_DEVICE, device));
+						return;
+					}
 				}
-			}
-		})();
-		(() => {
-			store.dispatch(exchangeMediaDevice(DEVICE_TYPE.AUDIO_DEVICE, audioDevices[0]));
-			for (const device of audioDevices) {
-				if (device.deviceId === lastAudioDevice) {
-					store.dispatch(exchangeMediaDevice(DEVICE_TYPE.AUDIO_DEVICE, device));
-					return;
+			})();
+		}
+		if (audioDevices.length > 0) {
+			(() => {
+				store.dispatch(exchangeMediaDevice(DEVICE_TYPE.AUDIO_DEVICE, audioDevices[0]));
+				for (const device of audioDevices) {
+					if (device.deviceId === lastAudioDevice) {
+						store.dispatch(exchangeMediaDevice(DEVICE_TYPE.AUDIO_DEVICE, device));
+						return;
+					}
 				}
-			}
-		})();
+			})();
+		}
 	});
 }
 
