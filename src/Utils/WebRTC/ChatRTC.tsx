@@ -164,7 +164,7 @@ export class ChatRTC extends EventEmitter {
 		};
 
 		if (store.getState().callStatus === CALL_STATUS_FREE) {
-			eventBus.emit('GET_PRIVATE_CALLED');
+			eventBus.emit('SET_SELECTED_TAB', 0);
 			this.answerAudioPrompt[0]();
 			store.dispatch(setNowChattingId(msg.sender));
 			const pgArr = JSON.parse(msg.security);

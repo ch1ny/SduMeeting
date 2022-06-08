@@ -13,8 +13,8 @@ import { decodeJWT } from 'Utils/Global';
 import {
 	ADD_MESSAGE_HISTORY,
 	ADD_UNREAD_MESSAGE,
+	REMOVE_UNREAD_MESSAGES,
 	setMessageHistory,
-	setNowChattingId,
 	setUnreadMessages,
 } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
@@ -23,17 +23,42 @@ import { ChatRTC } from 'Utils/WebRTC/ChatRTC';
 import './style.scss';
 
 export const ChatRTCContext = React.createContext<ChatRTC | undefined>(undefined);
+const clearUnreadMessages = (id: number) => {
+	invokeSocket().send({
+		sender: id,
+		type: ChatWebSocketType.CHAT_READ_MESSAGE,
+	});
+	store.dispatch(setUnreadMessages(REMOVE_UNREAD_MESSAGES, { userId: id }));
+};
 
 export default function Chats() {
 	const [nowChatting, setNowChatting] = useState(undefined);
 	const [chatSocket, setChatSocket] = useState<ChatSocket | undefined>(undefined);
+	useEffect(() => {
+		// NOTE: 签收未读消息并将它们移出未读消息列表
+		if (nowChatting) {
+			if (eventBus.invokeSync('GET_SELECTED_TAB') === 0) {
+				clearUnreadMessages((nowChatting as any).uid);
+			}
+			eventBus.on('SHOW_CHATS', () => {
+				clearUnreadMessages((nowChatting as any).uid);
+			});
+			return () => {
+				eventBus.offAll('SHOW_CHATS');
+			};
+		}
+	}, [nowChatting]);
 
 	useEffect(() => {
 		const onReceiveMessage = ({ data }: { data: { message: any } }) => {
 			// NOTE: 接收到消息，加入历史记录中，并根据当前打开的会话框决定是否加入未读消息队列中
 			const { message } = data;
 			message.myId = decodeJWT(store.getState().authToken).id;
-			if (!nowChatting || (nowChatting as any).uid !== message.fromId) {
+			if (
+				eventBus.invokeSync('GET_SELECTED_TAB') !== 0 ||
+				!nowChatting ||
+				(nowChatting as any).uid !== message.fromId
+			) {
 				store.dispatch(setUnreadMessages(ADD_UNREAD_MESSAGE, message));
 				store.dispatch(setMessageHistory(ADD_MESSAGE_HISTORY, message));
 			} else {
@@ -244,9 +269,6 @@ export default function Chats() {
 									id={friend.uid}
 									username={friend.username}
 									profile={friend.profile}
-									onClick={() => {
-										store.dispatch(setNowChattingId(friendId));
-									}}
 									onRemoveFriend={removeFriend}
 									unreadNumber={
 										unreadNumber[`${friend.uid}` as keyof typeof unreadNumber]

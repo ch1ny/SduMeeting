@@ -67,9 +67,13 @@ export class ChatSocket extends EventEmitter {
 						content: '已成功回复好友请求',
 						getPopupContainer: getMainContent,
 					});
+					this.send({
+						toId: msg.data.id,
+						message: '嘿，我们已经是好友了，快来和我聊天吧！',
+						type: ChatWebSocketType.CHAT_SEND_PRIVATE_MESSAGE,
+					});
 					break;
 				case 'REPLY_RECEIVER_OK':
-					playMessageAudio();
 					const { id, username, email, profile } = msg.data;
 					globalMessage.success({
 						content: `用户 ${username} 已成为您的好友`,
@@ -81,37 +85,21 @@ export class ChatSocket extends EventEmitter {
 						email,
 						profile,
 					};
-					(window as any).ipc.invoke('IS_MAIN_WINDOW_MINIMIZED').then((bool: boolean) => {
-						if (bool) {
-							new Notification(`${username} 已同意您的好友请求`, {
-								body: `嘿，我们已经是好友了，快来和我聊天吧！`,
-								icon: profile
-									? `http://meeting.aiolia.top:8080/file/pic/user/${id}.${profile}`
-									: drawUserProfile(username),
-								silent: true,
-							});
-						}
-					});
 					this.emit('REPLY_RECEIVER_OK', newFriend);
 					break;
 				case 'MESSAGE_RECEIVER_OK':
 					// NOTE: 接收消息
 					this.emit('MESSAGE_RECEIVER_OK', msg);
-					(window as any).ipc.invoke('IS_MAIN_WINDOW_MINIMIZED').then((bool: boolean) => {
-						if (bool) {
-							const friend = eventBus.invokeSync(
-								'GET_FRIEND_INFO_BY_ID',
-								msg.data.message.fromId
-							);
-							const profile = friend.profile;
-							new Notification(`${friend.username} 向您发送了一条消息`, {
-								body: `${msg.data.message.message}`,
-								icon: profile
-									? `http://meeting.aiolia.top:8080/file/pic/user/${msg.data.message.fromId}.${profile}`
-									: drawUserProfile(friend.username),
-								silent: true,
-							});
-						}
+					const friend = eventBus.invokeSync(
+						'GET_FRIEND_INFO_BY_ID',
+						msg.data.message.fromId
+					);
+					new Notification(`${friend.username} 向您发送了一条消息`, {
+						body: `${msg.data.message.message}`,
+						icon: friend.profile
+							? `http://meeting.aiolia.top:8080/file/pic/user/${msg.data.message.fromId}.${friend.profile}`
+							: drawUserProfile(friend.username),
+						silent: true,
 					});
 					playMessageAudio();
 					break;
@@ -153,6 +141,9 @@ export class ChatSocket extends EventEmitter {
 						body: '您的账号已在其他机器上登录，您已被挤下线',
 					});
 					eWindow.ipc.send('LOG_OUT');
+					break;
+				case 'SIGN_OK':
+					// NOTE: 签收消息确认
 					break;
 				default:
 					console.log('未知 chat socket 消息');

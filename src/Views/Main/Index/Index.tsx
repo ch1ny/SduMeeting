@@ -10,13 +10,24 @@ import './style.scss';
 export default function Index() {
 	const [selectedTab, setSelectedTab] = useState(0);
 	useEffect(() => {
-		eventBus.on('GET_PRIVATE_CALLED', () => {
-			setSelectedTab(0);
+		eventBus.on('SET_SELECTED_TAB', (selected: number) => {
+			setSelectedTab(selected);
 		});
 		return () => {
-			eventBus.offAll('GET_PRIVATE_CALLED');
+			eventBus.offAll('SET_SELECTED_TAB');
 		};
 	}, []);
+	useEffect(() => {
+		if (selectedTab === 0) {
+			eventBus.emit('SHOW_CHATS');
+		}
+		eventBus.handle('GET_SELECTED_TAB', () => {
+			return selectedTab;
+		});
+		return () => {
+			eventBus.removeHandler('GET_SELECTED_TAB');
+		};
+	}, [selectedTab]);
 
 	return (
 		<>

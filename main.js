@@ -462,10 +462,6 @@ function createMainWindow(userEmail) {
 			});
 		});
 
-		ipc.handle('IS_MAIN_WINDOW_MINIMIZED', () => {
-			return mainWindow.isMinimized();
-		});
-
 		ipc.handle('DIFFIE_HELLMAN', (evt, ...args) => {
 			switch (args.length) {
 				case 1:
@@ -491,7 +487,6 @@ function createMainWindow(userEmail) {
 			ipc.removeHandler('DOWNLOADED_UPDATE_ZIP');
 			ipc.removeAllListeners('READY_TO_UPDATE');
 			ipc.removeAllListeners('LOG_OUT');
-			ipc.removeHandler('IS_MAIN_WINDOW_MINIMIZED');
 			ipc.removeHandler('DIFFIE_HELLMAN');
 			mainWindow = null;
 		});

@@ -5,17 +5,14 @@ import Dropdown from 'antd/lib/dropdown';
 import Menu from 'antd/lib/menu';
 import Modal from 'antd/lib/modal';
 import React, { CSSProperties, useEffect, useState } from 'react';
-import invokeSocket from 'Utils/ChatSocket/ChatSocket';
-import { ChatWebSocketType } from 'Utils/Constraints';
 import { isSameDay, isSameWeek, isSameYear, translateDayNumberToDayChara } from 'Utils/Global';
-import { REMOVE_UNREAD_MESSAGES, setUnreadMessages } from 'Utils/Store/actions';
+import { setNowChattingId } from 'Utils/Store/actions';
 import store from 'Utils/Store/store';
 import './style.scss';
 
 interface FriendBubbleProps {
 	style?: CSSProperties;
 	id: number;
-	onClick: React.MouseEventHandler<HTMLDivElement>;
 	onRemoveFriend: (friendId: number) => void;
 	unreadNumber: number;
 	profile: false | string;
@@ -64,18 +61,8 @@ export default function FriendBubble(props: FriendBubbleProps) {
 			trigger={['contextMenu']}>
 			<div
 				className='friendBubbles'
-				onClick={(evt) => {
-					props.onClick(evt);
-					// NOTE: 签收未读消息并将它们移出未读消息列表
-					if (props.unreadNumber > 0) {
-						invokeSocket().send({
-							sender: props.id,
-							type: ChatWebSocketType.CHAT_READ_MESSAGE,
-						});
-						store.dispatch(
-							setUnreadMessages(REMOVE_UNREAD_MESSAGES, { userId: props.id })
-						);
-					}
+				onClick={() => {
+					store.dispatch(setNowChattingId(props.id));
 				}}
 				style={props.style}>
 				<div className='avatarContainer'>
