@@ -1,3 +1,4 @@
+import { AudioMutedOutlined, AudioOutlined } from '@ant-design/icons';
 import Dropdown from 'antd/lib/dropdown';
 import Menu from 'antd/lib/menu';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -31,7 +32,8 @@ export default function Member(props: MemberProps) {
 					className='meetingMemberVideo'
 				/>
 				<span className='memberName' title={props.member}>
-					{props.member}
+					{props.member}{' '}
+					{props.muted || muted ? <AudioMutedOutlined /> : <AudioOutlined />}
 				</span>
 			</div>
 		),
