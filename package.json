@@ -10,7 +10,7 @@
 		"@types/react-dom": "17",
 		"clean-webpack-plugin": "^4.0.0",
 		"css-loader": "^6.7.1",
-		"electron": "^18.2.4",
+		"electron": "^22.3.25",
 		"electron-packager": "^15.5.1",
 		"file-loader": "^6.2.0",
 		"html-webpack-plugin": "^5.5.0",
